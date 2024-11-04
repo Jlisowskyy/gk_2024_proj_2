@@ -11,9 +11,11 @@
 #include <QObject>
 #include <QToolBar>
 #include <QGraphicsItem>
+#include <QSlider>
 
 /* Forward declaration */
 class DrawingWidget;
+class DoubleSlider;
 
 class ToolBar : public QObject {
 Q_OBJECT
@@ -60,6 +62,7 @@ protected:
 
     QToolBar *m_toolBar{};
     DrawingWidget *m_drawingWidget{};
+    DoubleSlider *m_alphaSlider{};
 };
 
 

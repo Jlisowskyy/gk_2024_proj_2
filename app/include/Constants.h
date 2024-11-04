@@ -5,6 +5,8 @@
 #ifndef APP_CONSTANTS_H
 #define APP_CONSTANTS_H
 
-#include <Qt>
+/* external includes */
+
+static constexpr int DEFAULT_SLIDER_SIZE = 200;
 
 #endif //APP_CONSTANTS_H

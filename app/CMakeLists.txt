@@ -26,6 +26,8 @@ set(PROJECT_SOURCES
         include/GraphicObjects/DrawingWidget.h
         include/Constants.h
         src/Constants.cpp
+        src/DoubleSlider.cpp
+        include/UiObjects/DoubleSlider.h
 )
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)

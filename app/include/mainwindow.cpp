@@ -19,7 +19,6 @@ MainWindow::MainWindow(QWidget *parent)
           m_drawingWidget(new DrawingWidget(this)){
     m_ui->setupUi(this);
     m_toolBar->setupToolBar(m_ui->toolBar,  m_drawingWidget);
-
     m_ui->verticalLayout->addWidget(m_drawingWidget);
 
     QFrame *frame = new QFrame(this);

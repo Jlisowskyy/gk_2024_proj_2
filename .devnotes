@@ -1,0 +1,28 @@
+intro:
+- right side screen panel:
+	- slider how many to divade the space
+	- two another sliders: alpha, beta
+	- suwak na ks
+	- suwak na kd
+	- wybor koloru swiatla
+
+- space may be moved by mouse
+- 16 bezier control points
+- without overlapping
+- source of light -> color triangles based on that
+- try to use some library to draw 3d points
+
+- structs:
+	{
+	   Mesh = List<Traingle>
+	   Trangle = Vertes[3]
+	   Vertes = [punkt przed obrotem, punkt po obrocie, wektory styczne przed i po obrocie, (u, v) - wierzcholki]
+	}
+- srodek draw boxa <-> srodek cords
+- obserwator  V=[0,0,1]
+- zrodlo swiatla krazy wokol
+- wybor mapy wektorow normalnych
+- zmiana na przycisk
+- wczytywanie siatki z pliku
+
+

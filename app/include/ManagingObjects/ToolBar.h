@@ -63,6 +63,7 @@ public:
     DoubleSlider *m_kdSlider{};
     DoubleSlider *m_mSlider{};
     DoubleSlider *m_lightningPositionSlider{};
+    DoubleSlider *m_observerDistanceSlider{};
 
     /* Buttons */
     QAction *m_drawNetButton{};

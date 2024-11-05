@@ -14,11 +14,11 @@
 #include <QFrame>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent),
-      m_ui(new Ui::MainWindow),
-      m_toolBar(new ToolBar(this)),
-      m_drawingWidget(new DrawingWidget(this)),
-      m_objectMgr(new ObjectMgr(this, this)) {
+        : QMainWindow(parent),
+          m_ui(new Ui::MainWindow),
+          m_toolBar(new ToolBar(this)),
+          m_drawingWidget(new DrawingWidget(this)),
+          m_objectMgr(new ObjectMgr(this, this, m_drawingWidget)) {
     setMinimumSize(600, 900);
     setWindowTitle("Bezier 3D drawer");
 
@@ -37,6 +37,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     /* window connects */
     connect(m_ui->actionExit, &QAction::triggered, this, &MainWindow::close);
+
+    m_objectMgr->loadDefaultSettings();
 }
 
 

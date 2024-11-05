@@ -19,6 +19,8 @@
 /* Forward declarations */
 class ToolBar;
 
+class DrawingWidget;
+
 class ObjectMgr : public QObject {
 Q_OBJECT
 
@@ -26,7 +28,7 @@ Q_OBJECT
     // Class creation
     // ------------------------------
 public:
-    explicit ObjectMgr(QObject *parent, QWidget *widgetParent);
+    explicit ObjectMgr(QObject *parent, QWidget *widgetParent, DrawingWidget* drawingWidget);
 
     ~ObjectMgr() override;
 
@@ -92,21 +94,26 @@ protected:
 
     void _loadBezierPoints(const QString &path);
 
-    static void openFileDialog(std::function<void(const QString &)> callback);
+    void _openFileDialog(std::function<void(const QString &)> callback);
 
-    static ControlPoints loadBezierPoints(const QString &path, bool *ok);
+    ControlPoints _loadBezierPointsOpenFile(const QString &path, bool *ok);
 
-    static ControlPoints loadBezierPointsParse(QFile &file, bool *ok);
+    ControlPoints _loadBezierPointsParse(QFile &file, bool *ok);
+
+    void showToast(const QString &message, int duration = DEFAULT_TOAST_DURATION_MS);
 
     // ------------------------------
     // Class fields
     // ------------------------------
 protected:
 
-    QColor m_color;
-    QWidget *m_parentWidget;
+    QColor m_color{};
+    QWidget *m_parentWidget{};
+    DrawingWidget *m_drawingWidget{};
 
-    ControlPoints m_controlPoints;
+    ControlPoints m_controlPoints{};
+
+    QString m_previousDirectory{};
 };
 
 

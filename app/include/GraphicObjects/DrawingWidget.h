@@ -21,15 +21,9 @@ class DrawingWidget : public QGraphicsView {
 Q_OBJECT
 
     // ------------------------------
-    // Class constants
-    // ------------------------------
-public:
-    static constexpr int SPACE_WIDTH = 5000;
-    static constexpr int SPACE_HEIGHT = 5000;
-
-    // ------------------------------
     // Class creation
     // ------------------------------
+public:
 
     explicit DrawingWidget(QWidget *parent);
 
@@ -39,12 +33,18 @@ public:
     // Class interaction
     // ------------------------------
 
+    void drawPoint(QVector3D point, Qt::GlobalColor color, int radius);
+
+    void drawLine(QVector3D start, QVector3D end, Qt::GlobalColor color, int width);
+
     // ------------------------------
     // Class slots
     // ------------------------------
 public slots:
 
     void clearContent() const;
+
+    void setObserverDistance(double distance) { m_observerDistance = distance; }
 
     // ------------------------------
     // Class signals
@@ -67,7 +67,8 @@ private:
     // Class fields
     // ------------------------------
 
-    QGraphicsScene *m_scene{};
+    QGraphicsScene *m_scene;
+    double m_observerDistance;
 };
 
 

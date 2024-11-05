@@ -9,19 +9,14 @@
 #include <QDebug>
 #include <format>
 #include <QShortcut>
+#include <QVector3D>
 
 DrawingWidget::DrawingWidget(QWidget *parent) : QGraphicsView(parent),
-                                                m_scene(new QGraphicsScene(this)) {
+                                                m_scene(new QGraphicsScene(this)),
+                                                m_observerDistance(DEFAULT_OBSERVER_DISTANCE) {
     Q_ASSERT(parent != nullptr);
     setScene(m_scene);
     m_scene->setBackgroundBrush(Qt::white);
-
-    /* resize the scene */
-    m_scene->setSceneRect(0,
-                          0,
-                          SPACE_WIDTH,
-                          SPACE_HEIGHT);
-
 
     /* disable scrolls visibility */
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -30,8 +25,7 @@ DrawingWidget::DrawingWidget(QWidget *parent) : QGraphicsView(parent),
     /* Additional space options */
     setViewportUpdateMode(FullViewportUpdate);
     setRenderHint(QPainter::Antialiasing, true);
-
-    centerOn(static_cast<double>(SPACE_WIDTH) / 2.0, static_cast<double>(SPACE_HEIGHT) / 2.0);
+    setTransformationAnchor(AnchorViewCenter);
 }
 
 DrawingWidget::~DrawingWidget() {
@@ -40,4 +34,12 @@ DrawingWidget::~DrawingWidget() {
 
 void DrawingWidget::clearContent() const {
     m_scene->clear();
+}
+
+void DrawingWidget::drawPoint(QVector3D point, Qt::GlobalColor color, int radius) {
+
+}
+
+void DrawingWidget::drawLine(QVector3D start, QVector3D end, Qt::GlobalColor color, int width) {
+
 }

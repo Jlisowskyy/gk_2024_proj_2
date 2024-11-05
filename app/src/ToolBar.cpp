@@ -51,78 +51,143 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
     _addToolbarLiteral("Drawing options:");
     m_toolBar->setAllowedAreas(Qt::LeftToolBarArea | Qt::RightToolBarArea);
 
-    m_triangulationSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, 1.0, 30.0, 29, 5, "Triangulation accuracy",
+    // Triangulation slider
+    m_triangulationSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
+                                             TRIANGULATION_SLIDER_MIN, TRIANGULATION_SLIDER_MAX,
+                                             TRIANGULATION_SLIDER_STEPS, TRIANGULATION_SLIDER_DEFAULT,
+                                             "Triangulation accuracy",
                                              "Change accuracy of triangulation for rendered plain");
     m_toolBar->addWidget(m_triangulationSlider->getContainer());
 
-    auto pButton = new TextButton(m_toolBar, "Load Bezier points to the program!", "Load bezier points",
+    // Observer distance slider
+    m_observerDistanceSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
+                                                OBSERVER_DISTANCE_MIN, OBSERVER_DISTANCE_MAX,
+                                                OBSERVER_DISTANCE_STEPS, DEFAULT_OBSERVER_DISTANCE,
+                                                "Observer distance",
+                                                "Change distance of observer from the plain");
+    m_toolBar->addWidget(m_observerDistanceSlider->getContainer());
+
+    // Load Bezier points button
+    auto pButton = new TextButton(m_toolBar,
+                                  "Load Bezier points to the program!",
+                                  "Load bezier points",
                                   ":/icons/load_icon.png");
     m_loadBezierPointsButton = pButton->getAction();
     m_toolBar->addWidget(pButton);
 
-    pButton = new TextButton(m_toolBar, "Change whether draw the net over the plain or not", "Draw net",
+    // Draw net button
+    pButton = new TextButton(m_toolBar,
+                             "Change whether draw the net over the plain or not",
+                             "Draw net",
                              ":/icons/net_icon.png");
     m_drawNetButton = pButton->getAction();
     m_drawNetButton->setCheckable(true);
     m_toolBar->addWidget(pButton);
 
-    pButton = new TextButton(m_toolBar, "Load texture to the program!", "Load texture", ":/icons/load_icon.png");
+    // Load texture button
+    pButton = new TextButton(m_toolBar,
+                             "Load texture to the program!",
+                             "Load texture",
+                             ":/icons/load_icon.png");
     m_loadTextureButton = pButton->getAction();
     m_toolBar->addWidget(pButton);
 
-    pButton = new TextButton(m_toolBar, "Draw the texture on the plain!", "Draw the texture",
+    // Enable texture button
+    pButton = new TextButton(m_toolBar,
+                             "Draw the texture on the plain!",
+                             "Draw the texture",
                              ":/icons/texture_icon.png");
     m_enableTextureButton = pButton->getAction();
     m_enableTextureButton->setCheckable(true);
     m_toolBar->addWidget(pButton);
 
-    pButton = new TextButton(m_toolBar, "Load normal vector to the program!", "Load normal vectors",
+    // Load normal vectors button
+    pButton = new TextButton(m_toolBar,
+                             "Load normal vector to the program!",
+                             "Load normal vectors",
                              ":/icons/load_icon.png");
     m_loadNormalVectorsButton = pButton->getAction();
     m_toolBar->addWidget(pButton);
 
-    pButton = new TextButton(m_toolBar, "Enable usage of normal vectors in the program", "Enable normal vectors",
+    // Enable normal vectors button
+    pButton = new TextButton(m_toolBar,
+                             "Enable usage of normal vectors in the program",
+                             "Enable normal vectors",
                              ":/icons/vector_icon.png");
     m_enableNormalVectorsButton = pButton->getAction();
     m_enableTextureButton->setCheckable(true);
     m_toolBar->addWidget(pButton);
 
+    // Rotation section
     _addSeparator();
     _addToolbarLiteral("Rotations:");
-    m_alphaSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, -45.0, 45.0, 900, 450, "Alpha angle",
+
+    // Alpha angle slider
+    m_alphaSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
+                                     ALPHA_ANGLE_MIN, ALPHA_ANGLE_MAX,
+                                     ALPHA_ANGLE_STEPS, ALPHA_ANGLE_DEFAULT,
+                                     "Alpha angle",
                                      "Z Axis rotation angle");
     m_toolBar->addWidget(m_alphaSlider->getContainer());
 
-    m_betaSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, 0.0, 10.0, 100, 50, "Beta angle",
+    // Beta angle slider
+    m_betaSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
+                                    BETA_ANGLE_MIN, BETA_ANGLE_MAX,
+                                    BETA_ANGLE_STEPS, BETA_ANGLE_DEFAULT,
+                                    "Beta angle",
                                     "X Axis rotation angle");
     m_toolBar->addWidget(m_betaSlider->getContainer());
 
+    // Lightning section
     _addSeparator();
     _addToolbarLiteral("Lightning options:");
 
-    m_ksSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, 0.0, 1.0, 100, 50, "Ks coefficient",
+    // Ks coefficient slider
+    m_ksSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
+                                  LIGHTING_COEFFICIENT_MIN, LIGHTING_COEFFICIENT_MAX,
+                                  LIGHTING_COEFFICIENT_STEPS, LIGHTING_COEFFICIENT_DEFAULT,
+                                  "Ks coefficient",
                                   "Ks coefficient for lighting equation");
     m_toolBar->addWidget(m_ksSlider->getContainer());
 
-    m_kdSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, 0.0, 1.0, 100, 50, "Kd coefficient",
+    // Kd coefficient slider
+    m_kdSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
+                                  LIGHTING_COEFFICIENT_MIN, LIGHTING_COEFFICIENT_MAX,
+                                  LIGHTING_COEFFICIENT_STEPS, LIGHTING_COEFFICIENT_DEFAULT,
+                                  "Kd coefficient",
                                   "Kd coefficient for lightning equation");
     m_toolBar->addWidget(m_kdSlider->getContainer());
 
-    m_mSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, 1.0, 100.0, 99, 50, "M coefficient",
+    // M coefficient slider
+    m_mSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
+                                 M_COEFFICIENT_MIN, M_COEFFICIENT_MAX,
+                                 M_COEFFICIENT_STEPS, M_COEFFICIENT_DEFAULT,
+                                 "M coefficient",
                                  "M coefficient for lighting equation");
     m_toolBar->addWidget(m_mSlider->getContainer());
 
-    m_lightningPositionSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, 0.0, 1.0, 100, 50, "Light position",
+    // Light position slider
+    m_lightningPositionSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
+                                                 LIGHTING_COEFFICIENT_MIN, LIGHTING_COEFFICIENT_MAX,
+                                                 LIGHTING_COEFFICIENT_STEPS, LIGHTING_COEFFICIENT_DEFAULT,
+                                                 "Light position",
                                                  "Position of lighting equation");
     m_toolBar->addWidget(m_lightningPositionSlider->getContainer());
 
-    pButton = new TextButton(m_toolBar, "Stop movement of light source!", "Stop light movement",
+    // Stop light movement button
+    pButton = new TextButton(m_toolBar,
+                             "Stop movement of light source!",
+                             "Stop light movement",
                              ":/icons/stop_icon.png");
     m_stopLightMovementButton = pButton->getAction();
     m_stopLightMovementButton->setCheckable(true);
     m_toolBar->addWidget(pButton);
 
-    pButton = new TextButton(m_toolBar, "Change color of the plain!", "Change color", ":/icons/color_icon.png");
+    // Change plain color button
+    pButton = new TextButton(m_toolBar,
+                             "Change color of the plain!",
+                             "Change color",
+                             ":/icons/color_icon.png");
     m_changePlainColorButton = pButton->getAction();
     m_toolBar->addWidget(pButton);
 }

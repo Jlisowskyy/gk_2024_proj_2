@@ -14,6 +14,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 set(PROJECT_RESOURCES
         images.qrc
+        data.qrc
 )
 
 set(PROJECT_SOURCES

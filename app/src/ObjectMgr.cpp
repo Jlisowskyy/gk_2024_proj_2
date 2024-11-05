@@ -6,6 +6,7 @@
 #include "../include/ManagingObjects/ObjectMgr.h"
 #include "../include/ManagingObjects/ToolBar.h"
 #include "../include/UiObjects/DoubleSlider.h"
+#include "../include/GraphicObjects/DrawingWidget.h"
 
 /* external includes */
 #include <vector>
@@ -17,9 +18,14 @@
 #include <QVector3D>
 #include <QRegularExpression>
 #include <array>
+#include <QLabel>
+#include <QTimer>
 
-ObjectMgr::ObjectMgr(QObject *parent, QWidget *widgetParent) : QObject(parent), m_parentWidget(widgetParent) {
-    Q_ASSERT(parent && widgetParent);
+ObjectMgr::ObjectMgr(QObject *parent, QWidget *widgetParent, DrawingWidget *drawingWidget) :
+        QObject(parent),
+        m_parentWidget(widgetParent),
+        m_drawingWidget(drawingWidget) {
+    Q_ASSERT(parent && widgetParent && drawingWidget);
 }
 
 ObjectMgr::~ObjectMgr() = default;
@@ -62,13 +68,29 @@ void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
     for (const auto &[action, proc]: vActionBoolProc) {
         connect(action, &QAction::triggered, this, proc);
     }
+
+    /* Connect to toolbar */
+    connect(toolBar->m_observerDistanceSlider,
+            &DoubleSlider::doubleValueChanged,
+            m_drawingWidget,
+            &DrawingWidget::setObserverDistance
+    );
 }
 
 void ObjectMgr::loadDefaultSettings() {
     m_color = DEFAULT_PLAIN_COLOR;
+
+    _loadBezierPoints(":/data/example1");
+
+    redraw();
 }
 
 void ObjectMgr::redraw() {
+    m_drawingWidget->clearContent();
+
+    for (const auto &point: m_controlPoints) {
+        m_drawingWidget->drawPoint(point, DEFAULT_BEZIER_POINT_COLOR, DEFAULT_BEZIER_POINT_RADIUS);
+    }
 }
 
 void ObjectMgr::onTriangulationChanged(double value) {
@@ -102,19 +124,19 @@ void ObjectMgr::onStopLightingMovementChanged(bool isChecked) {
 }
 
 void ObjectMgr::onLoadBezierPointsTriggered() {
-    openFileDialog([this](const QString &path) {
+    _openFileDialog([this](const QString &path) {
         _loadBezierPoints(path);
     });
 }
 
 void ObjectMgr::onLoadTexturesTriggered() {
-    openFileDialog([](const QString &path) {
+    _openFileDialog([](const QString &path) {
         qDebug() << "Loading texture from path:" << path;
     });
 }
 
 void ObjectMgr::onLoadNormalVectorsTriggered() {
-    openFileDialog([](const QString &path) {
+    _openFileDialog([](const QString &path) {
         qDebug() << "Loading normal vectors from path:" << path;
     });
 }
@@ -132,27 +154,30 @@ void ObjectMgr::onColorChangedTriggered() {
 
 void ObjectMgr::_loadBezierPoints(const QString &path) {
     bool ok;
-    ControlPoints controlPoints = loadBezierPoints(path, &ok);
+    ControlPoints controlPoints = _loadBezierPointsOpenFile(path, &ok);
     if (!ok) {
         qWarning() << "Failed to load bezier points from file:" << path;
         return;
     }
 
-    qDebug() << "Bezier points loaded successfully from file:" << path;
+    m_controlPoints = controlPoints;
     redraw();
 }
 
-void ObjectMgr::openFileDialog(std::function<void(const QString &)> callback) {
+void ObjectMgr::_openFileDialog(std::function<void(const QString &)> callback) {
     Q_ASSERT(callback);
+
+    QString initialPath = m_previousDirectory.isEmpty() ? QDir::homePath() : m_previousDirectory;
 
     QString filePath = QFileDialog::getOpenFileName(
             nullptr,
             "Open File",
-            QDir::homePath(),
+            initialPath,
             "Text Files (*.txt);;All Files (*)"
     );
 
     if (!filePath.isEmpty()) {
+        m_previousDirectory = QFileInfo(filePath).absolutePath();
         qDebug() << "File selected:" << filePath;
         callback(filePath);
     } else {
@@ -160,10 +185,11 @@ void ObjectMgr::openFileDialog(std::function<void(const QString &)> callback) {
     }
 }
 
-ObjectMgr::ControlPoints ObjectMgr::loadBezierPoints(const QString &path, bool *ok) {
+ObjectMgr::ControlPoints ObjectMgr::_loadBezierPointsOpenFile(const QString &path, bool *ok) {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qWarning() << "Unable to open file:" << path;
+        showToast("Failed to open file");
 
         if (ok) {
             *ok = false;
@@ -171,13 +197,13 @@ ObjectMgr::ControlPoints ObjectMgr::loadBezierPoints(const QString &path, bool *
         return {};
     }
 
-    ControlPoints controlPoints = loadBezierPointsParse(file, ok);
+    ControlPoints controlPoints = _loadBezierPointsParse(file, ok);
     file.close();
 
     return controlPoints;
 }
 
-ObjectMgr::ControlPoints ObjectMgr::loadBezierPointsParse(QFile &file, bool *ok) {
+ObjectMgr::ControlPoints ObjectMgr::_loadBezierPointsParse(QFile &file, bool *ok) {
     ControlPoints controlPoints{};
 
     QTextStream istream(&file);
@@ -196,6 +222,7 @@ ObjectMgr::ControlPoints ObjectMgr::loadBezierPointsParse(QFile &file, bool *ok)
                     *ok = false;
                 }
 
+                showToast("Invalid file format");
                 return controlPoints;
             }
 
@@ -210,7 +237,13 @@ ObjectMgr::ControlPoints ObjectMgr::loadBezierPointsParse(QFile &file, bool *ok)
         if (okX && okY && okZ) {
             if (idx >= CONTROL_POINTS_COUNT) {
                 qWarning() << "Too many control points, expected:" << CONTROL_POINTS_COUNT;
-                break;
+
+                if (ok) {
+                    *ok = false;
+                }
+
+                showToast("Too many control points");
+                return controlPoints;
             }
 
             controlPoints[idx++] = QVector3D(x, y, z);
@@ -221,6 +254,7 @@ ObjectMgr::ControlPoints ObjectMgr::loadBezierPointsParse(QFile &file, bool *ok)
                 *ok = false;
             }
 
+            showToast("Invalid file format");
             return controlPoints;
         }
     }
@@ -232,6 +266,7 @@ ObjectMgr::ControlPoints ObjectMgr::loadBezierPointsParse(QFile &file, bool *ok)
             *ok = false;
         }
 
+        showToast("Wrong number of control points");
         return controlPoints;
     }
 
@@ -239,4 +274,26 @@ ObjectMgr::ControlPoints ObjectMgr::loadBezierPointsParse(QFile &file, bool *ok)
         *ok = true;
     }
     return controlPoints;
+}
+
+void ObjectMgr::showToast(const QString &message, int duration) {
+    /* temporary */
+    return;
+
+    auto *toast = new QLabel(m_parentWidget);
+
+    toast->setText(message);
+    toast->setStyleSheet("background-color: rgba(211, 211, 211, 180); padding: 10px; border-radius: 10px;");
+    toast->setAlignment(Qt::AlignCenter);
+
+    toast->adjustSize();
+
+    int padding = 20;
+    toast->move(padding, m_parentWidget->height() - toast->height() - padding);
+
+    toast->setWindowFlags(Qt::ToolTip);
+
+    toast->show();
+
+    QTimer::singleShot(duration, toast, &QLabel::deleteLater);
 }

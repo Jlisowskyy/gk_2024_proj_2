@@ -6,17 +6,21 @@
 #define OBJECTMGR_H
 
 /* internal includes */
+#include "../Constants.h"
 
 /* external includes */
 #include <QObject>
 #include <QColor>
 #include <QWidget>
+#include <array>
+#include <QVector3D>
+#include <QFile>
 
 /* Forward declarations */
 class ToolBar;
 
 class ObjectMgr : public QObject {
-    Q_OBJECT
+Q_OBJECT
 
     // ------------------------------
     // Class creation
@@ -25,6 +29,12 @@ public:
     explicit ObjectMgr(QObject *parent, QWidget *widgetParent);
 
     ~ObjectMgr() override;
+
+    // ------------------------------
+    // Class types
+    // ------------------------------
+
+    using ControlPoints = std::array<QVector3D, CONTROL_POINTS_COUNT>;
 
     // ------------------------------
     // Class interaction
@@ -40,6 +50,7 @@ public:
     // Class slots
     // ------------------------------
 public slots:
+
     /* State changes */
 
     void onTriangulationChanged(double value);
@@ -79,9 +90,13 @@ public slots:
     // ------------------------------
 protected:
 
-    void _loadBezierPoints(const QString& path);
+    void _loadBezierPoints(const QString &path);
 
-    static void openFileDialog(std::function<void(const QString&)> callback);
+    static void openFileDialog(std::function<void(const QString &)> callback);
+
+    static ControlPoints loadBezierPoints(const QString &path, bool *ok);
+
+    static ControlPoints loadBezierPointsParse(QFile &file, bool *ok);
 
     // ------------------------------
     // Class fields
@@ -90,6 +105,8 @@ protected:
 
     QColor m_color;
     QWidget *m_parentWidget;
+
+    ControlPoints m_controlPoints;
 };
 
 

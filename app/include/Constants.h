@@ -14,4 +14,6 @@ static constexpr int DEFAULT_ICON_SIZE = 24;
 
 static constexpr Qt::GlobalColor DEFAULT_PLAIN_COLOR = Qt::red;
 
+static constexpr size_t CONTROL_POINTS_COUNT = 16;
+
 #endif //APP_CONSTANTS_H

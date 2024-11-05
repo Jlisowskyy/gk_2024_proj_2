@@ -12,6 +12,11 @@
 #include <QColorDialog>
 #include <QDebug>
 #include <QFileDialog>
+#include <QFile>
+#include <QTextStream>
+#include <QVector3D>
+#include <QRegularExpression>
+#include <array>
 
 ObjectMgr::ObjectMgr(QObject *parent, QWidget *widgetParent) : QObject(parent), m_parentWidget(widgetParent) {
     Q_ASSERT(parent && widgetParent);
@@ -126,7 +131,15 @@ void ObjectMgr::onColorChangedTriggered() {
 }
 
 void ObjectMgr::_loadBezierPoints(const QString &path) {
+    bool ok;
+    ControlPoints controlPoints = loadBezierPoints(path, &ok);
+    if (!ok) {
+        qWarning() << "Failed to load bezier points from file:" << path;
+        return;
+    }
 
+    qDebug() << "Bezier points loaded successfully from file:" << path;
+    redraw();
 }
 
 void ObjectMgr::openFileDialog(std::function<void(const QString &)> callback) {
@@ -145,4 +158,85 @@ void ObjectMgr::openFileDialog(std::function<void(const QString &)> callback) {
     } else {
         qDebug() << "No file selected.";
     }
+}
+
+ObjectMgr::ControlPoints ObjectMgr::loadBezierPoints(const QString &path, bool *ok) {
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Unable to open file:" << path;
+
+        if (ok) {
+            *ok = false;
+        }
+        return {};
+    }
+
+    ControlPoints controlPoints = loadBezierPointsParse(file, ok);
+    file.close();
+
+    return controlPoints;
+}
+
+ObjectMgr::ControlPoints ObjectMgr::loadBezierPointsParse(QFile &file, bool *ok) {
+    ControlPoints controlPoints{};
+
+    QTextStream istream(&file);
+    size_t idx = 0;
+    while (!istream.atEnd()) {
+        QString line = istream.readLine();
+        QStringList tokens = line.split(" ", Qt::SkipEmptyParts);
+
+        if (tokens.size() != 3) {
+            qWarning() << "Invalid line format, expected 3 values per line, got:" << tokens.size();
+
+            if (!tokens.empty()) {
+                qWarning() << "Wrong line content:" << line;
+
+                if (ok) {
+                    *ok = false;
+                }
+
+                return controlPoints;
+            }
+
+            continue;
+        }
+
+        bool okX, okY, okZ;
+        float x = tokens[0].toFloat(&okX);
+        float y = tokens[1].toFloat(&okY);
+        float z = tokens[2].toFloat(&okZ);
+
+        if (okX && okY && okZ) {
+            if (idx >= CONTROL_POINTS_COUNT) {
+                qWarning() << "Too many control points, expected:" << CONTROL_POINTS_COUNT;
+                break;
+            }
+
+            controlPoints[idx++] = QVector3D(x, y, z);
+        } else {
+            qWarning() << "Failed to convert line to 3D point:" << line;
+
+            if (ok) {
+                *ok = false;
+            }
+
+            return controlPoints;
+        }
+    }
+
+    if (idx != CONTROL_POINTS_COUNT) {
+        qWarning() << "Invalid number of control points, expected:" << CONTROL_POINTS_COUNT << "got:" << idx;
+
+        if (ok) {
+            *ok = false;
+        }
+
+        return controlPoints;
+    }
+
+    if (ok) {
+        *ok = true;
+    }
+    return controlPoints;
 }

@@ -81,22 +81,30 @@ void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
 void ObjectMgr::loadDefaultSettings() {
     m_color = DEFAULT_PLAIN_COLOR;
     m_drawNet = true;
+    m_triangleAccuracy = DEFAULT_TRIANGLE_ACCURACY;
+    m_alpha = 0;
+    m_beta = 0;
 
     _loadBezierPoints(DEFAULT_DATA_PATH);
-
     redraw();
 }
 
 void ObjectMgr::redraw() {
     m_drawingWidget->clearContent();
+    m_triangles.clear();
+
+    _interpolateBezier();
+    m_drawingWidget->setTriangles(&m_triangles);
 
     if (m_drawNet) {
         _drawNet();
     }
-
+    m_drawingWidget->updateScene();
 }
 
 void ObjectMgr::onTriangulationChanged(double value) {
+    m_triangleAccuracy = static_cast<int>(value);
+    redraw();
 }
 
 void ObjectMgr::onAlphaChanged(double value) {
@@ -308,10 +316,12 @@ void ObjectMgr::showToast(const QString &message, int duration) {
 }
 
 void ObjectMgr::_drawNet() {
+    /* Draw control points */
     for (auto point: m_controlPoints) {
         m_drawingWidget->drawBezierPoint(rotate(point));
     }
 
+    /* Draw lines for control points */
     static constexpr int CONTROL_POINTS_MATRIX_SIZE_INT = CONTROL_POINTS_MATRIX_SIZE;
     static constexpr int CONTROL_POINTS_COUNT_INT = CONTROL_POINTS_COUNT;
     for (int i = 0; i < CONTROL_POINTS_COUNT_INT - 1; i++) {
@@ -335,6 +345,13 @@ void ObjectMgr::_drawNet() {
 
             m_drawingWidget->drawBezierLine(rotate(point1), rotate(point2));
         }
+    }
+
+    /* Add triangle lines */
+    for (const auto &triangle: m_triangles) {
+        m_drawingWidget->drawTriangleLines(triangle.v1.rotatedPosition, triangle.v2.rotatedPosition);
+        m_drawingWidget->drawTriangleLines(triangle.v2.rotatedPosition, triangle.v3.rotatedPosition);
+        m_drawingWidget->drawTriangleLines(triangle.v3.rotatedPosition, triangle.v1.rotatedPosition);
     }
 }
 
@@ -372,4 +389,98 @@ QVector3D &ObjectMgr::rotate(QVector3D &point) const {
     return rotateX(rotateZ(point, m_alpha), m_beta);
 }
 
+void ObjectMgr::_interpolateBezier() {
+    m_triangles.clear();
+    const float step = 1.0f / static_cast<float>(m_triangleAccuracy - 1);
+    const int steps = m_triangleAccuracy;
 
+    auto bernstein = [](float t) -> std::array<float, 4> {
+        const float t2 = t * t;
+        const float t3 = t2 * t;
+        const float mt = 1.0f - t;
+        const float mt2 = mt * mt;
+        const float mt3 = mt2 * mt;
+        return {
+                mt3,                    // (1-t)³
+                3.0f * mt2 * t,        // 3(1-t)²t
+                3.0f * mt * t2,        // 3(1-t)t²
+                t3                      // t³
+        };
+    };
+
+    auto computePoint = [this](const std::array<float, 4> &bu, const std::array<float, 4> &bv) -> QVector3D {
+        QVector3D point(0, 0, 0);
+        for (int k = 0; k < 4; ++k) {
+            for (int l = 0; l < 4; ++l) {
+                point += m_controlPoints[k * 4 + l] * (bu[k] * bv[l]);
+            }
+        }
+        return point;
+    };
+
+    for (int i = 0; i < steps - 1; ++i) {
+        for (int j = 0; j < steps - 1; ++j) {
+            float u = static_cast<float>(i) * step;
+            float v = static_cast<float>(j) * step;
+            float u_next = static_cast<float>(i + 1) * step;
+            float v_next = static_cast<float>(j + 1) * step;
+
+            auto bu = bernstein(u);
+            auto bv = bernstein(v);
+            auto bu_next = bernstein(u_next);
+            auto bv_next = bernstein(v_next);
+
+            QVector3D p00 = computePoint(bu, bv);
+            QVector3D p10 = computePoint(bu_next, bv);
+            QVector3D p01 = computePoint(bu, bv_next);
+            QVector3D p11 = computePoint(bu_next, bv_next);
+
+            Traingle t1, t2;
+
+            // First triangle
+            t1.v1.position = p00;
+            t1.v1.u = u;
+            t1.v1.v = v;
+
+            t1.v2.position = p10;
+            t1.v2.u = u_next;
+            t1.v2.v = v;
+
+            t1.v3.position = p01;
+            t1.v3.u = u;
+            t1.v3.v = v_next;
+
+            // Second triangle
+            t2.v1.position = p10;
+            t2.v1.u = u_next;
+            t2.v1.v = v;
+
+            t2.v2.position = p11;
+            t2.v2.u = u_next;
+            t2.v2.v = v_next;
+
+            t2.v3.position = p01;
+            t2.v3.u = u;
+            t2.v3.v = v_next;
+
+            // Apply rotation to position vectors
+            t1.v1.rotatedPosition = t1.v1.position;
+            t1.v2.rotatedPosition = t1.v2.position;
+            t1.v3.rotatedPosition = t1.v3.position;
+            rotate(t1.v1.rotatedPosition);
+            rotate(t1.v2.rotatedPosition);
+            rotate(t1.v3.rotatedPosition);
+
+            t2.v1.rotatedPosition = t2.v1.position;
+            t2.v2.rotatedPosition = t2.v2.position;
+            t2.v3.rotatedPosition = t2.v3.position;
+            rotate(t2.v1.rotatedPosition);
+            rotate(t2.v2.rotatedPosition);
+            rotate(t2.v3.rotatedPosition);
+
+            // Add triangles to the mesh
+            m_triangles.push_back(t1);
+            m_triangles.push_back(t2);
+        }
+    }
+}

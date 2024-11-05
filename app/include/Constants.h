@@ -28,9 +28,9 @@ static constexpr int DEFAULT_TOAST_DURATION_MS = 3000;
 static constexpr double DEFAULT_OBSERVER_DISTANCE = 1000.0;
 
 // Slider Ranges and Defaults
-static constexpr double TRIANGULATION_SLIDER_MIN = 1.0;
-static constexpr double TRIANGULATION_SLIDER_MAX = 30.0;
-static constexpr int TRIANGULATION_SLIDER_STEPS = 29;
+static constexpr double TRIANGULATION_SLIDER_MIN = 2.0;
+static constexpr double TRIANGULATION_SLIDER_MAX = 50.0;
+static constexpr int TRIANGULATION_SLIDER_STEPS = 48;
 static constexpr int TRIANGULATION_SLIDER_DEFAULT = 5;
 
 static constexpr double OBSERVER_DISTANCE_MIN = DEFAULT_OBSERVER_DISTANCE;
@@ -59,6 +59,10 @@ static constexpr double M_COEFFICIENT_MAX = 100.0;
 static constexpr int M_COEFFICIENT_STEPS = 99;
 static constexpr int M_COEFFICIENT_DEFAULT = 50;
 
-static constexpr const char* DEFAULT_DATA_PATH = ":/data/example1";
+static constexpr const char *DEFAULT_DATA_PATH = ":/data/example1";
+static constexpr int DEFAULT_TRIANGLE_ACCURACY = 6;
+
+static constexpr Qt::GlobalColor DEFAULT_TRIANGLE_LINE_COLOR = Qt::darkRed;
+static constexpr Qt::GlobalColor DEFAULT_BEZIER_LINE_COLOR = Qt::darkGreen;
 
 #endif //APP_CONSTANTS_H

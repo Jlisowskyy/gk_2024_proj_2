@@ -12,9 +12,11 @@
 #include <QLabel>
 #include <QGraphicsItem>
 #include <QVector3D>
+#include <vector>
 
 /* internal includes */
 #include "../Constants.h"
+#include "../PrimitiveData/Triangle.h"
 
 /* Forward declaration */
 
@@ -38,12 +40,18 @@ public:
 
     void drawBezierLine(const QVector3D &start, const QVector3D &end);
 
+    void drawTriangleLines(const QVector3D &start, const QVector3D &end);
+
     [[nodiscard]] QPointF dropPointToScreen(const QVector3D &point) const;
+
+    void setTriangles(std::vector<Traingle> *triangles);
 
     // ------------------------------
     // Class slots
     // ------------------------------
 public slots:
+
+    void updateScene();
 
     void clearContent();
 
@@ -68,12 +76,14 @@ protected:
 
 private:
 
-    void updateScene();
 
     void updateElements();
 
     void _drawBezierPoint(const QVector3D &point, size_t idx);
+
     void _drawBezierLine(const std::pair<QVector3D, QVector3D> &line);
+
+    void _drawTriangleLine(const std::pair<QVector3D, QVector3D> &line);
 
     // ------------------------------
     // Class fields
@@ -84,6 +94,8 @@ private:
 
     std::vector<QVector3D> m_points{};
     std::vector<std::pair<QVector3D, QVector3D>> m_lines{};
+    std::vector<std::pair<QVector3D, QVector3D>> m_triangleLines{};
+    std::vector<Traingle> *m_triangles{};
 };
 
 

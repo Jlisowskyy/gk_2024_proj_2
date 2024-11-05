@@ -36,16 +36,16 @@ DrawingWidget::~DrawingWidget() {
 void DrawingWidget::clearContent() {
     m_scene->clear();
     m_points.clear();
+    m_lines.clear();
+    m_triangleLines.clear();
 }
 
 void DrawingWidget::drawBezierPoint(const QVector3D &point) {
     m_points.push_back(point);
-    _drawBezierPoint(point, m_points.size() - 1);
 }
 
 void DrawingWidget::drawBezierLine(const QVector3D &start, const QVector3D &end) {
     m_lines.emplace_back(start, end);
-    _drawBezierLine({start, end});
 }
 
 void DrawingWidget::resizeEvent(QResizeEvent *event) {
@@ -66,12 +66,16 @@ void DrawingWidget::updateElements() {
     m_scene->clear();
 
     size_t idx = 0;
-    for (const auto& point : m_points) {
+    for (const auto &point: m_points) {
         _drawBezierPoint(point, idx++);
     }
 
     for (const auto &line: m_lines) {
         _drawBezierLine(line);
+    }
+
+    for (const auto &line: m_triangleLines) {
+        _drawTriangleLine(line);
     }
 }
 
@@ -79,6 +83,7 @@ void DrawingWidget::_drawBezierPoint(const QVector3D &point, const size_t idx) {
     auto *pointItem = new BezierPoint3DItem(point, DEFAULT_BEZIER_POINT_RADIUS, idx);
     m_scene->addItem(pointItem);
     pointItem->setPos(dropPointToScreen(point));
+    pointItem->setZValue(2);
 }
 
 void DrawingWidget::setObserverDistance(const double distance) {
@@ -89,13 +94,39 @@ void DrawingWidget::setObserverDistance(const double distance) {
 void DrawingWidget::_drawBezierLine(const std::pair<QVector3D, QVector3D> &line) {
     const auto start = dropPointToScreen(line.first);
     const auto end = dropPointToScreen(line.second);
-    m_scene->addLine(start.x(), start.y(), end.x(), end.y());
+    auto pLine = m_scene->addLine(start.x(), start.y(), end.x(), end.y());
+
+    pLine->setZValue(1);
+    QPen pen = QPen(DEFAULT_BEZIER_LINE_COLOR);
+    pen.setWidth(3);
+    pLine->setPen(pen);
 }
 
 QPointF DrawingWidget::dropPointToScreen(const QVector3D &point) const {
-    const double z = point.z() + m_observerDistance;
-    const double projX = (point.x() * m_observerDistance / z);
-    const double projY = (-point.y() * m_observerDistance / z);
+//    const double z = point.z() + m_observerDistance;
+//    const double projX = (point.x() * m_observerDistance / z);
+//    const double projY = (-point.y() * m_observerDistance / z);
+//
+//    return {projX, projY};
 
-    return {projX, projY};
+    return {point.x(), -point.y()};
+}
+
+void DrawingWidget::setTriangles(std::vector<Traingle> *triangles) {
+    m_triangles = triangles;
+}
+
+void DrawingWidget::drawTriangleLines(const QVector3D &start, const QVector3D &end) {
+    m_triangleLines.emplace_back(start, end);
+}
+
+void DrawingWidget::_drawTriangleLine(const std::pair<QVector3D, QVector3D> &line) {
+    const auto start = dropPointToScreen(line.first);
+    const auto end = dropPointToScreen(line.second);
+    auto pLine = m_scene->addLine(start.x(), start.y(), end.x(), end.y());
+
+    pLine->setZValue(0);
+    QPen pen = QPen(DEFAULT_TRIANGLE_LINE_COLOR);
+    pen.setWidth(1);
+    pLine->setPen(pen);
 }

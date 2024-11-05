@@ -7,6 +7,7 @@
 
 /* internal includes */
 #include "../Constants.h"
+#include "../PrimitiveData/Triangle.h"
 
 /* external includes */
 #include <QObject>
@@ -110,6 +111,8 @@ protected:
 
     void _drawNet();
 
+    void _interpolateBezier();
+
     // ------------------------------
     // Class fields
     // ------------------------------
@@ -127,6 +130,10 @@ protected:
 
     double m_alpha{};
     double m_beta{};
+
+    std::vector<Traingle> m_triangles{};
+
+    int m_triangleAccuracy{};
 };
 
 

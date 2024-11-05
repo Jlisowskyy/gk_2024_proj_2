@@ -34,9 +34,9 @@ public:
     // Class interaction
     // ------------------------------
 
-    void drawBezierPoint(QVector3D point);
+    void drawBezierPoint(const QVector3D &point);
 
-    void drawBezierLine(QVector3D start, QVector3D end);
+    void drawBezierLine(const QVector3D &start, const QVector3D &end);
 
     [[nodiscard]] QPointF dropPointToScreen(const QVector3D &point) const;
 

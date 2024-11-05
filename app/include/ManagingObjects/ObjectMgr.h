@@ -28,7 +28,7 @@ Q_OBJECT
     // Class creation
     // ------------------------------
 public:
-    explicit ObjectMgr(QObject *parent, QWidget *widgetParent, DrawingWidget* drawingWidget);
+    explicit ObjectMgr(QObject *parent, QWidget *widgetParent, DrawingWidget *drawingWidget);
 
     ~ObjectMgr() override;
 
@@ -47,6 +47,12 @@ public:
     void loadDefaultSettings();
 
     void redraw();
+
+    static QVector3D & rotateZ(QVector3D &point, double angle);
+
+    static QVector3D & rotateX(QVector3D &point, double angle);
+
+    QVector3D & rotate(QVector3D &point) const;
 
     // ------------------------------
     // Class slots
@@ -118,6 +124,9 @@ protected:
     QString m_previousDirectory{};
 
     bool m_drawNet{};
+
+    double m_alpha{};
+    double m_beta{};
 };
 
 

@@ -20,6 +20,7 @@
 #include <array>
 #include <QLabel>
 #include <QTimer>
+#include <cmath>
 
 ObjectMgr::ObjectMgr(QObject *parent, QWidget *widgetParent, DrawingWidget *drawingWidget) :
         QObject(parent),
@@ -99,9 +100,13 @@ void ObjectMgr::onTriangulationChanged(double value) {
 }
 
 void ObjectMgr::onAlphaChanged(double value) {
+    m_alpha = value;
+    redraw();
 }
 
 void ObjectMgr::onBetaChanged(double value) {
+    m_beta = value;
+    redraw();
 }
 
 void ObjectMgr::onKSChanged(double value) {
@@ -303,8 +308,8 @@ void ObjectMgr::showToast(const QString &message, int duration) {
 }
 
 void ObjectMgr::_drawNet() {
-    for (const auto &point: m_controlPoints) {
-        m_drawingWidget->drawBezierPoint(point);
+    for (auto point: m_controlPoints) {
+        m_drawingWidget->drawBezierPoint(rotate(point));
     }
 
     static constexpr int CONTROL_POINTS_MATRIX_SIZE_INT = CONTROL_POINTS_MATRIX_SIZE;
@@ -325,7 +330,46 @@ void ObjectMgr::_drawNet() {
             }
 
             const int idx = newRow * CONTROL_POINTS_MATRIX_SIZE_INT + newCol;
-            m_drawingWidget->drawBezierLine(m_controlPoints[i], m_controlPoints[idx]);
+            auto point1 = m_controlPoints[i];
+            auto point2 = m_controlPoints[idx];
+
+            m_drawingWidget->drawBezierLine(rotate(point1), rotate(point2));
         }
     }
 }
+
+QVector3D &ObjectMgr::rotateZ(QVector3D &point, double angle) {
+    if (angle == 0) {
+        return point;
+    }
+
+    const double x = point.x();
+    const double y = point.y();
+    const double rad = angle * M_PI / 180.0;
+
+    point.setX(static_cast<float>(x * std::cos(rad) - y * sin(rad)));
+    point.setY(static_cast<float>(x * std::sin(rad) + y * cos(rad)));
+
+    return point;
+}
+
+QVector3D &ObjectMgr::rotateX(QVector3D &point, double angle) {
+    if (angle == 0) {
+        return point;
+    }
+
+    const double y = point.y();
+    const double z = point.z();
+    const double rad = angle * M_PI / 180.0;
+
+    point.setY(static_cast<float>(y * std::cos(rad) - z * sin(rad)));
+    point.setZ(static_cast<float>(y * std::sin(rad) + z * cos(rad)));
+
+    return point;
+}
+
+QVector3D &ObjectMgr::rotate(QVector3D &point) const {
+    return rotateX(rotateZ(point, m_alpha), m_beta);
+}
+
+

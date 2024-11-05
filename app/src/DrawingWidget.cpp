@@ -8,7 +8,6 @@
 
 /* external includes */
 #include <QDebug>
-#include <format>
 #include <QShortcut>
 #include <QVector3D>
 #include <ranges>
@@ -39,12 +38,12 @@ void DrawingWidget::clearContent() {
     m_points.clear();
 }
 
-void DrawingWidget::drawBezierPoint(QVector3D point) {
+void DrawingWidget::drawBezierPoint(const QVector3D &point) {
     m_points.push_back(point);
     _drawBezierPoint(point, m_points.size() - 1);
 }
 
-void DrawingWidget::drawBezierLine(QVector3D start, QVector3D end) {
+void DrawingWidget::drawBezierLine(const QVector3D &start, const QVector3D &end) {
     m_lines.emplace_back(start, end);
     _drawBezierLine({start, end});
 }
@@ -82,7 +81,7 @@ void DrawingWidget::_drawBezierPoint(const QVector3D &point, const size_t idx) {
     pointItem->setPos(dropPointToScreen(point));
 }
 
-void DrawingWidget::setObserverDistance(double distance) {
+void DrawingWidget::setObserverDistance(const double distance) {
     m_observerDistance = distance;
     updateScene();
 }

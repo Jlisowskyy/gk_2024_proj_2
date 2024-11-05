@@ -34,6 +34,8 @@ set(PROJECT_SOURCES
         include/UiObjects/TextButton.h
         src/ObjectMgr.cpp
         include/ManagingObjects/ObjectMgr.h
+        src/BezierPoint3D.cpp
+        include/GraphicObjects/BezierPoint3D.h
 )
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)

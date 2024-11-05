@@ -79,8 +79,9 @@ void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
 
 void ObjectMgr::loadDefaultSettings() {
     m_color = DEFAULT_PLAIN_COLOR;
+    m_drawNet = true;
 
-    _loadBezierPoints(":/data/example1");
+    _loadBezierPoints(DEFAULT_DATA_PATH);
 
     redraw();
 }
@@ -88,9 +89,10 @@ void ObjectMgr::loadDefaultSettings() {
 void ObjectMgr::redraw() {
     m_drawingWidget->clearContent();
 
-    for (const auto &point: m_controlPoints) {
-        m_drawingWidget->drawPoint(point, DEFAULT_BEZIER_POINT_COLOR, DEFAULT_BEZIER_POINT_RADIUS);
+    if (m_drawNet) {
+        _drawNet();
     }
+
 }
 
 void ObjectMgr::onTriangulationChanged(double value) {
@@ -112,6 +114,8 @@ void ObjectMgr::onMChanged(double value) {
 }
 
 void ObjectMgr::onDrawNetChanged(bool isChecked) {
+    m_drawNet = isChecked;
+    redraw();
 }
 
 void ObjectMgr::onEnableTextureChanged(bool isChecked) {
@@ -296,4 +300,32 @@ void ObjectMgr::showToast(const QString &message, int duration) {
     toast->show();
 
     QTimer::singleShot(duration, toast, &QLabel::deleteLater);
+}
+
+void ObjectMgr::_drawNet() {
+    for (const auto &point: m_controlPoints) {
+        m_drawingWidget->drawBezierPoint(point);
+    }
+
+    static constexpr int CONTROL_POINTS_MATRIX_SIZE_INT = CONTROL_POINTS_MATRIX_SIZE;
+    static constexpr int CONTROL_POINTS_COUNT_INT = CONTROL_POINTS_COUNT;
+    for (int i = 0; i < CONTROL_POINTS_COUNT_INT - 1; i++) {
+        const int row = i / CONTROL_POINTS_MATRIX_SIZE_INT;
+        const int col = i % CONTROL_POINTS_MATRIX_SIZE_INT;
+
+        const int dx[] = {0, 1};
+        const int dy[] = {1, 0};
+
+        for (int j = 0; j < 2; j++) {
+            const int newRow = row + dx[j];
+            const int newCol = col + dy[j];
+
+            if (newRow >= CONTROL_POINTS_MATRIX_SIZE_INT || newCol >= CONTROL_POINTS_MATRIX_SIZE_INT) {
+                continue;
+            }
+
+            const int idx = newRow * CONTROL_POINTS_MATRIX_SIZE_INT + newCol;
+            m_drawingWidget->drawBezierLine(m_controlPoints[i], m_controlPoints[idx]);
+        }
+    }
 }

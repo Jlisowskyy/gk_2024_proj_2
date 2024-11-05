@@ -102,6 +102,8 @@ protected:
 
     void showToast(const QString &message, int duration = DEFAULT_TOAST_DURATION_MS);
 
+    void _drawNet();
+
     // ------------------------------
     // Class fields
     // ------------------------------
@@ -114,6 +116,8 @@ protected:
     ControlPoints m_controlPoints{};
 
     QString m_previousDirectory{};
+
+    bool m_drawNet{};
 };
 
 

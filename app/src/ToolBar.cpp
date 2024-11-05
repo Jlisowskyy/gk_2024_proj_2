@@ -62,7 +62,7 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
     // Observer distance slider
     m_observerDistanceSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
                                                 OBSERVER_DISTANCE_MIN, OBSERVER_DISTANCE_MAX,
-                                                OBSERVER_DISTANCE_STEPS, DEFAULT_OBSERVER_DISTANCE,
+                                                OBSERVER_DISTANCE_STEPS, OBSERVER_DISTANCE_DEFAULT,
                                                 "Observer distance",
                                                 "Change distance of observer from the plain");
     m_toolBar->addWidget(m_observerDistanceSlider->getContainer());
@@ -82,6 +82,7 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
                              ":/icons/net_icon.png");
     m_drawNetButton = pButton->getAction();
     m_drawNetButton->setCheckable(true);
+    m_drawNetButton->setChecked(true);
     m_toolBar->addWidget(pButton);
 
     // Load texture button

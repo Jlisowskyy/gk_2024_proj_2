@@ -18,7 +18,7 @@ class DrawingWidget;
 class DoubleSlider;
 
 class ToolBar : public QObject {
-Q_OBJECT
+    Q_OBJECT
 
     // ------------------------------
     // Class creation
@@ -39,7 +39,6 @@ public:
     // Class slots
     // ------------------------------
 public slots:
-
     // ------------------------------
     // Class private methods
     // ------------------------------
@@ -50,9 +49,9 @@ private:
 
     QAction *_addButtonToToolbar(const char *name, const char *imgPath, const char *toolTip);
 
-// ------------------------------
-// Public fields
-// ------------------------------
+    // ------------------------------
+    // Public fields
+    // ------------------------------
 public:
 
 protected:
@@ -62,7 +61,16 @@ protected:
 
     QToolBar *m_toolBar{};
     DrawingWidget *m_drawingWidget{};
+
+    /* Sliders */
+    DoubleSlider *m_triangulationSlider{};
     DoubleSlider *m_alphaSlider{};
+    DoubleSlider *m_betaSlider{};
+    DoubleSlider *m_ksSlider{};
+    DoubleSlider *m_kdSlider{};
+    DoubleSlider *m_mSlider{};
+    DoubleSlider *m_lightningPositionSlider{};
+
 };
 
 

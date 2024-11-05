@@ -50,6 +50,38 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
 
     m_toolBar->setAllowedAreas(Qt::LeftToolBarArea | Qt::RightToolBarArea);
 
-    m_alphaSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, 0.0, 1.0, 100, 100, "Alpha", "Alpha value");
+    m_triangulationSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, 1.0, 30.0, 29, 5, "Triangulation accuracy",
+                                             "Change accuracy of triangulation for rendered plain");
+    m_toolBar->addWidget(m_triangulationSlider->getContainer());
+
+    _addSeparator();
+    _addToolbarLiteral("Rotations:");
+    m_alphaSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, -45.0, 45.0, 900, 450, "Alpha angle",
+                                     "Z Axis rotation angle");
     m_toolBar->addWidget(m_alphaSlider->getContainer());
+
+    m_betaSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, 0.0, 10.0, 100, 50, "Beta angle",
+                                    "X Axis rotation angle");
+    m_toolBar->addWidget(m_betaSlider->getContainer());
+
+    _addSeparator();
+    _addToolbarLiteral("Lightning options:");
+
+    m_ksSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, 0.0, 1.0, 100, 50, "Ks coefficient",
+                                  "Ks coefficient for lighting equation");
+    m_toolBar->addWidget(m_ksSlider->getContainer());
+
+    m_kdSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, 0.0, 1.0, 100, 50, "Kd coefficient",
+                                  "Kd coefficient for lightning equation");
+    m_toolBar->addWidget(m_kdSlider->getContainer());
+
+    m_mSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, 1.0, 100.0, 99, 50, "M coefficient",
+                                 "M coefficient for lighting equation");
+    m_toolBar->addWidget(m_mSlider->getContainer());
+
+    m_lightningPositionSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, 0.0, 1.0, 100, 50, "Light position",
+                                                 "Position of lighting equation");
+    m_toolBar->addWidget(m_lightningPositionSlider->getContainer());
+
+
 }

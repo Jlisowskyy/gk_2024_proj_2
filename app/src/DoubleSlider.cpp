@@ -36,14 +36,12 @@ DoubleSlider::DoubleSlider(Qt::Orientation orientation, QWidget *parent, double 
     pLayout->setAlignment(pLabel, Qt::AlignCenter);
     pContainer->setLayout(pLayout);
 
-    pLabelsLayout->addStretch();
-    pLabelsLayout->addWidget(new QLabel(QString::number(maxValue), pLabelsContainer));
+    pLabelsLayout->addWidget(new QLabel(QString::number(minValue), pLabelsContainer));
     pLabel = new QLabel(QString::number(getDoubleValue()), pLabelsContainer);
     pLabelsLayout->addStretch();
     pLabelsLayout->addWidget(pLabel);
     pLabelsLayout->addStretch();
-    pLabelsLayout->addWidget(new QLabel(QString::number(minValue), pLabelsContainer));
-    pLabelsLayout->addStretch();
+    pLabelsLayout->addWidget(new QLabel(QString::number(maxValue), pLabelsContainer));
 
     connect(this, &DoubleSlider::doubleValueChanged, pLabel, [pLabel](double value) {
         pLabel->setText(QString::number(value));

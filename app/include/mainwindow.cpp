@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
           m_ui(new Ui::MainWindow),
           m_toolBar(new ToolBar(this)),
           m_drawingWidget(new DrawingWidget(this)){
-    setMinimumSize(600, 600);
+    setMinimumSize(600, 900);
     setWindowTitle("Bezier 3D drawer");
 
     m_ui->setupUi(this);

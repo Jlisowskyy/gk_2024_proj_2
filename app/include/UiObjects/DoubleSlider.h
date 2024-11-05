@@ -48,14 +48,9 @@ signals:
     // ------------------------------
 protected:
 
-    void sliderChange(SliderChange change) override {
-        QSlider::sliderChange(change);
-        if (change == QSlider::SliderValueChange) {
-            emit doubleValueChanged(getDoubleValue());
-        }
-    }
+    void sliderChange(SliderChange change) override;
 
-    // ------------------------------
+// ------------------------------
     // Class fields
     // ------------------------------
 

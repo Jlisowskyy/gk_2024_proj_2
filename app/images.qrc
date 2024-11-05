@@ -1,0 +1,11 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource>
+        <file>icons/load_icon.png</file>
+        <file>icons/net_icon.png</file>
+        <file>icons/stop_icon.png</file>
+        <file>icons/texture_icon.png</file>
+        <file>icons/vector_icon.png</file>
+        <file>icons/color_icon.png</file>
+    </qresource>
+</RCC>

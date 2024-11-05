@@ -1,9 +1,21 @@
 TODO:
-- wybor czy rysowac siatke
-- zatrzymanie swiatla
-- kolor obiektu
-- wczytywanie tekstur
-- wlaczanie tekstur
-- wczytywanie punktow
-- wczytywanie wektorow normalnych
-- wlaczanie wektorow normalnych
+
+
+
+- zatrzymanie swiatla - button - tekst - ikonka stop
+- kolor obiektu - button - tekst - ikonka ladowania
+
+------------------
+- wybor czy rysowac siatke button - tekst - ikonka siatki
+- wczytywanie punktow - button - tekst - ikonka ladowania
+
+- wczytywanie tekstur - ikonka ladowania
+- wlaczanie tekstur - button -tekst - ikonka tekstury
+
+- wczytywanie wektorow normalnych - ikonka ladowania
+- wlaczanie wektorow normalnych - button - tekst - ikonka wektora?
+
+
+
+
+

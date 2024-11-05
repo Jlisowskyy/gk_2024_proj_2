@@ -10,21 +10,21 @@
 #include "../include/ManagingObjects/ToolBar.h"
 #include "../include/GraphicObjects/DrawingWidget.h"
 #include "../include/UiObjects/DoubleSlider.h"
+#include "../include/UiObjects/TextButton.h"
 
 ToolBar::ToolBar(QObject *parent) : QObject(parent) {
 }
 
-ToolBar::~ToolBar() {
-}
+ToolBar::~ToolBar() = default;
 
-void ToolBar::_addToolbarLiteral(const char *strLiteral) {
+void ToolBar::_addToolbarLiteral(const char *strLiteral) const {
     auto pliteral = new QAction(tr(strLiteral), m_toolBar);
     pliteral->setDisabled(true);
     m_toolBar->addAction(pliteral);
 }
 
 QAction *
-ToolBar::_addButtonToToolbar(const char *name, const char *imgPath, const char *toolTip) {
+ToolBar::_addButtonToToolbar(const char *name, const char *imgPath, const char *toolTip) const {
     auto pButton = new QAction(tr(name), m_toolBar);
     pButton->setIcon(QIcon(imgPath));
     pButton->setToolTip(tr(toolTip));
@@ -48,11 +48,44 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
     Q_ASSERT(drawingWidget != nullptr);
     m_drawingWidget = drawingWidget;
 
+    _addToolbarLiteral("Drawing options:");
     m_toolBar->setAllowedAreas(Qt::LeftToolBarArea | Qt::RightToolBarArea);
 
     m_triangulationSlider = new DoubleSlider(Qt::Horizontal, m_toolBar, 1.0, 30.0, 29, 5, "Triangulation accuracy",
                                              "Change accuracy of triangulation for rendered plain");
     m_toolBar->addWidget(m_triangulationSlider->getContainer());
+
+    auto pButton = new TextButton(m_toolBar, "Load Bezier points to the program!", "Load bezier points",
+                                  ":/icons/load_icon.png");
+    m_loadBezierPointsButton = pButton->getAction();
+    m_toolBar->addWidget(pButton);
+
+    pButton = new TextButton(m_toolBar, "Change whether draw the net over the plain or not", "Draw net",
+                             ":/icons/net_icon.png");
+    m_drawNetButton = pButton->getAction();
+    m_drawNetButton->setCheckable(true);
+    m_toolBar->addWidget(pButton);
+
+    pButton = new TextButton(m_toolBar, "Load texture to the program!", "Load texture", ":/icons/load_icon.png");
+    m_loadTextureButton = pButton->getAction();
+    m_toolBar->addWidget(pButton);
+
+    pButton = new TextButton(m_toolBar, "Draw the texture on the plain!", "Draw the texture",
+                             ":/icons/texture_icon.png");
+    m_enableTextureButton = pButton->getAction();
+    m_enableTextureButton->setCheckable(true);
+    m_toolBar->addWidget(pButton);
+
+    pButton = new TextButton(m_toolBar, "Load normal vector to the program!", "Load normal vectors",
+                             ":/icons/load_icon.png");
+    m_loadNormalVectorsButton = pButton->getAction();
+    m_toolBar->addWidget(pButton);
+
+    pButton = new TextButton(m_toolBar, "Enable usage of normal vectors in the program", "Enable normal vectors",
+                             ":/icons/vector_icon.png");
+    m_enableNormalVectorsButton = pButton->getAction();
+    m_enableTextureButton->setCheckable(true);
+    m_toolBar->addWidget(pButton);
 
     _addSeparator();
     _addToolbarLiteral("Rotations:");
@@ -83,5 +116,13 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
                                                  "Position of lighting equation");
     m_toolBar->addWidget(m_lightningPositionSlider->getContainer());
 
+    pButton = new TextButton(m_toolBar, "Stop movement of light source!", "Stop light movement",
+                             ":/icons/stop_icon.png");
+    m_stopLightMovementButton = pButton->getAction();
+    m_stopLightMovementButton->setCheckable(true);
+    m_toolBar->addWidget(pButton);
 
+    pButton = new TextButton(m_toolBar, "Change color of the plain!", "Change color", ":/icons/color_icon.png");
+    m_changePlainColorButton = pButton->getAction();
+    m_toolBar->addWidget(pButton);
 }

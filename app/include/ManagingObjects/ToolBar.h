@@ -42,23 +42,17 @@ public slots:
     // ------------------------------
     // Class private methods
     // ------------------------------
-private:
+protected:
     void _addSeparator();
 
-    void _addToolbarLiteral(const char *strLiteral);
+    void _addToolbarLiteral(const char *strLiteral) const;
 
-    QAction *_addButtonToToolbar(const char *name, const char *imgPath, const char *toolTip);
+    QAction *_addButtonToToolbar(const char *name, const char *imgPath, const char *toolTip) const;
 
     // ------------------------------
     // Public fields
     // ------------------------------
 public:
-
-protected:
-    // ------------------------------
-    // Class fields
-    // ------------------------------
-
     QToolBar *m_toolBar{};
     DrawingWidget *m_drawingWidget{};
 
@@ -71,6 +65,15 @@ protected:
     DoubleSlider *m_mSlider{};
     DoubleSlider *m_lightningPositionSlider{};
 
+    /* Buttons */
+    QAction *m_drawNetButton{};
+    QAction *m_loadBezierPointsButton{};
+    QAction *m_loadTextureButton{};
+    QAction *m_enableTextureButton{};
+    QAction *m_loadNormalVectorsButton{};
+    QAction *m_enableNormalVectorsButton{};
+    QAction *m_stopLightMovementButton{};
+    QAction *m_changePlainColorButton{};
 };
 
 

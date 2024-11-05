@@ -9,10 +9,10 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
-DoubleSlider::DoubleSlider(Qt::Orientation orientation, QWidget *parent, double minValue, double maxValue,
-                           int precisionPoints, int startValuePrecision, const char *title,
-                           const char *toolTip, int sliderSize) : QSlider(orientation), m_minValue(minValue),
-                                                                  m_maxValue(maxValue) {
+DoubleSlider::DoubleSlider(const Qt::Orientation orientation, QWidget *parent, const double minValue, const double maxValue,
+                           const int precisionPoints, const int startValuePrecision, const char *title,
+                           const char *toolTip, const int sliderSize) : QSlider(orientation), m_minValue(minValue),
+                                                                        m_maxValue(maxValue) {
     Q_ASSERT(precisionPoints >= 0);
     Q_ASSERT(startValuePrecision >= 0 && startValuePrecision <= precisionPoints);
 
@@ -20,15 +20,15 @@ DoubleSlider::DoubleSlider(Qt::Orientation orientation, QWidget *parent, double 
     setValue(startValuePrecision);
     setToolTip(tr(toolTip));
 
-    QWidget *pContainer = new QWidget(parent);
-    QVBoxLayout *pLayout = new QVBoxLayout(pContainer);
+    auto *pContainer = new QWidget(parent);
+    auto pLayout = new QVBoxLayout(pContainer);
 
-    QWidget *pLabelsContainer = new QWidget(pContainer);
-    QHBoxLayout *pLabelsLayout = new QHBoxLayout(pLabelsContainer);
+    auto *pLabelsContainer = new QWidget(pContainer);
+    auto *pLabelsLayout = new QHBoxLayout(pLabelsContainer);
 
     setParent(pContainer);
 
-    QLabel *pLabel = new QLabel(tr(title), pContainer);
+    auto *pLabel = new QLabel(tr(title), pContainer);
     pLabel->setToolTip(tr(toolTip));
     pLayout->addWidget(pLabel);
     pLayout->addWidget(this);
@@ -54,5 +54,12 @@ DoubleSlider::DoubleSlider(Qt::Orientation orientation, QWidget *parent, double 
 
     if (sliderSize != 0) {
         orientation == Qt::Horizontal ? setFixedWidth(sliderSize) : setFixedHeight(sliderSize);
+    }
+}
+
+void DoubleSlider::sliderChange(const SliderChange change) {
+    QSlider::sliderChange(change);
+    if (change == QSlider::SliderValueChange) {
+        emit doubleValueChanged(getDoubleValue());
     }
 }

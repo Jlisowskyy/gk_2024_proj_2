@@ -9,4 +9,6 @@
 
 static constexpr int DEFAULT_SLIDER_SIZE = 200;
 
+static constexpr int DEFAULT_ICON_SIZE = 24;
+
 #endif //APP_CONSTANTS_H

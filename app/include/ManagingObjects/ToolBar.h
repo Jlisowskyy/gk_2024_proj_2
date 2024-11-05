@@ -11,7 +11,6 @@
 #include <QObject>
 #include <QToolBar>
 #include <QGraphicsItem>
-#include <QSlider>
 
 /* Forward declaration */
 class DrawingWidget;

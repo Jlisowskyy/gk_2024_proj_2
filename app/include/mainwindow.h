@@ -8,11 +8,11 @@
 /* External includes */
 #include <QApplication>
 #include <QMainWindow>
-#include <QLabel>
 
-/* Internal includes */
-#include "ManagingObjects/ToolBar.h"
-#include "GraphicObjects/DrawingWidget.h"
+/* Forward declarations */
+class DrawingWidget;
+class ToolBar;
+class ObjectMgr;
 
 QT_BEGIN_NAMESPACE
 
@@ -23,22 +23,21 @@ namespace Ui {
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow {
-Q_OBJECT
+    Q_OBJECT
 
 public:
     // ------------------------------
     // Class creation
     // ------------------------------
 
-    MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
 
-    ~MainWindow();
+    ~MainWindow() override;
 
     // ------------------------------
     // Class protected methods
     // ------------------------------
 protected:
-
     // ------------------------------
     // Class fields
     // ------------------------------
@@ -47,6 +46,7 @@ private:
     Ui::MainWindow *m_ui;
     ToolBar *m_toolBar;
     DrawingWidget *m_drawingWidget;
+    ObjectMgr *m_objectMgr;
 };
 
 #endif // MAINWINDOW_H

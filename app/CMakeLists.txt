@@ -31,6 +31,8 @@ set(PROJECT_SOURCES
         include/UiObjects/DoubleSlider.h
         src/TextButton.cpp
         include/UiObjects/TextButton.h
+        src/ObjectMgr.cpp
+        include/ManagingObjects/ObjectMgr.h
 )
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)

@@ -6,9 +6,12 @@
 #define APP_CONSTANTS_H
 
 /* external includes */
+#include <QColor>
 
 static constexpr int DEFAULT_SLIDER_SIZE = 200;
 
 static constexpr int DEFAULT_ICON_SIZE = 24;
+
+static constexpr Qt::GlobalColor DEFAULT_PLAIN_COLOR = Qt::red;
 
 #endif //APP_CONSTANTS_H

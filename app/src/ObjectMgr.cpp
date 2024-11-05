@@ -11,9 +11,9 @@
 #include <vector>
 #include <QColorDialog>
 #include <QDebug>
+#include <QFileDialog>
 
-
-ObjectMgr::ObjectMgr(QObject *parent, QWidget *widgetParent): QObject(parent), m_parentWidget(widgetParent) {
+ObjectMgr::ObjectMgr(QObject *parent, QWidget *widgetParent) : QObject(parent), m_parentWidget(widgetParent) {
     Q_ASSERT(parent && widgetParent);
 }
 
@@ -22,12 +22,12 @@ ObjectMgr::~ObjectMgr() = default;
 void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
     /* State changes */
     std::vector<std::pair<DoubleSlider *, void (ObjectMgr::*)(double)> > vSliderProc{
-        {toolBar->m_triangulationSlider, &ObjectMgr::onTriangulationChanged},
-        {toolBar->m_alphaSlider, &ObjectMgr::onAlphaChanged},
-        {toolBar->m_betaSlider, &ObjectMgr::onBetaChanged},
-        {toolBar->m_ksSlider, &ObjectMgr::onKSChanged},
-        {toolBar->m_kdSlider, &ObjectMgr::onKDChanged},
-        {toolBar->m_mSlider, &ObjectMgr::onMChanged},
+            {toolBar->m_triangulationSlider, &ObjectMgr::onTriangulationChanged},
+            {toolBar->m_alphaSlider,         &ObjectMgr::onAlphaChanged},
+            {toolBar->m_betaSlider,          &ObjectMgr::onBetaChanged},
+            {toolBar->m_ksSlider,            &ObjectMgr::onKSChanged},
+            {toolBar->m_kdSlider,            &ObjectMgr::onKDChanged},
+            {toolBar->m_mSlider,             &ObjectMgr::onMChanged},
     };
 
     for (const auto &[slider, proc]: vSliderProc) {
@@ -36,10 +36,10 @@ void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
 
     /* simple actions */
     std::vector<std::pair<QAction *, void (ObjectMgr::*)()> > vActionProc{
-        {toolBar->m_loadTextureButton, &ObjectMgr::onLoadTexturesTriggered},
-        {toolBar->m_loadBezierPointsButton, &ObjectMgr::onLoadBezierPointsTriggered},
-        {toolBar->m_loadNormalVectorsButton, &ObjectMgr::onLoadNormalVectorsTriggered},
-        {toolBar->m_changePlainColorButton, &ObjectMgr::onColorChangedTriggered},
+            {toolBar->m_loadTextureButton,       &ObjectMgr::onLoadTexturesTriggered},
+            {toolBar->m_loadBezierPointsButton,  &ObjectMgr::onLoadBezierPointsTriggered},
+            {toolBar->m_loadNormalVectorsButton, &ObjectMgr::onLoadNormalVectorsTriggered},
+            {toolBar->m_changePlainColorButton,  &ObjectMgr::onColorChangedTriggered},
     };
 
     for (const auto &[action, proc]: vActionProc) {
@@ -48,10 +48,10 @@ void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
 
     /* Check able actions */
     std::vector<std::pair<QAction *, void (ObjectMgr::*)(bool)> > vActionBoolProc{
-        {toolBar->m_drawNetButton, &ObjectMgr::onDrawNetChanged},
-        {toolBar->m_enableTextureButton, &ObjectMgr::onEnableTextureChanged},
-        {toolBar->m_enableNormalVectorsButton, &ObjectMgr::onEnableNormalVectorsChanged},
-        {toolBar->m_stopLightMovementButton, &ObjectMgr::onStopLightingMovementChanged},
+            {toolBar->m_drawNetButton,             &ObjectMgr::onDrawNetChanged},
+            {toolBar->m_enableTextureButton,       &ObjectMgr::onEnableTextureChanged},
+            {toolBar->m_enableNormalVectorsButton, &ObjectMgr::onEnableNormalVectorsChanged},
+            {toolBar->m_stopLightMovementButton,   &ObjectMgr::onStopLightingMovementChanged},
     };
 
     for (const auto &[action, proc]: vActionBoolProc) {
@@ -84,9 +84,6 @@ void ObjectMgr::onKDChanged(double value) {
 void ObjectMgr::onMChanged(double value) {
 }
 
-void ObjectMgr::onLightningPositionChanged(double value) {
-}
-
 void ObjectMgr::onDrawNetChanged(bool isChecked) {
 }
 
@@ -100,12 +97,21 @@ void ObjectMgr::onStopLightingMovementChanged(bool isChecked) {
 }
 
 void ObjectMgr::onLoadBezierPointsTriggered() {
+    openFileDialog([this](const QString &path) {
+        _loadBezierPoints(path);
+    });
 }
 
 void ObjectMgr::onLoadTexturesTriggered() {
+    openFileDialog([](const QString &path) {
+        qDebug() << "Loading texture from path:" << path;
+    });
 }
 
 void ObjectMgr::onLoadNormalVectorsTriggered() {
+    openFileDialog([](const QString &path) {
+        qDebug() << "Loading normal vectors from path:" << path;
+    });
 }
 
 void ObjectMgr::onColorChangedTriggered() {
@@ -117,4 +123,26 @@ void ObjectMgr::onColorChangedTriggered() {
 
     m_color = selectedColor;
     redraw();
+}
+
+void ObjectMgr::_loadBezierPoints(const QString &path) {
+
+}
+
+void ObjectMgr::openFileDialog(std::function<void(const QString &)> callback) {
+    Q_ASSERT(callback);
+
+    QString filePath = QFileDialog::getOpenFileName(
+            nullptr,
+            "Open File",
+            QDir::homePath(),
+            "Text Files (*.txt);;All Files (*)"
+    );
+
+    if (!filePath.isEmpty()) {
+        qDebug() << "File selected:" << filePath;
+        callback(filePath);
+    } else {
+        qDebug() << "No file selected.";
+    }
 }

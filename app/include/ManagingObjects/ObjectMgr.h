@@ -54,8 +54,6 @@ public slots:
 
     void onMChanged(double value);
 
-    void onLightningPositionChanged(double value);
-
     /* toggle actions */
 
     void onDrawNetChanged(bool isChecked);
@@ -82,6 +80,8 @@ public slots:
 protected:
 
     void _loadBezierPoints(const QString& path);
+
+    static void openFileDialog(std::function<void(const QString&)> callback);
 
     // ------------------------------
     // Class fields

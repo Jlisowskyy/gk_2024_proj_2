@@ -439,18 +439,18 @@ ObjectMgr::BernsteinTable ObjectMgr::_computeBernstein(float t) {
     const float mt2 = mt * mt;
     const float mt3 = mt2 * mt;
     return {
-            mt3,                    // (1-t)³
-            3.0f * mt2 * t,        // 3(1-t)²t
-            3.0f * mt * t2,        // 3(1-t)t²
-            t3                      // t³
+            mt3,                    // (1-t)^3
+            3.0f * mt2 * t,        // 3(1-t)^2t
+            3.0f * mt * t2,        // 3(1-t)t^2
+            t3                      // t^3
     };
 }
 
 std::tuple<QVector3D, QVector3D, QVector3D>
 ObjectMgr::_computePointAndDeriv(const ObjectMgr::BernsteinTable &bu, const ObjectMgr::BernsteinTable &bv) {
-    QVector3D derivativeU(0, 0, 0);
-    QVector3D derivativeV(0, 0, 0);
-    QVector3D point(0, 0, 0);
+    QVector3D derivativeU{};
+    QVector3D derivativeV{};
+    QVector3D point{};
     static constexpr std::array<float, 4> derivativeCoeffs = {-3.0f, -6.0f, 3.0f, 6.0f};
 
     for (int i = 0; i < 4; ++i) {

@@ -11,7 +11,7 @@
 #include <QLabel>
 #include <QToolButton>
 
-TextButton::TextButton(QWidget *parent, const char *toolTip, const char *title, const char *icon): QWidget(parent) {
+TextButton::TextButton(QWidget *parent, const char *toolTip, const char *title, const char *icon) : QWidget(parent) {
     setToolTip(tr(toolTip));
 
     auto pLayout = new QHBoxLayout(this);

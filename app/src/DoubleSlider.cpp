@@ -9,7 +9,8 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
-DoubleSlider::DoubleSlider(const Qt::Orientation orientation, QWidget *parent, const double minValue, const double maxValue,
+DoubleSlider::DoubleSlider(const Qt::Orientation orientation, QWidget *parent, const double minValue,
+                           const double maxValue,
                            const int precisionPoints, const int startValuePrecision, const char *title,
                            const char *toolTip, const int sliderSize) : QSlider(orientation), m_minValue(minValue),
                                                                         m_maxValue(maxValue) {

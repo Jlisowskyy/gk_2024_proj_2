@@ -16,12 +16,12 @@ BezierPoint3DItem::BezierPoint3DItem(const QVector3D &point3d, double size, size
     setBrush(DEFAULT_BEZIER_POINT_COLOR);
     setPen(QPen(DEFAULT_BEZIER_POINT_COLOR));
 
-    auto* label = new QGraphicsTextItem(QString::number(idx), this);
+    auto *label = new QGraphicsTextItem(QString::number(idx), this);
 
     QFont font = label->font();
     font.setPointSize(10);
     label->setFont(font);
 
-    label->setPos(-size/2 - 10, -size/2 - 20);
+    label->setPos(-size / 2 - 10, -size / 2 - 20);
     label->setDefaultTextColor(DEFAULT_BEZIER_POINT_COLOR);
 }

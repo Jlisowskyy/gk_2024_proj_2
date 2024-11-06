@@ -394,30 +394,6 @@ void ObjectMgr::_interpolateBezier() {
     const float step = 1.0f / static_cast<float>(m_triangleAccuracy - 1);
     const int steps = m_triangleAccuracy;
 
-    auto bernstein = [](float t) -> std::array<float, 4> {
-        const float t2 = t * t;
-        const float t3 = t2 * t;
-        const float mt = 1.0f - t;
-        const float mt2 = mt * mt;
-        const float mt3 = mt2 * mt;
-        return {
-                mt3,                    // (1-t)³
-                3.0f * mt2 * t,        // 3(1-t)²t
-                3.0f * mt * t2,        // 3(1-t)t²
-                t3                      // t³
-        };
-    };
-
-    auto computePoint = [this](const std::array<float, 4> &bu, const std::array<float, 4> &bv) -> QVector3D {
-        QVector3D point(0, 0, 0);
-        for (int k = 0; k < 4; ++k) {
-            for (int l = 0; l < 4; ++l) {
-                point += m_controlPoints[k * 4 + l] * (bu[k] * bv[l]);
-            }
-        }
-        return point;
-    };
-
     for (int i = 0; i < steps - 1; ++i) {
         for (int j = 0; j < steps - 1; ++j) {
             float u = static_cast<float>(i) * step;
@@ -425,62 +401,64 @@ void ObjectMgr::_interpolateBezier() {
             float u_next = static_cast<float>(i + 1) * step;
             float v_next = static_cast<float>(j + 1) * step;
 
-            auto bu = bernstein(u);
-            auto bv = bernstein(v);
-            auto bu_next = bernstein(u_next);
-            auto bv_next = bernstein(v_next);
+            auto bu = _computeBernstein(u);
+            auto bv = _computeBernstein(v);
+            auto bu_next = _computeBernstein(u_next);
+            auto bv_next = _computeBernstein(v_next);
 
-            QVector3D p00 = computePoint(bu, bv);
-            QVector3D p10 = computePoint(bu_next, bv);
-            QVector3D p01 = computePoint(bu, bv_next);
-            QVector3D p11 = computePoint(bu_next, bv_next);
+            auto [p00, pu00, pv00] = _computePointAndDeriv(bu, bv);
+            auto [p10, pu10, pv10] = _computePointAndDeriv(bu_next, bv);
+            auto [p01, pu01, pv01] = _computePointAndDeriv(bu, bv_next);
+            auto [p11, pu11, pv11] = _computePointAndDeriv(bu_next, bv_next);
+
+            QVector3D n00 = QVector3D::crossProduct(pu00, pv00).normalized();
+            QVector3D n10 = QVector3D::crossProduct(pu10, pv10).normalized();
+            QVector3D n01 = QVector3D::crossProduct(pu01, pv01).normalized();
+            QVector3D n11 = QVector3D::crossProduct(pu11, pv11).normalized();
 
             Traingle t1, t2;
 
-            // First triangle
-            t1.v1.position = p00;
-            t1.v1.u = u;
-            t1.v1.v = v;
+            t1.v1 = Vertex(p00, pu00, pv00, n00, u, v, m_alpha, m_beta);
+            t1.v2 = Vertex(p10, pu10, pv10, n10, u_next, v, m_alpha, m_beta);
+            t1.v3 = Vertex(p01, pu01, pv01, n01, u, v_next, m_alpha, m_beta);
 
-            t1.v2.position = p10;
-            t1.v2.u = u_next;
-            t1.v2.v = v;
+            t2.v1 = Vertex(p10, pu10, pv10, n10, u_next, v, m_alpha, m_beta);
+            t2.v2 = Vertex(p11, pu11, pv11, n11, u_next, v_next, m_alpha, m_beta);
+            t2.v3 = Vertex(p01, pu01, pv01, n01, u, v_next, m_alpha, m_beta);
 
-            t1.v3.position = p01;
-            t1.v3.u = u;
-            t1.v3.v = v_next;
-
-            // Second triangle
-            t2.v1.position = p10;
-            t2.v1.u = u_next;
-            t2.v1.v = v;
-
-            t2.v2.position = p11;
-            t2.v2.u = u_next;
-            t2.v2.v = v_next;
-
-            t2.v3.position = p01;
-            t2.v3.u = u;
-            t2.v3.v = v_next;
-
-            // Apply rotation to position vectors
-            t1.v1.rotatedPosition = t1.v1.position;
-            t1.v2.rotatedPosition = t1.v2.position;
-            t1.v3.rotatedPosition = t1.v3.position;
-            rotate(t1.v1.rotatedPosition);
-            rotate(t1.v2.rotatedPosition);
-            rotate(t1.v3.rotatedPosition);
-
-            t2.v1.rotatedPosition = t2.v1.position;
-            t2.v2.rotatedPosition = t2.v2.position;
-            t2.v3.rotatedPosition = t2.v3.position;
-            rotate(t2.v1.rotatedPosition);
-            rotate(t2.v2.rotatedPosition);
-            rotate(t2.v3.rotatedPosition);
-
-            // Add triangles to the mesh
             m_triangles.push_back(t1);
             m_triangles.push_back(t2);
         }
     }
+}
+
+ObjectMgr::BernsteinTable ObjectMgr::_computeBernstein(float t) {
+    const float t2 = t * t;
+    const float t3 = t2 * t;
+    const float mt = 1.0f - t;
+    const float mt2 = mt * mt;
+    const float mt3 = mt2 * mt;
+    return {
+            mt3,                    // (1-t)³
+            3.0f * mt2 * t,        // 3(1-t)²t
+            3.0f * mt * t2,        // 3(1-t)t²
+            t3                      // t³
+    };
+}
+
+std::tuple<QVector3D, QVector3D, QVector3D>
+ObjectMgr::_computePointAndDeriv(const ObjectMgr::BernsteinTable &bu, const ObjectMgr::BernsteinTable &bv) {
+    QVector3D derivativeU(0, 0, 0);
+    QVector3D derivativeV(0, 0, 0);
+    QVector3D point(0, 0, 0);
+    static constexpr std::array<float, 4> derivativeCoeffs = {-3.0f, -6.0f, 3.0f, 6.0f};
+
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            derivativeV += m_controlPoints[i * 4 + j] * (derivativeCoeffs[i] * bv[j]);
+            derivativeU += m_controlPoints[i * 4 + j] * (bu[i] * derivativeCoeffs[j]);
+            point += m_controlPoints[i * 4 + j] * (bu[i] * bv[j]);
+        }
+    }
+    return {point, derivativeU, derivativeV};
 }

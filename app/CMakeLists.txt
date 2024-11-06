@@ -38,6 +38,7 @@ set(PROJECT_SOURCES
         include/GraphicObjects/BezierPoint3D.h
         include/PrimitiveData/Vertex.h
         include/PrimitiveData/Triangle.h
+        src/Vertex.cpp
 )
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)

@@ -18,6 +18,7 @@ static constexpr Qt::GlobalColor DEFAULT_BEZIER_POINT_COLOR = Qt::blue;
 
 // Bezier Configuration
 static constexpr size_t CONTROL_POINTS_COUNT = 16;
+static constexpr size_t BERNSTEIN_TABLE_SIZE = 4;
 static constexpr size_t CONTROL_POINTS_MATRIX_SIZE = 4;
 static constexpr double DEFAULT_BEZIER_POINT_RADIUS = 15;
 

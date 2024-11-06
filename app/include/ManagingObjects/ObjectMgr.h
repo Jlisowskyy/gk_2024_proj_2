@@ -38,6 +38,7 @@ public:
     // ------------------------------
 
     using ControlPoints = std::array<QVector3D, CONTROL_POINTS_COUNT>;
+    using BernsteinTable = std::array<float, BERNSTEIN_TABLE_SIZE>;
 
     // ------------------------------
     // Class interaction
@@ -113,6 +114,8 @@ protected:
 
     void _interpolateBezier();
 
+    static BernsteinTable _computeBernstein(float t);
+
     // ------------------------------
     // Class fields
     // ------------------------------
@@ -134,6 +137,8 @@ protected:
     std::vector<Traingle> m_triangles{};
 
     int m_triangleAccuracy{};
+
+    std::tuple<QVector3D, QVector3D, QVector3D> _computePointAndDeriv(const ObjectMgr::BernsteinTable &bu, const ObjectMgr::BernsteinTable &bv);
 };
 
 

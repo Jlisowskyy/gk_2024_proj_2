@@ -183,7 +183,7 @@ void DrawingWidget::_fillTriangle(const Triangle &triangle) {
                     triangle
             );
         }
-            break;
+        break;
         case FillType::SIMPLE_COLOR: {
             auto curColor = m_color;
             colorPolygon(
@@ -207,15 +207,24 @@ void DrawingWidget::setTexture(QImage *texture) {
 }
 
 QColor DrawingWidget::_getTextureColor(const QVector3D &pos, const Triangle &triangle) {
-    const QVector3D v0 = triangle[1].rotatedPosition - triangle[0].rotatedPosition;
-    const QVector3D v1 = triangle[2].rotatedPosition - triangle[0].rotatedPosition;
-    const QVector3D v2 = pos - triangle[0].rotatedPosition;
+    const QVector2D v0(
+            triangle[1].rotatedPosition.x() - triangle[0].rotatedPosition.x(),
+            triangle[1].rotatedPosition.y() - triangle[0].rotatedPosition.y()
+    );
+    const QVector2D v1(
+            triangle[2].rotatedPosition.x() - triangle[0].rotatedPosition.x(),
+            triangle[2].rotatedPosition.y() - triangle[0].rotatedPosition.y()
+    );
+    const QVector2D v2(
+            pos.x() - triangle[0].rotatedPosition.x(),
+            pos.y() - triangle[0].rotatedPosition.y()
+    );
 
-    const float d00 = QVector3D::dotProduct(v0, v0);
-    const float d01 = QVector3D::dotProduct(v0, v1);
-    const float d11 = QVector3D::dotProduct(v1, v1);
-    const float d20 = QVector3D::dotProduct(v2, v0);
-    const float d21 = QVector3D::dotProduct(v2, v1);
+    const float d00 = QVector2D::dotProduct(v0, v0);
+    const float d01 = QVector2D::dotProduct(v0, v1);
+    const float d11 = QVector2D::dotProduct(v1, v1);
+    const float d20 = QVector2D::dotProduct(v2, v0);
+    const float d21 = QVector2D::dotProduct(v2, v1);
 
     const float denom = d00 * d11 - d01 * d01;
     const float v = (d11 * d20 - d01 * d21) / denom;

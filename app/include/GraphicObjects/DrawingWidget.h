@@ -219,6 +219,33 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const P
         });
     }
 
+     /* WTF: HORIZONTAL EDGES? */
+    for (size_t i = 0; i < N; i++) {
+        const auto& v1 = polygon[i].rotatedPosition;
+        const auto& v2 = polygon[(i + 1) % N].rotatedPosition;
+
+        if (std::abs(v1.y() - v2.y()) <= 1.0f) {
+            const int y = static_cast<int>(std::floor(v1.y()));
+            const int x1 = static_cast<int>(std::floor(std::min(v1.x(), v2.x())));
+            const int x2 = static_cast<int>(std::floor(std::max(v1.x(), v2.x())));
+
+            for (int x = x1; x <= x2; x++) {
+                vBuffer.position.setX(static_cast<float>(x));
+                vBuffer.position.setY(static_cast<float>(y));
+
+                QColor color = colorGet(vBuffer.position, polygon);
+                color = colorSet(vBuffer, color);
+
+                QVector3D screenPos(vBuffer.position.x() + m_width / 2,
+                                    vBuffer.position.y() + m_height / 2,
+                                    0);
+
+                painter.setPen(QPen(color));
+                painter.drawPoint(static_cast<int>(screenPos.x()), static_cast<int>(screenPos.y()));
+            }
+        }
+    }
+
     painter.end();
 }
 

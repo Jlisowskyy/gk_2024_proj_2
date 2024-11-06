@@ -61,7 +61,7 @@ public:
 
     void setFillType(FillType fillType);
 
-    // void setTexture();
+    void setTexture(QImage *texture);
 
     // void setNormals();
 
@@ -100,6 +100,8 @@ private:
 
     void _fillTriangle(const Triangle &triangle);
 
+    QColor _getTextureColor(const QVector3D &pos, const Triangle &triangle);
+
     // ------------------------------
     // Class fields
     // ------------------------------
@@ -112,6 +114,7 @@ private:
     float m_height{};
     QColor m_color{};
     FillType m_fillType{};
+    QImage *m_texture{};
 
     double m_observerDistance{};
     std::vector<QVector3D> m_points{};
@@ -182,24 +185,23 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const P
         /* Draw the pixels */
         auto it = aet.begin();
         while (it != aet.end() && std::next(it) != aet.end()) {
-            int x1 = static_cast<int>(std::ceil(it->x));
-            int x2 = static_cast<int>(std::floor(std::next(it)->x));
+            int x1 = static_cast<int>(std::floor(it->x));
+            int x2 = static_cast<int>(std::ceil(std::next(it)->x));
 
             for (int x = x1; x <= x2; x++) {
                 vBuffer.position.setX(static_cast<float>(x));
                 vBuffer.position.setY(static_cast<float>(y));
 
+                /* Process color values */
+                QColor color = colorGet(vBuffer.position, polygon);
+                color = colorSet(vBuffer, color);
+
                 QVector3D screenPos(vBuffer.position.x() + m_width / 2,
                                     vBuffer.position.y() + m_height / 2,
                                     0);
 
-                /* Process color values */
-                QColor color = colorGet(screenPos);
-                vBuffer.position = screenPos;
-                color = colorSet(vBuffer, color);
-
                 painter.setPen(QPen(color));
-                painter.drawPoint(screenPos.x(), screenPos.y());
+                painter.drawPoint(static_cast<int>(screenPos.x()), static_cast<int>(screenPos.y()));
             }
 
             std::advance(it, 2);
@@ -212,7 +214,6 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const P
             edge.x += edge.dx;
         }
 
-        // Remove edges that have reached their maximum y
         aet.remove_if([y](const ActiveEdge &edge) {
             return y >= edge.yMax;
         });

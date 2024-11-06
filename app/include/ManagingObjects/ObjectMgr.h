@@ -100,11 +100,15 @@ public slots:
 protected:
     void _loadBezierPoints(const QString &path);
 
-    void _openFileDialog(const std::function<void(const QString &)> &callback);
+    void _openFileDialog(const std::function<void(const QString &)> &callback, const char* filter);
 
-    ControlPoints _loadBezierPointsOpenFile(const QString &path, bool *ok);
+    [[nodiscard]] ControlPoints _loadBezierPointsOpenFile(const QString &path, bool *ok);
 
-    ControlPoints _loadBezierPointsParse(QFile &file, bool *ok);
+    [[nodiscard]] ControlPoints _loadBezierPointsParse(QFile &file, bool *ok);
+
+    void _loadTexture(const QString &path);
+
+    [[nodiscard]] QImage *_loadTextureFromFile(const QString &path);
 
     void showToast(const QString &message, int duration = DEFAULT_TOAST_DURATION_MS);
 
@@ -112,7 +116,7 @@ protected:
 
     void _interpolateBezier();
 
-    static BernsteinTable _computeBernstein(float t);
+    [[nodiscard]] static BernsteinTable _computeBernstein(float t);
 
     [[nodiscard]] std::tuple<QVector3D, QVector3D, QVector3D> _computePointAndDeriv(
         const BernsteinTable &bu, const BernsteinTable &bv) const;
@@ -130,7 +134,7 @@ protected:
     bool m_useTexture{};
     double m_alpha{};
     double m_beta{};
-    void *m_texture{};
+    QImage *m_texture{};
 
     ControlPoints m_controlPoints{};
     std::vector<Triangle> m_triangles{};

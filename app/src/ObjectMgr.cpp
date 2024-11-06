@@ -85,7 +85,8 @@ void ObjectMgr::loadDefaultSettings() {
     m_beta = 0;
     m_drawingWidget->setColor(DEFAULT_PLAIN_COLOR);
 
-    _loadBezierPoints(DEFAULT_DATA_PATH);
+    _loadBezierPoints(DEFAULT_CONTROL_POINTS_PATH);
+    _loadTexture(DEFAULT_TEXTURE_PATH);
     redraw();
 }
 
@@ -144,19 +145,20 @@ void ObjectMgr::onStopLightingMovementChanged(bool isChecked) {
 void ObjectMgr::onLoadBezierPointsTriggered() {
     _openFileDialog([this](const QString &path) {
         _loadBezierPoints(path);
-    });
+                    },
+                    "Text Files (*.txt);;All Files (*)");
 }
 
 void ObjectMgr::onLoadTexturesTriggered() {
-    _openFileDialog([](const QString &path) {
-        qDebug() << "Loading texture from path:" << path;
-    });
+    _openFileDialog([this](const QString &path) {
+        _loadTexture(path);
+    }, "Images (*.png *.jpg *.bmp);;All Files (*)");
 }
 
 void ObjectMgr::onLoadNormalVectorsTriggered() {
     _openFileDialog([](const QString &path) {
         qDebug() << "Loading normal vectors from path:" << path;
-    });
+    }, "");
 }
 
 void ObjectMgr::onColorChangedTriggered() {
@@ -182,7 +184,7 @@ void ObjectMgr::_loadBezierPoints(const QString &path) {
     redraw();
 }
 
-void ObjectMgr::_openFileDialog(const std::function<void(const QString &)> &callback) {
+void ObjectMgr::_openFileDialog(const std::function<void(const QString &)> &callback, const char *filter) {
     Q_ASSERT(callback);
 
     QString initialPath = m_previousDirectory.isEmpty() ? QDir::homePath() : m_previousDirectory;
@@ -191,7 +193,7 @@ void ObjectMgr::_openFileDialog(const std::function<void(const QString &)> &call
         nullptr,
         "Open File",
         initialPath,
-        "Text Files (*.txt);;All Files (*)"
+        filter
     );
 
     if (!filePath.isEmpty()) {
@@ -462,4 +464,33 @@ ObjectMgr::_computePointAndDeriv(const BernsteinTable &bu, const BernsteinTable 
         }
     }
     return {point, derivativeU, derivativeV};
+}
+
+void ObjectMgr::_loadTexture(const QString &path) {
+    auto pTexture = _loadTextureFromFile(path);
+
+    if (!pTexture) {
+        return;
+    }
+
+    delete m_texture;
+    m_texture = pTexture;
+
+    m_drawingWidget->setTexture(m_texture);
+
+    if (m_useTexture) {
+        m_drawingWidget->setFillType(FillType::TEXTURE);
+    }
+}
+
+QImage *ObjectMgr::_loadTextureFromFile(const QString &path) {
+    QImage image(path);
+
+    if (image.isNull()) {
+        qWarning() << "Failed to load image from path:" << path;
+        showToast("Failed to load image");
+        return nullptr;
+    }
+
+    return new QImage(image.scaled(1000, 1000, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 }

@@ -30,8 +30,8 @@ static constexpr double DEFAULT_OBSERVER_DISTANCE = 1000.0;
 
 // Slider Ranges and Defaults
 static constexpr double TRIANGULATION_SLIDER_MIN = 2.0;
-static constexpr double TRIANGULATION_SLIDER_MAX = 50.0;
-static constexpr int TRIANGULATION_SLIDER_STEPS = 48;
+static constexpr double TRIANGULATION_SLIDER_MAX = 90.0;
+static constexpr int TRIANGULATION_SLIDER_STEPS = 88;
 static constexpr int TRIANGULATION_SLIDER_DEFAULT = 5;
 
 static constexpr double OBSERVER_DISTANCE_MIN = DEFAULT_OBSERVER_DISTANCE;
@@ -60,11 +60,14 @@ static constexpr double M_COEFFICIENT_MAX = 100.0;
 static constexpr int M_COEFFICIENT_STEPS = 99;
 static constexpr int M_COEFFICIENT_DEFAULT = 50;
 
-static constexpr const char *DEFAULT_DATA_PATH = ":/data/example1";
+static constexpr const char *DEFAULT_CONTROL_POINTS_PATH = ":/data/example1";
+static constexpr const char *DEFAULT_TEXTURE_PATH = ":/data/test_texture.png";
 static constexpr int DEFAULT_TRIANGLE_ACCURACY = 6;
 
 static constexpr Qt::GlobalColor DEFAULT_TRIANGLE_LINE_COLOR = Qt::darkRed;
 static constexpr Qt::GlobalColor DEFAULT_BEZIER_LINE_COLOR = Qt::darkGreen;
+
+static constexpr int TEXTURE_IMAGE_SIZE = 1000;
 
 enum class FillType {
     SIMPLE_COLOR,

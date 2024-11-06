@@ -75,6 +75,8 @@ void DrawingWidget::setFillType(FillType fillType) {
     }
 
     m_fillType = fillType;
+
+    Q_ASSERT(m_fillType != FillType::TEXTURE || m_texture);
     updateScene();
 }
 
@@ -170,11 +172,22 @@ void DrawingWidget::_drawTriangleLine(const std::pair<QVector3D, QVector3D> &lin
 
 void DrawingWidget::_fillTriangle(const Triangle &triangle) {
     switch (m_fillType) {
-        case FillType::TEXTURE:
+        case FillType::TEXTURE: {
+            colorPolygon(
+                    [this](const QVector3D &pos, const Triangle &triangle) {
+                        return _getTextureColor(pos, triangle);
+                    },
+                    [](const Vertex &vertex, const QColor &color) {
+                        return color;
+                    },
+                    triangle
+            );
+        }
+            break;
         case FillType::SIMPLE_COLOR: {
             auto curColor = m_color;
             colorPolygon(
-                [=](const QVector3D &pos) {
+                    [=](const QVector3D &pos, const Triangle &triangle) {
                     return curColor;
                 },
                 [](const Vertex &vertex, const QColor &color) {
@@ -187,4 +200,35 @@ void DrawingWidget::_fillTriangle(const Triangle &triangle) {
         default:
             Q_ASSERT(false);
     }
+}
+
+void DrawingWidget::setTexture(QImage *texture) {
+    m_texture = texture;
+}
+
+QColor DrawingWidget::_getTextureColor(const QVector3D &pos, const Triangle &triangle) {
+    const QVector3D v0 = triangle[1].rotatedPosition - triangle[0].rotatedPosition;
+    const QVector3D v1 = triangle[2].rotatedPosition - triangle[0].rotatedPosition;
+    const QVector3D v2 = pos - triangle[0].rotatedPosition;
+
+    const float d00 = QVector3D::dotProduct(v0, v0);
+    const float d01 = QVector3D::dotProduct(v0, v1);
+    const float d11 = QVector3D::dotProduct(v1, v1);
+    const float d20 = QVector3D::dotProduct(v2, v0);
+    const float d21 = QVector3D::dotProduct(v2, v1);
+
+    const float denom = d00 * d11 - d01 * d01;
+    const float v = (d11 * d20 - d01 * d21) / denom;
+    const float w = (d00 * d21 - d01 * d20) / denom;
+    const float u = 1.0f - v - w;
+
+    float interpolatedU = u * triangle[0].u + v * triangle[1].u + w * triangle[2].u;
+    float interpolatedV = u * triangle[0].v + v * triangle[1].v + w * triangle[2].v;
+    interpolatedU = std::clamp(interpolatedU, 0.0f, 1.0f);
+    interpolatedV = std::clamp(interpolatedV, 0.0f, 1.0f);
+
+    return m_texture->pixelColor(
+            static_cast<int>(interpolatedU * static_cast<float>(m_texture->width() - 1)),
+            static_cast<int>(interpolatedV * static_cast<float>(m_texture->height() - 1))
+    );
 }

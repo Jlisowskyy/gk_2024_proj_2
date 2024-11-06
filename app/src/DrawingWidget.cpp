@@ -80,20 +80,16 @@ void DrawingWidget::setFillType(FillType fillType) {
 
 void DrawingWidget::updateScene() {
     const QRectF viewRect = rect();
-    const qreal width = viewRect.width();
-    const qreal height = viewRect.height();
+    m_width = viewRect.width();
+    m_height = viewRect.height();
 
-    setSceneRect(-width / 2, -height / 2, width, height);
+    setSceneRect(-m_width / 2, -m_height / 2, m_width, m_height);
     updateElements();
 }
 
 void DrawingWidget::updateElements() {
-    const QRectF viewRect = rect();
-    const qreal width = viewRect.width();
-    const qreal height = viewRect.height();
-
     m_scene->clear();
-    m_pixMap = new QPixmap(static_cast<int>(width), static_cast<int>(height));
+    m_pixMap = new QPixmap(static_cast<int>(m_width), static_cast<int>(m_height));
     m_pixMap->fill(Qt::white);
 
     size_t idx = 0;
@@ -117,7 +113,7 @@ void DrawingWidget::updateElements() {
 
     const auto pMapItem = m_scene->addPixmap(*m_pixMap);
     pMapItem->setZValue(-1);
-    pMapItem->setPos(QPointF(-width / 2, -height / 2));
+    pMapItem->setPos(QPointF(-m_width / 2, -m_height / 2));
 }
 
 void DrawingWidget::_drawBezierPoint(const QVector3D &point, const size_t idx) const {
@@ -150,7 +146,7 @@ QPointF DrawingWidget::dropPointToScreen(const QVector3D &point) const {
     //
     //    return {projX, projY};
 
-    return {point.x(), -point.y()};
+    return {point.x(), point.y()};
 }
 
 void DrawingWidget::setTriangles(std::vector<Triangle> *triangles) {

@@ -9,17 +9,21 @@
 #include <QVector3D>
 #include <cmath>
 
-struct  ActiveEdge {
+struct ActiveEdge {
     int yMax{};
     float x{};
     float dx{};
 
     ActiveEdge(const QVector3D &upper, const QVector3D &lower) {
-        yMax = static_cast<int>(std::round(upper.y()));
+        yMax = static_cast<int>(std::floor(upper.y()));
         x = lower.x();
 
         const float dy = upper.y() - lower.y();
-        dx = dy != 0.0f ? (upper.x() - lower.x()) / dy : 0.0f;
+        if (std::abs(dy) > std::numeric_limits<float>::epsilon()) {
+            dx = (upper.x() - lower.x()) / dy;
+        } else {
+            dx = 0.0f;
+        }
     }
 };
 

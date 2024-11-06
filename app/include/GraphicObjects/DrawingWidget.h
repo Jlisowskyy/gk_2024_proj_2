@@ -106,11 +106,14 @@ private:
 
     QGraphicsScene *m_scene{};
     ObjectMgr *m_objectMgr{};
-    double m_observerDistance{};
     QPixmap *m_pixMap{};
+
+    float m_width{};
+    float m_height{};
     QColor m_color{};
     FillType m_fillType{};
 
+    double m_observerDistance{};
     std::vector<QVector3D> m_points{};
     std::vector<std::pair<QVector3D, QVector3D> > m_lines{};
     std::vector<std::pair<QVector3D, QVector3D> > m_triangleLines{};
@@ -121,7 +124,7 @@ template<typename ColorGetT, typename ColorSetT, size_t N>
 void DrawingWidget::colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const PolygonArr<N> &polygon) {
     QPainter painter(m_pixMap);
 
-    /* sort the vertices by y cord */
+    /* sort the vertices by y coordinate */
     std::array<size_t, N> sorted{};
     for (size_t i = 0; i < N; i++) {
         sorted[i] = i;
@@ -131,7 +134,7 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const P
         size_t key = sorted[i];
         int j = i - 1;
 
-        while (j >= 0 && polygon[sorted[j]].position.y() > polygon[key].position.y()) {
+        while (j >= 0 && polygon[sorted[j]].rotatedPosition.y() > polygon[key].rotatedPosition.y()) {
             sorted[j + 1] = sorted[j];
             j--;
         }
@@ -140,27 +143,31 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const P
 
     std::list<ActiveEdge> aet{};
     Vertex vBuffer{};
-    int y = static_cast<int>(std::round(polygon[sorted[0]].position.y()));
+    int y = static_cast<int>(std::floor(polygon[sorted[0]].rotatedPosition.y()));
     size_t nextVertex = 0;
 
     while (nextVertex < N || !aet.empty()) {
         /* Detect et edges on the current y */
-        while (nextVertex < N && static_cast<int>(std::round(polygon[sorted[nextVertex]].position.y())) == y) {
+        while (nextVertex < N && static_cast<int>(std::floor(polygon[sorted[nextVertex]].rotatedPosition.y())) == y) {
             const size_t curr = sorted[nextVertex];
             const size_t prev = (curr + N - 1) % N;
             const size_t next = (curr + 1) % N;
 
-            if (std::round(polygon[prev].position.y()) > y) {
+            const float currY = polygon[curr].rotatedPosition.y();
+            const float prevY = polygon[prev].rotatedPosition.y();
+            const float nextY = polygon[next].rotatedPosition.y();
+
+            if (prevY > currY) {
                 aet.emplace_back(
-                    polygon[curr].position,
-                    polygon[prev].position
+                        polygon[prev].rotatedPosition,
+                        polygon[curr].rotatedPosition
                 );
             }
 
-            if (std::round(polygon[next].position.y()) > y) {
+            if (nextY > currY) {
                 aet.emplace_back(
-                    polygon[curr].position,
-                    polygon[next].position
+                        polygon[next].rotatedPosition,
+                        polygon[curr].rotatedPosition
                 );
             }
 
@@ -168,24 +175,31 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const P
         }
 
         /* sort the aet edges by the x coordinate */
-        aet.sort([](const ActiveEdge &a, const ActiveEdge &b) { return a.x < b.x; });
+        aet.sort([](const ActiveEdge &a, const ActiveEdge &b) {
+            return a.x < b.x || (a.x == b.x && a.dx < b.dx);
+        });
 
         /* Draw the pixels */
         auto it = aet.begin();
         while (it != aet.end() && std::next(it) != aet.end()) {
-            int x1 = static_cast<int>(std::round(it->x));
-            int x2 = static_cast<int>(std::round(std::next(it)->x));
+            int x1 = static_cast<int>(std::ceil(it->x));
+            int x2 = static_cast<int>(std::floor(std::next(it)->x));
 
             for (int x = x1; x <= x2; x++) {
                 vBuffer.position.setX(static_cast<float>(x));
                 vBuffer.position.setY(static_cast<float>(y));
 
+                QVector3D screenPos(vBuffer.position.x() + m_width / 2,
+                                    vBuffer.position.y() + m_height / 2,
+                                    0);
+
                 /* Process color values */
-                QColor color = colorGet(vBuffer.position);
+                QColor color = colorGet(screenPos);
+                vBuffer.position = screenPos;
                 color = colorSet(vBuffer, color);
 
                 painter.setPen(QPen(color));
-                painter.drawPoint(x, y);
+                painter.drawPoint(screenPos.x(), screenPos.y());
             }
 
             std::advance(it, 2);
@@ -198,6 +212,7 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const P
             edge.x += edge.dx;
         }
 
+        // Remove edges that have reached their maximum y
         aet.remove_if([y](const ActiveEdge &edge) {
             return y >= edge.yMax;
         });

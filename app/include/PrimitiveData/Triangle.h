@@ -8,10 +8,8 @@
 /* internal includes */
 #include "Vertex.h"
 
-struct Traingle {
-    Vertex v1{};
-    Vertex v2{};
-    Vertex v3{};
-};
+template<size_t N>
+using PolygonArr = std::array<Vertex, N>;
+using Triangle = PolygonArr<3>;
 
 #endif //APP_TRIANGLE_H

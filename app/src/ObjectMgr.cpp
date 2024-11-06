@@ -22,11 +22,11 @@
 #include <QTimer>
 #include <cmath>
 
-ObjectMgr::ObjectMgr(QObject *parent, QWidget *widgetParent, DrawingWidget *drawingWidget) :
-        QObject(parent),
-        m_parentWidget(widgetParent),
-        m_drawingWidget(drawingWidget) {
+ObjectMgr::ObjectMgr(QObject *parent, QWidget *widgetParent, DrawingWidget *drawingWidget) : QObject(parent),
+    m_parentWidget(widgetParent),
+    m_drawingWidget(drawingWidget) {
     Q_ASSERT(parent && widgetParent && drawingWidget);
+    m_drawingWidget->setTriangles(&m_triangles);
 }
 
 ObjectMgr::~ObjectMgr() = default;
@@ -34,12 +34,12 @@ ObjectMgr::~ObjectMgr() = default;
 void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
     /* State changes */
     std::vector<std::pair<DoubleSlider *, void (ObjectMgr::*)(double)> > vSliderProc{
-            {toolBar->m_triangulationSlider, &ObjectMgr::onTriangulationChanged},
-            {toolBar->m_alphaSlider,         &ObjectMgr::onAlphaChanged},
-            {toolBar->m_betaSlider,          &ObjectMgr::onBetaChanged},
-            {toolBar->m_ksSlider,            &ObjectMgr::onKSChanged},
-            {toolBar->m_kdSlider,            &ObjectMgr::onKDChanged},
-            {toolBar->m_mSlider,             &ObjectMgr::onMChanged},
+        {toolBar->m_triangulationSlider, &ObjectMgr::onTriangulationChanged},
+        {toolBar->m_alphaSlider, &ObjectMgr::onAlphaChanged},
+        {toolBar->m_betaSlider, &ObjectMgr::onBetaChanged},
+        {toolBar->m_ksSlider, &ObjectMgr::onKSChanged},
+        {toolBar->m_kdSlider, &ObjectMgr::onKDChanged},
+        {toolBar->m_mSlider, &ObjectMgr::onMChanged},
     };
 
     for (const auto &[slider, proc]: vSliderProc) {
@@ -48,10 +48,10 @@ void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
 
     /* simple actions */
     std::vector<std::pair<QAction *, void (ObjectMgr::*)()> > vActionProc{
-            {toolBar->m_loadTextureButton,       &ObjectMgr::onLoadTexturesTriggered},
-            {toolBar->m_loadBezierPointsButton,  &ObjectMgr::onLoadBezierPointsTriggered},
-            {toolBar->m_loadNormalVectorsButton, &ObjectMgr::onLoadNormalVectorsTriggered},
-            {toolBar->m_changePlainColorButton,  &ObjectMgr::onColorChangedTriggered},
+        {toolBar->m_loadTextureButton, &ObjectMgr::onLoadTexturesTriggered},
+        {toolBar->m_loadBezierPointsButton, &ObjectMgr::onLoadBezierPointsTriggered},
+        {toolBar->m_loadNormalVectorsButton, &ObjectMgr::onLoadNormalVectorsTriggered},
+        {toolBar->m_changePlainColorButton, &ObjectMgr::onColorChangedTriggered},
     };
 
     for (const auto &[action, proc]: vActionProc) {
@@ -60,10 +60,10 @@ void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
 
     /* Check able actions */
     std::vector<std::pair<QAction *, void (ObjectMgr::*)(bool)> > vActionBoolProc{
-            {toolBar->m_drawNetButton,             &ObjectMgr::onDrawNetChanged},
-            {toolBar->m_enableTextureButton,       &ObjectMgr::onEnableTextureChanged},
-            {toolBar->m_enableNormalVectorsButton, &ObjectMgr::onEnableNormalVectorsChanged},
-            {toolBar->m_stopLightMovementButton,   &ObjectMgr::onStopLightingMovementChanged},
+        {toolBar->m_drawNetButton, &ObjectMgr::onDrawNetChanged},
+        {toolBar->m_enableTextureButton, &ObjectMgr::onEnableTextureChanged},
+        {toolBar->m_enableNormalVectorsButton, &ObjectMgr::onEnableNormalVectorsChanged},
+        {toolBar->m_stopLightMovementButton, &ObjectMgr::onStopLightingMovementChanged},
     };
 
     for (const auto &[action, proc]: vActionBoolProc) {
@@ -79,11 +79,11 @@ void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
 }
 
 void ObjectMgr::loadDefaultSettings() {
-    m_color = DEFAULT_PLAIN_COLOR;
     m_drawNet = true;
     m_triangleAccuracy = DEFAULT_TRIANGLE_ACCURACY;
     m_alpha = 0;
     m_beta = 0;
+    m_drawingWidget->setColor(DEFAULT_PLAIN_COLOR);
 
     _loadBezierPoints(DEFAULT_DATA_PATH);
     redraw();
@@ -94,7 +94,6 @@ void ObjectMgr::redraw() {
     m_triangles.clear();
 
     _interpolateBezier();
-    m_drawingWidget->setTriangles(&m_triangles);
 
     if (m_drawNet) {
         _drawNet();
@@ -126,12 +125,14 @@ void ObjectMgr::onKDChanged(double value) {
 void ObjectMgr::onMChanged(double value) {
 }
 
-void ObjectMgr::onDrawNetChanged(bool isChecked) {
+void ObjectMgr::onDrawNetChanged(const bool isChecked) {
     m_drawNet = isChecked;
     redraw();
 }
 
-void ObjectMgr::onEnableTextureChanged(bool isChecked) {
+void ObjectMgr::onEnableTextureChanged(const bool isChecked) {
+    m_useTexture = isChecked;
+    m_drawingWidget->setFillType(m_texture && m_useTexture ? FillType::TEXTURE : FillType::SIMPLE_COLOR);
 }
 
 void ObjectMgr::onEnableNormalVectorsChanged(bool isChecked) {
@@ -165,13 +166,13 @@ void ObjectMgr::onColorChangedTriggered() {
         return;
     }
 
-    m_color = selectedColor;
+    m_drawingWidget->setColor(selectedColor);
     redraw();
 }
 
 void ObjectMgr::_loadBezierPoints(const QString &path) {
     bool ok;
-    ControlPoints controlPoints = _loadBezierPointsOpenFile(path, &ok);
+    const ControlPoints controlPoints = _loadBezierPointsOpenFile(path, &ok);
     if (!ok) {
         qWarning() << "Failed to load bezier points from file:" << path;
         return;
@@ -181,16 +182,16 @@ void ObjectMgr::_loadBezierPoints(const QString &path) {
     redraw();
 }
 
-void ObjectMgr::_openFileDialog(std::function<void(const QString &)> callback) {
+void ObjectMgr::_openFileDialog(const std::function<void(const QString &)> &callback) {
     Q_ASSERT(callback);
 
     QString initialPath = m_previousDirectory.isEmpty() ? QDir::homePath() : m_previousDirectory;
 
     QString filePath = QFileDialog::getOpenFileName(
-            nullptr,
-            "Open File",
-            initialPath,
-            "Text Files (*.txt);;All Files (*)"
+        nullptr,
+        "Open File",
+        initialPath,
+        "Text Files (*.txt);;All Files (*)"
     );
 
     if (!filePath.isEmpty()) {
@@ -328,8 +329,8 @@ void ObjectMgr::_drawNet() {
         const int row = i / CONTROL_POINTS_MATRIX_SIZE_INT;
         const int col = i % CONTROL_POINTS_MATRIX_SIZE_INT;
 
-        const int dx[] = {0, 1};
-        const int dy[] = {1, 0};
+        static constexpr int dx[] = {0, 1};
+        static constexpr int dy[] = {1, 0};
 
         for (int j = 0; j < 2; j++) {
             const int newRow = row + dx[j];
@@ -349,9 +350,9 @@ void ObjectMgr::_drawNet() {
 
     /* Add triangle lines */
     for (const auto &triangle: m_triangles) {
-        m_drawingWidget->drawTriangleLines(triangle.v1.rotatedPosition, triangle.v2.rotatedPosition);
-        m_drawingWidget->drawTriangleLines(triangle.v2.rotatedPosition, triangle.v3.rotatedPosition);
-        m_drawingWidget->drawTriangleLines(triangle.v3.rotatedPosition, triangle.v1.rotatedPosition);
+        m_drawingWidget->drawTriangleLines(triangle[0].rotatedPosition, triangle[1].rotatedPosition);
+        m_drawingWidget->drawTriangleLines(triangle[1].rotatedPosition, triangle[2].rotatedPosition);
+        m_drawingWidget->drawTriangleLines(triangle[2].rotatedPosition, triangle[0].rotatedPosition);
     }
 }
 
@@ -416,15 +417,15 @@ void ObjectMgr::_interpolateBezier() {
             QVector3D n01 = QVector3D::crossProduct(pu01, pv01).normalized();
             QVector3D n11 = QVector3D::crossProduct(pu11, pv11).normalized();
 
-            Traingle t1, t2;
+            Triangle t1, t2;
 
-            t1.v1 = Vertex(p00, pu00, pv00, n00, u, v, m_alpha, m_beta);
-            t1.v2 = Vertex(p10, pu10, pv10, n10, u_next, v, m_alpha, m_beta);
-            t1.v3 = Vertex(p01, pu01, pv01, n01, u, v_next, m_alpha, m_beta);
+            t1[0] = Vertex(p00, pu00, pv00, n00, u, v, m_alpha, m_beta);
+            t1[1] = Vertex(p10, pu10, pv10, n10, u_next, v, m_alpha, m_beta);
+            t1[2] = Vertex(p01, pu01, pv01, n01, u, v_next, m_alpha, m_beta);
 
-            t2.v1 = Vertex(p10, pu10, pv10, n10, u_next, v, m_alpha, m_beta);
-            t2.v2 = Vertex(p11, pu11, pv11, n11, u_next, v_next, m_alpha, m_beta);
-            t2.v3 = Vertex(p01, pu01, pv01, n01, u, v_next, m_alpha, m_beta);
+            t2[0] = Vertex(p10, pu10, pv10, n10, u_next, v, m_alpha, m_beta);
+            t2[1] = Vertex(p11, pu11, pv11, n11, u_next, v_next, m_alpha, m_beta);
+            t2[2] = Vertex(p01, pu01, pv01, n01, u, v_next, m_alpha, m_beta);
 
             m_triangles.push_back(t1);
             m_triangles.push_back(t2);
@@ -432,22 +433,22 @@ void ObjectMgr::_interpolateBezier() {
     }
 }
 
-ObjectMgr::BernsteinTable ObjectMgr::_computeBernstein(float t) {
+ObjectMgr::BernsteinTable ObjectMgr::_computeBernstein(const float t) {
     const float t2 = t * t;
     const float t3 = t2 * t;
     const float mt = 1.0f - t;
     const float mt2 = mt * mt;
     const float mt3 = mt2 * mt;
     return {
-            mt3,                    // (1-t)^3
-            3.0f * mt2 * t,        // 3(1-t)^2t
-            3.0f * mt * t2,        // 3(1-t)t^2
-            t3                      // t^3
+        mt3, // (1-t)^3
+        3.0f * mt2 * t, // 3(1-t)^2t
+        3.0f * mt * t2, // 3(1-t)t^2
+        t3 // t^3
     };
 }
 
 std::tuple<QVector3D, QVector3D, QVector3D>
-ObjectMgr::_computePointAndDeriv(const ObjectMgr::BernsteinTable &bu, const ObjectMgr::BernsteinTable &bv) {
+ObjectMgr::_computePointAndDeriv(const BernsteinTable &bu, const BernsteinTable &bv) const {
     QVector3D derivativeU{};
     QVector3D derivativeV{};
     QVector3D point{};

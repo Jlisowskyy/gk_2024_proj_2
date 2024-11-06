@@ -23,7 +23,7 @@ class ToolBar;
 class DrawingWidget;
 
 class ObjectMgr : public QObject {
-Q_OBJECT
+    Q_OBJECT
 
     // ------------------------------
     // Class creation
@@ -50,17 +50,16 @@ public:
 
     void redraw();
 
-    static QVector3D & rotateZ(QVector3D &point, double angle);
+    static QVector3D &rotateZ(QVector3D &point, double angle);
 
-    static QVector3D & rotateX(QVector3D &point, double angle);
+    static QVector3D &rotateX(QVector3D &point, double angle);
 
-    QVector3D & rotate(QVector3D &point) const;
+    QVector3D &rotate(QVector3D &point) const;
 
     // ------------------------------
     // Class slots
     // ------------------------------
 public slots:
-
     /* State changes */
 
     void onTriangulationChanged(double value);
@@ -99,10 +98,9 @@ public slots:
     // Class protected methods
     // ------------------------------
 protected:
-
     void _loadBezierPoints(const QString &path);
 
-    void _openFileDialog(std::function<void(const QString &)> callback);
+    void _openFileDialog(const std::function<void(const QString &)> &callback);
 
     ControlPoints _loadBezierPointsOpenFile(const QString &path, bool *ok);
 
@@ -116,29 +114,26 @@ protected:
 
     static BernsteinTable _computeBernstein(float t);
 
+    [[nodiscard]] std::tuple<QVector3D, QVector3D, QVector3D> _computePointAndDeriv(
+        const BernsteinTable &bu, const BernsteinTable &bv) const;
+
     // ------------------------------
     // Class fields
     // ------------------------------
 protected:
-
-    QColor m_color{};
     QWidget *m_parentWidget{};
     DrawingWidget *m_drawingWidget{};
-
-    ControlPoints m_controlPoints{};
-
     QString m_previousDirectory{};
 
+    int m_triangleAccuracy{};
     bool m_drawNet{};
-
+    bool m_useTexture{};
     double m_alpha{};
     double m_beta{};
+    void *m_texture{};
 
-    std::vector<Traingle> m_triangles{};
-
-    int m_triangleAccuracy{};
-
-    std::tuple<QVector3D, QVector3D, QVector3D> _computePointAndDeriv(const ObjectMgr::BernsteinTable &bu, const ObjectMgr::BernsteinTable &bv);
+    ControlPoints m_controlPoints{};
+    std::vector<Triangle> m_triangles{};
 };
 
 

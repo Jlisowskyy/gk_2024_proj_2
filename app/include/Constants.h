@@ -66,4 +66,9 @@ static constexpr int DEFAULT_TRIANGLE_ACCURACY = 6;
 static constexpr Qt::GlobalColor DEFAULT_TRIANGLE_LINE_COLOR = Qt::darkRed;
 static constexpr Qt::GlobalColor DEFAULT_BEZIER_LINE_COLOR = Qt::darkGreen;
 
+enum class FillType {
+    SIMPLE_COLOR,
+    TEXTURE,
+};
+
 #endif //APP_CONSTANTS_H

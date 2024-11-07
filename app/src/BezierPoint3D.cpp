@@ -10,8 +10,9 @@
 #include <QDebug>
 #include <QFont>
 
-BezierPoint3DItem::BezierPoint3DItem(const QVector3D &point3d, double size, size_t idx, QGraphicsItem *parent)
-        : QGraphicsEllipseItem(parent), m_point(point3d) {
+BezierPoint3DItem::BezierPoint3DItem(const QVector3D &point3d, const double size, const size_t idx,
+                                     QGraphicsItem *parent)
+    : QGraphicsEllipseItem(parent), m_point(point3d) {
     setRect(-size / 2, -size / 2, size, size);
     setBrush(UI_CONSTANTS::DEFAULT_BEZIER_POINT_COLOR);
     setPen(QPen(UI_CONSTANTS::DEFAULT_BEZIER_POINT_COLOR));

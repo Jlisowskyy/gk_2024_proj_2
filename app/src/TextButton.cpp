@@ -14,11 +14,11 @@
 TextButton::TextButton(QWidget *parent, const char *toolTip, const char *title, const char *icon) : QWidget(parent) {
     setToolTip(tr(toolTip));
 
-    auto pLayout = new QHBoxLayout(this);
+    const auto pLayout = new QHBoxLayout(this);
     pLayout->setContentsMargins(0, 0, 0, 0);
     pLayout->setSpacing(0);
 
-    auto pToolButton = new QToolButton(this);
+    const auto pToolButton = new QToolButton(this);
     m_button = new QAction(tr(title), pToolButton);
     m_button->setToolTip(tr(toolTip));
     m_button->setIcon(QIcon(icon));

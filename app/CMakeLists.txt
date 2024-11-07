@@ -70,6 +70,13 @@ endif ()
 
 target_link_libraries(app PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
+find_package(OpenMP)
+
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(app PRIVATE OpenMP::OpenMP_CXX)
+endif()
+
+
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
@@ -83,6 +90,73 @@ set_target_properties(app PROPERTIES
         MACOSX_BUNDLE TRUE
         WIN32_EXECUTABLE TRUE
 )
+
+string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_UPPER)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if (BUILD_TYPE_UPPER STREQUAL "RELEASE")
+        target_compile_options(app PUBLIC
+                -O3
+                -march=native
+                -fopenmp
+                -funroll-loops
+        )
+    elseif (BUILD_TYPE_UPPER STREQUAL "DEBUG")
+        target_compile_options(app PUBLIC
+                -fopenmp
+        )
+    else()
+        message(FATAL_ERROR "UNKNOWN BUILD TYPE: ${BUILD_TYPE_UPPER}")
+    endif()
+
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if (BUILD_TYPE_UPPER STREQUAL "RELEASE")
+        target_compile_options(app PUBLIC
+                -O3
+                -march=native
+                -fopenmp
+                -funroll-loops
+        )
+    elseif (BUILD_TYPE_UPPER STREQUAL "DEBUG")
+        target_compile_options(app PUBLIC
+                -fopenmp
+        )
+    else()
+        message(FATAL_ERROR "UNKNOWN BUILD TYPE: ${BUILD_TYPE_UPPER}")
+    endif()
+
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel" OR CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+    if (BUILD_TYPE_UPPER STREQUAL "RELEASE")
+        target_compile_options(app PUBLIC
+                -O3
+                -march=native
+                -fopenmp
+                -fno-tracer
+        )
+    elseif (BUILD_TYPE_UPPER STREQUAL "DEBUG")
+        target_compile_options(app PUBLIC
+                -fopenmp
+        )
+    else()
+        message(FATAL_ERROR "UNKNOWN BUILD TYPE: ${BUILD_TYPE_UPPER}")
+    endif()
+
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    if (BUILD_TYPE_UPPER STREQUAL "RELEASE")
+        target_compile_options(app PUBLIC
+                /O2
+                /openmp
+        )
+    elseif (BUILD_TYPE_UPPER STREQUAL "DEBUG")
+        target_compile_options(app PUBLIC
+                /openmp
+        )
+    else()
+        message(FATAL_ERROR "UNKNOWN BUILD TYPE: ${BUILD_TYPE_UPPER}")
+    endif()
+
+else()
+    message(FATAL_ERROR "Unknown compiler: ${CMAKE_CXX_COMPILER_ID}")
+endif()
 
 include(GNUInstallDirs)
 install(TARGETS app

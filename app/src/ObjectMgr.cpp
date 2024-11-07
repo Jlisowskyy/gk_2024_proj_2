@@ -115,23 +115,26 @@ void ObjectMgr::onTriangulationChanged(double value) {
     redraw();
 }
 
-void ObjectMgr::onAlphaChanged(double value) {
+void ObjectMgr::onAlphaChanged(const double value) {
     m_alpha = value;
     redraw();
 }
 
-void ObjectMgr::onBetaChanged(double value) {
+void ObjectMgr::onBetaChanged(const double value) {
     m_beta = value;
     redraw();
 }
 
-void ObjectMgr::onKSChanged(double value) {
+void ObjectMgr::onKSChanged(const double value) {
+    m_drawingWidget->setKsCoef(static_cast<float>(value));
 }
 
-void ObjectMgr::onKDChanged(double value) {
+void ObjectMgr::onKDChanged(const double value) {
+    m_drawingWidget->setKdCoef(static_cast<float>(value));
 }
 
-void ObjectMgr::onMChanged(double value) {
+void ObjectMgr::onMChanged(const double value) {
+    m_drawingWidget->setMCoef(static_cast<float>(value));
 }
 
 void ObjectMgr::onDrawNetChanged(const bool isChecked) {
@@ -152,7 +155,7 @@ void ObjectMgr::onStopLightingMovementChanged(bool isChecked) {
 
 void ObjectMgr::onLoadBezierPointsTriggered() {
     _openFileDialog([this](const QString &path) {
-        _loadBezierPoints(path);
+                        _loadBezierPoints(path);
                     },
                     "Text Files (*.txt);;All Files (*)");
 }
@@ -195,9 +198,8 @@ void ObjectMgr::_loadBezierPoints(const QString &path) {
 void ObjectMgr::_openFileDialog(const std::function<void(const QString &)> &callback, const char *filter) {
     Q_ASSERT(callback);
 
-    QString initialPath = m_previousDirectory.isEmpty() ? QDir::homePath() : m_previousDirectory;
-
-    QString filePath = QFileDialog::getOpenFileName(
+    const QString initialPath = m_previousDirectory.isEmpty() ? QDir::homePath() : m_previousDirectory;
+    const QString filePath = QFileDialog::getOpenFileName(
         nullptr,
         "Open File",
         initialPath,
@@ -225,7 +227,7 @@ ObjectMgr::ControlPoints ObjectMgr::_loadBezierPointsOpenFile(const QString &pat
         return {};
     }
 
-    ControlPoints controlPoints = _loadBezierPointsParse(file, ok);
+    const ControlPoints controlPoints = _loadBezierPointsParse(file, ok);
     file.close();
 
     return controlPoints;
@@ -258,9 +260,9 @@ ObjectMgr::ControlPoints ObjectMgr::_loadBezierPointsParse(QFile &file, bool *ok
         }
 
         bool okX, okY, okZ;
-        float x = tokens[0].toFloat(&okX);
-        float y = tokens[1].toFloat(&okY);
-        float z = tokens[2].toFloat(&okZ);
+        const auto x = tokens[0].toFloat(&okX);
+        const auto y = tokens[1].toFloat(&okY);
+        const auto z = tokens[2].toFloat(&okZ);
 
         if (okX && okY && okZ) {
             if (idx >= BEZIER_CONSTANTS::CONTROL_POINTS_COUNT) {
@@ -288,7 +290,8 @@ ObjectMgr::ControlPoints ObjectMgr::_loadBezierPointsParse(QFile &file, bool *ok
     }
 
     if (idx != BEZIER_CONSTANTS::CONTROL_POINTS_COUNT) {
-        qWarning() << "Invalid number of control points, expected:" << BEZIER_CONSTANTS::CONTROL_POINTS_COUNT << "got:" << idx;
+        qWarning() << "Invalid number of control points, expected:" << BEZIER_CONSTANTS::CONTROL_POINTS_COUNT << "got:"
+                << idx;
 
         if (ok) {
             *ok = false;
@@ -366,7 +369,7 @@ void ObjectMgr::_drawNet() {
     }
 }
 
-QVector3D &ObjectMgr::rotateZ(QVector3D &point, double angle) {
+QVector3D &ObjectMgr::rotateZ(QVector3D &point, const double angle) {
     if (angle == 0) {
         return point;
     }
@@ -381,7 +384,7 @@ QVector3D &ObjectMgr::rotateZ(QVector3D &point, double angle) {
     return point;
 }
 
-QVector3D &ObjectMgr::rotateX(QVector3D &point, double angle) {
+QVector3D &ObjectMgr::rotateX(QVector3D &point, const double angle) {
     if (angle == 0) {
         return point;
     }
@@ -407,25 +410,25 @@ void ObjectMgr::_interpolateBezier() {
 
     for (int i = 0; i < steps - 1; ++i) {
         for (int j = 0; j < steps - 1; ++j) {
-            float u = static_cast<float>(i) * step;
-            float v = static_cast<float>(j) * step;
-            float u_next = static_cast<float>(i + 1) * step;
-            float v_next = static_cast<float>(j + 1) * step;
+            const float u = static_cast<float>(i) * step;
+            const float v = static_cast<float>(j) * step;
+            const float u_next = static_cast<float>(i + 1) * step;
+            const float v_next = static_cast<float>(j + 1) * step;
 
-            auto bu = _computeBernstein(u);
-            auto bv = _computeBernstein(v);
-            auto bu_next = _computeBernstein(u_next);
-            auto bv_next = _computeBernstein(v_next);
+            const auto bu = _computeBernstein(u);
+            const auto bv = _computeBernstein(v);
+            const auto bu_next = _computeBernstein(u_next);
+            const auto bv_next = _computeBernstein(v_next);
 
-            auto [p00, pu00, pv00] = _computePointAndDeriv(bu, bv);
-            auto [p10, pu10, pv10] = _computePointAndDeriv(bu_next, bv);
-            auto [p01, pu01, pv01] = _computePointAndDeriv(bu, bv_next);
-            auto [p11, pu11, pv11] = _computePointAndDeriv(bu_next, bv_next);
+            const auto [p00, pu00, pv00] = _computePointAndDeriv(bu, bv);
+            const auto [p10, pu10, pv10] = _computePointAndDeriv(bu_next, bv);
+            const auto [p01, pu01, pv01] = _computePointAndDeriv(bu, bv_next);
+            const auto [p11, pu11, pv11] = _computePointAndDeriv(bu_next, bv_next);
 
-            QVector3D n00 = QVector3D::crossProduct(pu00, pv00).normalized();
-            QVector3D n10 = QVector3D::crossProduct(pu10, pv10).normalized();
-            QVector3D n01 = QVector3D::crossProduct(pu01, pv01).normalized();
-            QVector3D n11 = QVector3D::crossProduct(pu11, pv11).normalized();
+            const QVector3D n00 = QVector3D::crossProduct(pu00, pv00).normalized();
+            const QVector3D n10 = QVector3D::crossProduct(pu10, pv10).normalized();
+            const QVector3D n01 = QVector3D::crossProduct(pu01, pv01).normalized();
+            const QVector3D n11 = QVector3D::crossProduct(pu11, pv11).normalized();
 
             Triangle t1, t2;
 
@@ -475,7 +478,7 @@ ObjectMgr::_computePointAndDeriv(const BernsteinTable &bu, const BernsteinTable 
 }
 
 void ObjectMgr::_loadTexture(const QString &path) {
-    auto pTexture = _loadTextureFromFile(path);
+    const auto pTexture = _loadTextureFromFile(path);
 
     if (!pTexture) {
         return;
@@ -492,7 +495,7 @@ void ObjectMgr::_loadTexture(const QString &path) {
 }
 
 QImage *ObjectMgr::_loadTextureFromFile(const QString &path) {
-    QImage image(path);
+    const QImage image(path);
 
     if (image.isNull()) {
         qWarning() << "Failed to load image from path:" << path;
@@ -501,6 +504,6 @@ QImage *ObjectMgr::_loadTextureFromFile(const QString &path) {
     }
 
     return new QImage(
-            image.scaled(RESOURCE_CONSTANTS::TEXTURE_IMAGE_SIZE, RESOURCE_CONSTANTS::TEXTURE_IMAGE_SIZE,
-                         Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+        image.scaled(RESOURCE_CONSTANTS::TEXTURE_IMAGE_SIZE, RESOURCE_CONSTANTS::TEXTURE_IMAGE_SIZE,
+                     Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 }

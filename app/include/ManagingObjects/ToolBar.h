@@ -44,9 +44,9 @@ public slots:
 protected:
     void _addSeparator();
 
-    void _addToolbarLiteral(const char *strLiteral) const;
+    void _addToolbarLiteral(const char *strLiteral);
 
-    QAction *_addButtonToToolbar(const char *name, const char *imgPath, const char *toolTip) const;
+    QAction *_addButtonToToolbar(const char *name, const char *imgPath, const char *toolTip);
 
     // ------------------------------
     // Public fields

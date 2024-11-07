@@ -22,7 +22,7 @@ DoubleSlider::DoubleSlider(const Qt::Orientation orientation, QWidget *parent, c
     setToolTip(tr(toolTip));
 
     auto *pContainer = new QWidget(parent);
-    auto pLayout = new QVBoxLayout(pContainer);
+    const auto pLayout = new QVBoxLayout(pContainer);
 
     auto *pLabelsContainer = new QWidget(pContainer);
     auto *pLabelsLayout = new QHBoxLayout(pLabelsContainer);

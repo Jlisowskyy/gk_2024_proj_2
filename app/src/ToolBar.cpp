@@ -17,15 +17,15 @@ ToolBar::ToolBar(QObject *parent) : QObject(parent) {
 
 ToolBar::~ToolBar() = default;
 
-void ToolBar::_addToolbarLiteral(const char *strLiteral) const {
-    auto pliteral = new QAction(tr(strLiteral), m_toolBar);
+void ToolBar::_addToolbarLiteral(const char *strLiteral) {
+    const auto pliteral = new QAction(tr(strLiteral), m_toolBar);
     pliteral->setDisabled(true);
     m_toolBar->addAction(pliteral);
 }
 
 QAction *
-ToolBar::_addButtonToToolbar(const char *name, const char *imgPath, const char *toolTip) const {
-    auto pButton = new QAction(tr(name), m_toolBar);
+ToolBar::_addButtonToToolbar(const char *name, const char *imgPath, const char *toolTip) {
+    const auto pButton = new QAction(tr(name), m_toolBar);
     pButton->setIcon(QIcon(imgPath));
     pButton->setToolTip(tr(toolTip));
     m_toolBar->addAction(pButton);
@@ -34,7 +34,7 @@ ToolBar::_addButtonToToolbar(const char *name, const char *imgPath, const char *
 }
 
 void ToolBar::_addSeparator() {
-    auto pLiteral = new QAction(m_toolBar);
+    const auto pLiteral = new QAction(m_toolBar);
     pLiteral->setSeparator(true);
     m_toolBar->addAction(pLiteral);
 }
@@ -51,7 +51,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
     _addToolbarLiteral("Drawing options:");
     m_toolBar->setAllowedAreas(Qt::LeftToolBarArea | Qt::RightToolBarArea);
 
-    // Triangulation slider
     m_triangulationSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
                                              SLIDER_CONSTANTS::TRIANGULATION::MIN,
                                              SLIDER_CONSTANTS::TRIANGULATION::MAX,
@@ -61,7 +60,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
                                              "Change accuracy of triangulation for rendered plain");
     m_toolBar->addWidget(m_triangulationSlider->getContainer());
 
-    // Observer distance slider
     m_observerDistanceSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
                                                 SLIDER_CONSTANTS::OBSERVER::MIN,
                                                 SLIDER_CONSTANTS::OBSERVER::MAX,
@@ -71,7 +69,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
                                                 "Change distance of observer from the plain");
     m_toolBar->addWidget(m_observerDistanceSlider->getContainer());
 
-    // Load Bezier points button
     auto pButton = new TextButton(m_toolBar,
                                   "Load Bezier points to the program!",
                                   "Load bezier points",
@@ -79,7 +76,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
     m_loadBezierPointsButton = pButton->getAction();
     m_toolBar->addWidget(pButton);
 
-    // Draw net button
     pButton = new TextButton(m_toolBar,
                              "Change whether draw the net over the plain or not",
                              "Draw net",
@@ -89,7 +85,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
     m_drawNetButton->setChecked(true);
     m_toolBar->addWidget(pButton);
 
-    // Load texture button
     pButton = new TextButton(m_toolBar,
                              "Load texture to the program!",
                              "Load texture",
@@ -97,7 +92,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
     m_loadTextureButton = pButton->getAction();
     m_toolBar->addWidget(pButton);
 
-    // Enable texture button
     pButton = new TextButton(m_toolBar,
                              "Draw the texture on the plain!",
                              "Draw the texture",
@@ -106,7 +100,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
     m_enableTextureButton->setCheckable(true);
     m_toolBar->addWidget(pButton);
 
-    // Load normal vectors button
     pButton = new TextButton(m_toolBar,
                              "Load normal vector to the program!",
                              "Load normal vectors",
@@ -114,7 +107,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
     m_loadNormalVectorsButton = pButton->getAction();
     m_toolBar->addWidget(pButton);
 
-    // Enable normal vectors button
     pButton = new TextButton(m_toolBar,
                              "Enable usage of normal vectors in the program",
                              "Enable normal vectors",
@@ -127,7 +119,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
     _addSeparator();
     _addToolbarLiteral("Rotations:");
 
-    // Alpha angle slider
     m_alphaSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
                                      SLIDER_CONSTANTS::ALPHA::MIN,
                                      SLIDER_CONSTANTS::ALPHA::MAX,
@@ -137,7 +128,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
                                      "Z Axis rotation angle");
     m_toolBar->addWidget(m_alphaSlider->getContainer());
 
-    // Beta angle slider
     m_betaSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
                                     SLIDER_CONSTANTS::BETA::MIN,
                                     SLIDER_CONSTANTS::BETA::MAX,
@@ -151,7 +141,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
     _addSeparator();
     _addToolbarLiteral("Lightning options:");
 
-    // Ks coefficient slider
     m_ksSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
                                   SLIDER_CONSTANTS::KS::MIN,
                                   SLIDER_CONSTANTS::KS::MAX,
@@ -161,7 +150,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
                                   "Ks coefficient for lighting equation");
     m_toolBar->addWidget(m_ksSlider->getContainer());
 
-    // Kd coefficient slider
     m_kdSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
                                   SLIDER_CONSTANTS::KD::MIN,
                                   SLIDER_CONSTANTS::KD::MAX,
@@ -171,7 +159,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
                                   "Kd coefficient for lightning equation");
     m_toolBar->addWidget(m_kdSlider->getContainer());
 
-    // M coefficient slider
     m_mSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
                                  SLIDER_CONSTANTS::M::MIN,
                                  SLIDER_CONSTANTS::M::MAX,
@@ -181,7 +168,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
                                  "M coefficient for lighting equation");
     m_toolBar->addWidget(m_mSlider->getContainer());
 
-    // Light position slider
     m_lightningPositionSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
                                                  SLIDER_CONSTANTS::LIGHT_POSITION::MIN,
                                                  SLIDER_CONSTANTS::LIGHT_POSITION::MAX,
@@ -191,7 +177,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
                                                  "Position of lighting equation");
     m_toolBar->addWidget(m_lightningPositionSlider->getContainer());
 
-    // Stop light movement button
     pButton = new TextButton(m_toolBar,
                              "Stop movement of light source!",
                              "Stop light movement",
@@ -200,7 +185,6 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
     m_stopLightMovementButton->setCheckable(true);
     m_toolBar->addWidget(pButton);
 
-    // Change plain color button
     pButton = new TextButton(m_toolBar,
                              "Change color of the plain!",
                              "Change color",

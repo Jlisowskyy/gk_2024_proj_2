@@ -85,8 +85,8 @@ void DrawingWidget::setFillType(FillType fillType) {
 
 void DrawingWidget::updateScene() {
     const QRectF viewRect = rect();
-    m_width = viewRect.width();
-    m_height = viewRect.height();
+    m_width = static_cast<float>(viewRect.width());
+    m_height = static_cast<float>(viewRect.height());
 
     setSceneRect(-m_width / 2, -m_height / 2, m_width, m_height);
     updateElements();
@@ -170,30 +170,30 @@ void DrawingWidget::_drawTriangleLine(const std::pair<QVector3D, QVector3D> &lin
     pLine->setPen(pen);
 }
 
-void DrawingWidget::_fillTriangle(const Triangle &triangle) {
+void DrawingWidget::_fillTriangle(const Triangle &triangleToFill) {
     switch (m_fillType) {
         case FillType::TEXTURE: {
             colorPolygon(
-                    [this](const QVector3D &pos, const Triangle &triangle) {
-                        return _getTextureColor(pos, triangle);
-                    },
-                    [](const Vertex &vertex, const QColor &color) {
-                        return color;
-                    },
-                    triangle
+                [this](const QVector3D &pos, const Triangle &triangle) {
+                    return _getTextureColor(pos, triangle);
+                },
+                [](const Vertex &vertex, const QColor &color) {
+                    return color;
+                },
+                triangleToFill
             );
         }
         break;
         case FillType::SIMPLE_COLOR: {
             auto curColor = m_color;
             colorPolygon(
-                    [=](const QVector3D &pos, const Triangle &triangle) {
+                [=](const QVector3D &pos, const Triangle &triangle) {
                     return curColor;
                 },
                 [](const Vertex &vertex, const QColor &color) {
                     return color;
                 },
-                triangle
+                triangleToFill
             );
         }
         break;
@@ -206,9 +206,9 @@ void DrawingWidget::setTexture(QImage *texture) {
     m_texture = texture;
 }
 
-QColor DrawingWidget::_getTextureColor(const QVector3D &pos, const Triangle &triangle) {
+QColor DrawingWidget::_getTextureColor(const QVector3D &pos, const Triangle &triangle) const {
     /* custom dot product */
-    const auto dotProduct2D = [](float x1, float y1, float x2, float y2) {
+    const auto dotProduct2D = [](const float x1, const float y1, const float x2, const float y2) {
         return x1 * x2 + y1 * y2;
     };
 
@@ -236,8 +236,8 @@ QColor DrawingWidget::_getTextureColor(const QVector3D &pos, const Triangle &tri
     interpolatedV = std::clamp(interpolatedV, 0.0f, 1.0f);
 
     return m_texture->pixelColor(
-            static_cast<int>(interpolatedU * static_cast<float>(m_texture->width() - 1)),
-            static_cast<int>(interpolatedV * static_cast<float>(m_texture->height() - 1))
+        static_cast<int>(interpolatedU * static_cast<float>(m_texture->width() - 1)),
+        static_cast<int>(interpolatedV * static_cast<float>(m_texture->height() - 1))
     );
 }
 
@@ -247,25 +247,25 @@ void DrawingWidget::_setupLight() {
     m_timer->start(LIGHTING_CONSTANTS::ANIMATION_TIME_STEP_MS);
 }
 
-void DrawingWidget::setKsCoef(float value) {
+void DrawingWidget::setKsCoef(const float value) {
     m_ksCoef = value;
 }
 
-void DrawingWidget::setKdCoef(float value) {
+void DrawingWidget::setKdCoef(const float value) {
     m_kdCoef = value;
 }
 
-void DrawingWidget::setMCoef(float value) {
+void DrawingWidget::setMCoef(const float value) {
     m_mCoef = value;
 }
 
-void DrawingWidget::setLightZ(int value) {
+void DrawingWidget::setLightZ(const int value) {
     m_lightZ = value;
 }
 
 void DrawingWidget::_onTimer() {
     m_lightPos += std::fmod(
-            LIGHTING_CONSTANTS::LIGHT_MOVEMENT_STEP, 1.0f);
+        LIGHTING_CONSTANTS::LIGHT_MOVEMENT_STEP, 1.0f);
 
     _processLightPosition();
     _drawTexture();
@@ -284,7 +284,9 @@ void DrawingWidget::_processLightPosition() {
 
 void DrawingWidget::_drawTexture() {
     m_pixMap->fill(Qt::white);
+
     if (m_triangles) {
+        // #pragma omp parallel for schedule(static)
         for (const auto &triangle: *m_triangles) {
             _fillTriangle(triangle);
         }
@@ -293,23 +295,27 @@ void DrawingWidget::_drawTexture() {
 
 QPointF DrawingWidget::_getLightPosition() const {
     const float radian = 2.0f * M_PIf * m_lightPos;
-    const float radius = UI_CONSTANTS::DEFAULT_LIGHT_MOVE_RADIUS;
 
-    const float x = radius * std::cos(radian);
-    const float y = radius * std::sin(radian);
+    const float x = UI_CONSTANTS::DEFAULT_LIGHT_MOVE_RADIUS * std::cos(radian);
+    const float y = UI_CONSTANTS::DEFAULT_LIGHT_MOVE_RADIUS * std::sin(radian);
 
     return {x, y};
+}
+
+QColor DrawingWidget::
+_adjustColorByLighting(const Vertex &vertex, const QColor &color, const QVector3D &position) const {
+    return {};
 }
 
 void DrawingWidget::_addLightDrawing() {
     const auto point = _getLightPosition();
 
     m_lightEllipse = m_scene->addEllipse(
-            point.x() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
-            point.y() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
-            2 * UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
-            2 * UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
-            QPen(UI_CONSTANTS::LIGHT_SOURCE_COLOR),
-            QBrush(UI_CONSTANTS::LIGHT_SOURCE_COLOR)
+        point.x() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
+        point.y() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
+        2 * UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
+        2 * UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
+        QPen(UI_CONSTANTS::LIGHT_SOURCE_COLOR),
+        QBrush(UI_CONSTANTS::LIGHT_SOURCE_COLOR)
     );
 }

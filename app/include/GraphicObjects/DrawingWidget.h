@@ -113,9 +113,9 @@ protected:
 
     void _drawTriangleLine(const std::pair<QVector3D, QVector3D> &line) const;
 
-    void _fillTriangle(const Triangle &triangle);
+    void _fillTriangle(const Triangle &triangleToFill);
 
-    QColor _getTextureColor(const QVector3D &pos, const Triangle &triangle);
+    QColor _getTextureColor(const QVector3D &pos, const Triangle &triangle) const;
 
     void _setupLight();
 
@@ -126,6 +126,7 @@ protected:
     void _addLightDrawing();
 
     [[nodiscard]] QPointF _getLightPosition() const;
+    [[nodiscard]] QColor _adjustColorByLighting(const Vertex &vertex, const QColor &color, const QVector3D& position) const;
 
     // ------------------------------
     // Class fields

@@ -74,6 +74,7 @@ public:
     QAction *m_enableNormalVectorsButton{};
     QAction *m_stopLightMovementButton{};
     QAction *m_changePlainColorButton{};
+    QAction *m_changeLightColorButton{};
 };
 
 

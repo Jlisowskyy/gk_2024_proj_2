@@ -191,4 +191,11 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
                              ":/icons/color_icon.png");
     m_changePlainColorButton = pButton->getAction();
     m_toolBar->addWidget(pButton);
+
+    pButton = new TextButton(m_toolBar,
+                             "Change color of the light source!",
+                             "Change light color",
+                             ":/icons/color_icon.png");
+    m_changeLightColorButton = pButton->getAction();
+    m_toolBar->addWidget(pButton);
 }

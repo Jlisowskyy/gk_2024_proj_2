@@ -52,6 +52,7 @@ void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
         {toolBar->m_loadBezierPointsButton, &ObjectMgr::onLoadBezierPointsTriggered},
         {toolBar->m_loadNormalVectorsButton, &ObjectMgr::onLoadNormalVectorsTriggered},
         {toolBar->m_changePlainColorButton, &ObjectMgr::onColorChangedTriggered},
+        {toolBar->m_changeLightColorButton, &ObjectMgr::onLightColorChangedTriggered},
     };
 
     for (const auto &[action, proc]: vActionProc) {
@@ -92,6 +93,12 @@ void ObjectMgr::loadDefaultSettings() {
     m_drawingWidget->setObserverDistance(VIEW_SETTINGS::DEFAULT_OBSERVER_DISTANCE);
     m_drawingWidget->setLightZ(VIEW_SETTINGS::DEFAULT_LIGHT_Z);
     m_drawingWidget->setColor(UI_CONSTANTS::DEFAULT_PLAIN_COLOR);
+
+    m_drawingWidget->setKdCoef(LIGHTING_CONSTANTS::DEFAULT_KD);
+    m_drawingWidget->setKsCoef(LIGHTING_CONSTANTS::DEFAULT_KS);
+    m_drawingWidget->setMCoef(LIGHTING_CONSTANTS::DEFAULT_M);
+    m_drawingWidget->setLightColor(LIGHTING_CONSTANTS::DEFAULT_LIGHT_COLOR);
+    m_drawingWidget->setLightZ(VIEW_SETTINGS::DEFAULT_LIGHT_Z);
 
     _loadBezierPoints(RESOURCE_CONSTANTS::DEFAULT_CONTROL_POINTS_PATH);
     _loadTexture(RESOURCE_CONSTANTS::DEFAULT_TEXTURE_PATH);
@@ -181,7 +188,6 @@ void ObjectMgr::onColorChangedTriggered() {
     }
 
     m_drawingWidget->setColor(selectedColor);
-    redraw();
 }
 
 void ObjectMgr::_loadBezierPoints(const QString &path) {
@@ -507,4 +513,14 @@ QImage *ObjectMgr::_loadTextureFromFile(const QString &path) {
     return new QImage(
         image.scaled(RESOURCE_CONSTANTS::TEXTURE_IMAGE_SIZE, RESOURCE_CONSTANTS::TEXTURE_IMAGE_SIZE,
                      Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+}
+
+void ObjectMgr::onLightColorChangedTriggered() {
+    const QColor selectedColor = QColorDialog::getColor(Qt::white, m_parentWidget, "Choose Color");
+    if (!selectedColor.isValid()) {
+        qDebug() << "Error getting color";
+        return;
+    }
+
+    m_drawingWidget->setLightColor(selectedColor);
 }

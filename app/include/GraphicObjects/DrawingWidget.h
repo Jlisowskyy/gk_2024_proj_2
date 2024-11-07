@@ -88,6 +88,8 @@ public slots:
 
     void setStopLight(bool value);
 
+    void setLightColor(const QColor &color);
+
     // ------------------------------
     // Class signals
     // ------------------------------
@@ -147,6 +149,7 @@ protected:
     QPixmap *m_pixMap{};
     QTimer *m_timer{};
     QGraphicsEllipseItem *m_lightEllipse{};
+    QGraphicsPixmapItem *m_pixMapItem{};
 
     float m_width{};
     float m_height{};

@@ -94,6 +94,8 @@ public slots:
 
     void onColorChangedTriggered();
 
+    void onLightColorChangedTriggered();
+
     // ------------------------------
     // Class protected methods
     // ------------------------------

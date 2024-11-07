@@ -67,8 +67,8 @@ void DrawingWidget::setColor(const QColor &color) {
 
     m_color = color;
 
-    if (m_fillType == FillType::SIMPLE_COLOR) {
-        updateScene();
+    if (m_stopLight) {
+        _drawTexture();
     }
 }
 
@@ -80,7 +80,10 @@ void DrawingWidget::setFillType(FillType fillType) {
     m_fillType = fillType;
 
     Q_ASSERT(m_fillType != FillType::TEXTURE || m_texture);
-    updateScene();
+
+    if (m_stopLight) {
+        _drawTexture();
+    }
 }
 
 void DrawingWidget::updateScene() {
@@ -111,11 +114,12 @@ void DrawingWidget::updateElements() {
         _drawTriangleLine(line);
     }
 
-    _drawTexture();
-
     const auto pMapItem = m_scene->addPixmap(*m_pixMap);
     pMapItem->setZValue(-1);
     pMapItem->setPos(QPointF(-m_width / 2, -m_height / 2));
+    m_pixMapItem = pMapItem;
+
+    _drawTexture();
 }
 
 void DrawingWidget::_drawBezierPoint(const QVector3D &point, const size_t idx) const {
@@ -197,6 +201,10 @@ void DrawingWidget::_fillTriangle(const Triangle &triangleToFill) {
 
 void DrawingWidget::setTexture(QImage *texture) {
     m_texture = texture;
+
+    if (m_fillType == FillType::TEXTURE && m_stopLight) {
+        _drawTexture();
+    }
 }
 
 QColor DrawingWidget::_getTextureColor(const QVector3D &pos, const Triangle &triangle) const {
@@ -223,18 +231,34 @@ void DrawingWidget::_setupLight() {
 
 void DrawingWidget::setKsCoef(const float value) {
     m_ksCoef = value;
+
+    if (m_stopLight) {
+        _drawTexture();
+    }
 }
 
 void DrawingWidget::setKdCoef(const float value) {
     m_kdCoef = value;
+
+    if (m_stopLight) {
+        _drawTexture();
+    }
 }
 
 void DrawingWidget::setMCoef(const float value) {
     m_mCoef = value;
+
+    if (m_stopLight) {
+        _drawTexture();
+    }
 }
 
 void DrawingWidget::setLightZ(const int value) {
     m_lightZ = value;
+
+    if (m_stopLight) {
+        _drawTexture();
+    }
 }
 
 void DrawingWidget::_onTimer() {
@@ -269,6 +293,8 @@ void DrawingWidget::_drawTexture() {
             _fillTriangle(triangle);
         }
     }
+
+    m_pixMapItem->setPixmap(*m_pixMap);
 }
 
 QPointF DrawingWidget::_getLightPosition2D() const {
@@ -336,7 +362,8 @@ DrawingWidget::_interpolateFromTrianglePoint(const QVector3D &pos, const Triangl
 
 QColor DrawingWidget::_applyLightToTriangleColor(const QColor &color, const QVector3D &normalVector,
                                                  const QVector3D &pos) const {
-    const QColor lightColor = Qt::white;
+    return color;
+
     const QVector3D L = (_getLightPosition3D() - pos).normalized();
     const QVector3D N = normalVector.normalized();
     const QVector3D V(0, 0, 1);
@@ -348,9 +375,9 @@ QColor DrawingWidget::_applyLightToTriangleColor(const QColor &color, const QVec
     const float cos1m = std::pow(cos1, m_mCoef);
 
     QVector3D lightColors = QVector3D(
-            static_cast<float>(lightColor.red()),
-            static_cast<float>(lightColor.green()),
-            static_cast<float>(lightColor.blue())) / 255.0f;
+            static_cast<float>(m_lightColor.red()),
+            static_cast<float>(m_lightColor.green()),
+            static_cast<float>(m_lightColor.blue())) / 255.0f;
 
     QVector3D objColors = QVector3D(
             static_cast<float>(color.red()),
@@ -373,4 +400,12 @@ QColor DrawingWidget::_applyLightToTriangleColor(const QColor &color, const QVec
 
 void DrawingWidget::setStopLight(bool value) {
     m_stopLight = value;
+}
+
+void DrawingWidget::setLightColor(const QColor &color) {
+    m_lightColor = color;
+
+    if (m_stopLight) {
+        _drawTexture();
+    }
 }

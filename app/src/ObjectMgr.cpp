@@ -80,9 +80,17 @@ void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
 
 void ObjectMgr::loadDefaultSettings() {
     m_drawNet = true;
+    m_useTexture = false;
+
     m_triangleAccuracy = VIEW_SETTINGS::DEFAULT_TRIANGLE_ACCURACY;
     m_alpha = 0;
     m_beta = 0;
+
+    m_drawingWidget->setKdCoef(LIGHTING_CONSTANTS::DEFAULT_KD);
+    m_drawingWidget->setKsCoef(LIGHTING_CONSTANTS::DEFAULT_KS);
+    m_drawingWidget->setMCoef(LIGHTING_CONSTANTS::DEFAULT_M);
+    m_drawingWidget->setObserverDistance(VIEW_SETTINGS::DEFAULT_OBSERVER_DISTANCE);
+    m_drawingWidget->setLightZ(VIEW_SETTINGS::DEFAULT_LIGHT_Z);
     m_drawingWidget->setColor(UI_CONSTANTS::DEFAULT_PLAIN_COLOR);
 
     _loadBezierPoints(RESOURCE_CONSTANTS::DEFAULT_CONTROL_POINTS_PATH);

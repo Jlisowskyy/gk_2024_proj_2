@@ -16,6 +16,7 @@
 
 DrawingWidget::DrawingWidget(QWidget *parent) : QGraphicsView(parent),
                                                 m_scene(new QGraphicsScene(this)),
+                                                m_timer(new QTimer(this)),
                                                 m_observerDistance(VIEW_SETTINGS::DEFAULT_OBSERVER_DISTANCE) {
     Q_ASSERT(parent != nullptr);
     setScene(m_scene);
@@ -30,8 +31,9 @@ DrawingWidget::DrawingWidget(QWidget *parent) : QGraphicsView(parent),
     setRenderHint(QPainter::Antialiasing, true);
     setTransformationAnchor(AnchorViewCenter);
 
-    _setupLight();
     updateScene();
+    _setupLight();
+    _processLightPosition();
 }
 
 DrawingWidget::~DrawingWidget() {
@@ -93,7 +95,8 @@ void DrawingWidget::updateScene() {
 void DrawingWidget::updateElements() {
     m_scene->clear();
     m_pixMap = new QPixmap(static_cast<int>(m_width), static_cast<int>(m_height));
-    m_pixMap->fill(Qt::white);
+
+    _addLightDrawing();
 
     size_t idx = 0;
     for (const auto &point: m_points) {
@@ -108,11 +111,7 @@ void DrawingWidget::updateElements() {
         _drawTriangleLine(line);
     }
 
-    if (m_triangles) {
-        for (const auto &triangle: *m_triangles) {
-            _fillTriangle(triangle);
-        }
-    }
+    _drawTexture();
 
     const auto pMapItem = m_scene->addPixmap(*m_pixMap);
     pMapItem->setZValue(-1);
@@ -243,7 +242,9 @@ QColor DrawingWidget::_getTextureColor(const QVector3D &pos, const Triangle &tri
 }
 
 void DrawingWidget::_setupLight() {
+    connect(m_timer, &QTimer::timeout, this, &DrawingWidget::_onTimer);
 
+    m_timer->start(LIGHTING_CONSTANTS::ANIMATION_TIME_STEP_MS);
 }
 
 void DrawingWidget::setKsCoef(float value) {
@@ -260,4 +261,55 @@ void DrawingWidget::setMCoef(float value) {
 
 void DrawingWidget::setLightZ(int value) {
     m_lightZ = value;
+}
+
+void DrawingWidget::_onTimer() {
+    m_lightPos += std::fmod(
+            LIGHTING_CONSTANTS::LIGHT_MOVEMENT_STEP, 1.0f);
+
+    _processLightPosition();
+    _drawTexture();
+}
+
+void DrawingWidget::_processLightPosition() {
+    const auto point = _getLightPosition();
+
+    m_lightEllipse->setRect(
+        point.x() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
+        point.y() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
+        2 * UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
+        2 * UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS
+    );
+}
+
+void DrawingWidget::_drawTexture() {
+    m_pixMap->fill(Qt::white);
+    if (m_triangles) {
+        for (const auto &triangle: *m_triangles) {
+            _fillTriangle(triangle);
+        }
+    }
+}
+
+QPointF DrawingWidget::_getLightPosition() const {
+    const float radian = 2.0f * M_PIf * m_lightPos;
+    const float radius = UI_CONSTANTS::DEFAULT_LIGHT_MOVE_RADIUS;
+
+    const float x = radius * std::cos(radian);
+    const float y = radius * std::sin(radian);
+
+    return {x, y};
+}
+
+void DrawingWidget::_addLightDrawing() {
+    const auto point = _getLightPosition();
+
+    m_lightEllipse = m_scene->addEllipse(
+            point.x() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
+            point.y() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
+            2 * UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
+            2 * UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
+            QPen(UI_CONSTANTS::LIGHT_SOURCE_COLOR),
+            QBrush(UI_CONSTANTS::LIGHT_SOURCE_COLOR)
+    );
 }

@@ -16,6 +16,8 @@
 #include <QPixmap>
 #include <array>
 #include <list>
+#include <QTimer>
+#include <QGraphicsEllipseItem>
 
 /* internal includes */
 #include "../Constants.h"
@@ -98,7 +100,11 @@ protected:
     // Private methods
     // ------------------------------
 
-private:
+protected slots:
+
+    void _onTimer();
+
+protected:
     void updateElements();
 
     void _drawBezierPoint(const QVector3D &point, size_t idx) const;
@@ -113,6 +119,14 @@ private:
 
     void _setupLight();
 
+    void _processLightPosition();
+
+    void _drawTexture();
+
+    void _addLightDrawing();
+
+    [[nodiscard]] QPointF _getLightPosition() const;
+
     // ------------------------------
     // Class fields
     // ------------------------------
@@ -120,6 +134,8 @@ private:
     QGraphicsScene *m_scene{};
     ObjectMgr *m_objectMgr{};
     QPixmap *m_pixMap{};
+    QTimer *m_timer{};
+    QGraphicsEllipseItem *m_lightEllipse{};
 
     float m_width{};
     float m_height{};
@@ -131,6 +147,7 @@ private:
     float m_kdCoef{};
     float m_mCoef{};
     int m_lightZ{};
+    float m_lightPos{};
 
     double m_observerDistance{};
     std::vector<QVector3D> m_points{};

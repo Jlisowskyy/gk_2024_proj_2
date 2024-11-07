@@ -150,7 +150,8 @@ void ObjectMgr::onEnableTextureChanged(const bool isChecked) {
 void ObjectMgr::onEnableNormalVectorsChanged(bool isChecked) {
 }
 
-void ObjectMgr::onStopLightingMovementChanged(bool isChecked) {
+void ObjectMgr::onStopLightingMovementChanged(const bool isChecked) {
+    m_drawingWidget->setStopLight(isChecked);
 }
 
 void ObjectMgr::onLoadBezierPointsTriggered() {

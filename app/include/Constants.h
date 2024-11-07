@@ -49,6 +49,7 @@ namespace LIGHTING_CONSTANTS {
     static constexpr int ANIMATION_TIME_STEP_MS = 50;
     static constexpr float LIGHT_SPEED = 0.01f;
     static constexpr float LIGHT_MOVEMENT_STEP = (ANIMATION_TIME_STEP_MS / 1000.0) * LIGHT_SPEED;
+    static constexpr Qt::GlobalColor DEFAULT_LIGHT_COLOR = Qt::white;
 }
 
 namespace SLIDER_CONSTANTS {
@@ -137,7 +138,7 @@ namespace SLIDER_CONSTANTS {
     }
 
     namespace LIGHT_POSITION {
-        static constexpr double MIN = 500.0;
+        static constexpr double MIN = 100.0;
         static constexpr double MAX = 10000.0;
         static constexpr int STEPS = static_cast<int>((MAX - MIN) / 10.0);
         static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(

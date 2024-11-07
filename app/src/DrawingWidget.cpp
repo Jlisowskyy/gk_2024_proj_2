@@ -177,21 +177,14 @@ void DrawingWidget::_fillTriangle(const Triangle &triangleToFill) {
                 [this](const QVector3D &pos, const Triangle &triangle) {
                     return _getTextureColor(pos, triangle);
                 },
-                [](const Vertex &vertex, const QColor &color) {
-                    return color;
-                },
                 triangleToFill
             );
         }
         break;
         case FillType::SIMPLE_COLOR: {
-            auto curColor = m_color;
             colorPolygon(
-                [=](const QVector3D &pos, const Triangle &triangle) {
-                    return curColor;
-                },
-                [](const Vertex &vertex, const QColor &color) {
-                    return color;
+                    [this](const QVector3D &pos, const Triangle &triangle) {
+                        return _getPlainColor(pos, triangle);
                 },
                 triangleToFill
             );
@@ -207,39 +200,20 @@ void DrawingWidget::setTexture(QImage *texture) {
 }
 
 QColor DrawingWidget::_getTextureColor(const QVector3D &pos, const Triangle &triangle) const {
-    /* custom dot product */
-    const auto dotProduct2D = [](const float x1, const float y1, const float x2, const float y2) {
-        return x1 * x2 + y1 * y2;
-    };
-
-    const float v0x = triangle[1].rotatedPosition.x() - triangle[0].rotatedPosition.x();
-    const float v0y = triangle[1].rotatedPosition.y() - triangle[0].rotatedPosition.y();
-    const float v1x = triangle[2].rotatedPosition.x() - triangle[0].rotatedPosition.x();
-    const float v1y = triangle[2].rotatedPosition.y() - triangle[0].rotatedPosition.y();
-    const float v2x = pos.x() - triangle[0].rotatedPosition.x();
-    const float v2y = pos.y() - triangle[0].rotatedPosition.y();
-
-    const float d00 = dotProduct2D(v0x, v0y, v0x, v0y);
-    const float d01 = dotProduct2D(v0x, v0y, v1x, v1y);
-    const float d11 = dotProduct2D(v1x, v1y, v1x, v1y);
-    const float d20 = dotProduct2D(v2x, v2y, v0x, v0y);
-    const float d21 = dotProduct2D(v2x, v2y, v1x, v1y);
-
-    const float denom = d00 * d11 - d01 * d01;
-    const float v = (d11 * d20 - d01 * d21) / denom;
-    const float w = (d00 * d21 - d01 * d20) / denom;
-    const float u = 1.0f - v - w;
-
-    float interpolatedU = u * triangle[0].u + v * triangle[1].u + w * triangle[2].u;
-    float interpolatedV = u * triangle[0].v + v * triangle[1].v + w * triangle[2].v;
-    interpolatedU = std::clamp(interpolatedU, 0.0f, 1.0f);
-    interpolatedV = std::clamp(interpolatedV, 0.0f, 1.0f);
-
-    return m_texture->pixelColor(
-        static_cast<int>(interpolatedU * static_cast<float>(m_texture->width() - 1)),
-        static_cast<int>(interpolatedV * static_cast<float>(m_texture->height() - 1))
+    const auto [interpolatedU, interpolatedV, interpolatedNormalVector] = _interpolateFromTrianglePoint(pos, triangle);
+    const QColor color = m_texture->pixelColor(
+            static_cast<int>(interpolatedU * static_cast<float>(m_texture->width() - 1)),
+            static_cast<int>(interpolatedV * static_cast<float>(m_texture->height() - 1))
     );
+
+    return _applyLightToTriangleColor(color, interpolatedNormalVector, pos);
 }
+
+QColor DrawingWidget::_getPlainColor(const QVector3D &pos, const Triangle &triangle) const {
+    const auto [u0, u1, interpolatedNormalVector] = _interpolateFromTrianglePoint(pos, triangle);
+    return _applyLightToTriangleColor(m_color, interpolatedNormalVector, pos);
+}
+
 
 void DrawingWidget::_setupLight() {
     connect(m_timer, &QTimer::timeout, this, &DrawingWidget::_onTimer);
@@ -264,6 +238,10 @@ void DrawingWidget::setLightZ(const int value) {
 }
 
 void DrawingWidget::_onTimer() {
+    if (m_stopLight) {
+        return;
+    }
+
     m_lightPos += std::fmod(
         LIGHTING_CONSTANTS::LIGHT_MOVEMENT_STEP, 1.0f);
 
@@ -272,7 +250,7 @@ void DrawingWidget::_onTimer() {
 }
 
 void DrawingWidget::_processLightPosition() {
-    const auto point = _getLightPosition();
+    const auto point = _getLightPosition2D();
 
     m_lightEllipse->setRect(
         point.x() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
@@ -293,7 +271,7 @@ void DrawingWidget::_drawTexture() {
     }
 }
 
-QPointF DrawingWidget::_getLightPosition() const {
+QPointF DrawingWidget::_getLightPosition2D() const {
     const float radian = 2.0f * M_PIf * m_lightPos;
 
     const float x = UI_CONSTANTS::DEFAULT_LIGHT_MOVE_RADIUS * std::cos(radian);
@@ -302,13 +280,8 @@ QPointF DrawingWidget::_getLightPosition() const {
     return {x, y};
 }
 
-QColor DrawingWidget::
-_adjustColorByLighting(const Vertex &vertex, const QColor &color, const QVector3D &position) const {
-    return {};
-}
-
 void DrawingWidget::_addLightDrawing() {
-    const auto point = _getLightPosition();
+    const auto point = _getLightPosition2D();
 
     m_lightEllipse = m_scene->addEllipse(
         point.x() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
@@ -318,4 +291,86 @@ void DrawingWidget::_addLightDrawing() {
         QPen(UI_CONSTANTS::LIGHT_SOURCE_COLOR),
         QBrush(UI_CONSTANTS::LIGHT_SOURCE_COLOR)
     );
+}
+
+QVector3D DrawingWidget::_getLightPosition3D() const {
+    const QPointF point2D = _getLightPosition2D();
+    return {static_cast<float>(point2D.x()), static_cast<float>(point2D.y()), static_cast<float>(m_lightZ)};
+}
+
+std::tuple<float, float, QVector3D>
+DrawingWidget::_interpolateFromTrianglePoint(const QVector3D &pos, const Triangle &triangle) {
+    /* custom dot product */
+    const auto dotProduct2D = [](const float x1, const float y1, const float x2, const float y2) {
+        return x1 * x2 + y1 * y2;
+    };
+
+    const float v0x = triangle[1].rotatedPosition.x() - triangle[0].rotatedPosition.x();
+    const float v0y = triangle[1].rotatedPosition.y() - triangle[0].rotatedPosition.y();
+    const float v1x = triangle[2].rotatedPosition.x() - triangle[0].rotatedPosition.x();
+    const float v1y = triangle[2].rotatedPosition.y() - triangle[0].rotatedPosition.y();
+    const float v2x = pos.x() - triangle[0].rotatedPosition.x();
+    const float v2y = pos.y() - triangle[0].rotatedPosition.y();
+
+    const float d00 = dotProduct2D(v0x, v0y, v0x, v0y);
+    const float d01 = dotProduct2D(v0x, v0y, v1x, v1y);
+    const float d11 = dotProduct2D(v1x, v1y, v1x, v1y);
+    const float d20 = dotProduct2D(v2x, v2y, v0x, v0y);
+    const float d21 = dotProduct2D(v2x, v2y, v1x, v1y);
+
+    const float denom = d00 * d11 - d01 * d01;
+    const float v = (d11 * d20 - d01 * d21) / denom;
+    const float w = (d00 * d21 - d01 * d20) / denom;
+    const float u = 1.0f - v - w;
+
+    const float interpolatedU
+            = std::clamp(u * triangle[0].u + v * triangle[1].u + w * triangle[2].u, 0.0f, 1.0f);
+    const float interpolatedV
+            = std::clamp(u * triangle[0].v + v * triangle[1].v + w * triangle[2].v, 0.0f, 1.0f);
+
+    QVector3D interpolatedNormalVector = (u * triangle[0].rotatedNormal + v * triangle[1].rotatedNormal +
+                                          w * triangle[2].rotatedNormal);
+
+    return {interpolatedU, interpolatedV, interpolatedNormalVector};
+}
+
+QColor DrawingWidget::_applyLightToTriangleColor(const QColor &color, const QVector3D &normalVector,
+                                                 const QVector3D &pos) const {
+    const QColor lightColor = Qt::white;
+    const QVector3D L = (_getLightPosition3D() - pos).normalized();
+    const QVector3D N = normalVector.normalized();
+    const QVector3D V(0, 0, 1);
+    const float NdotL = QVector3D::dotProduct(N, L);
+    const QVector3D R = (2.0f * NdotL * N - L).normalized();
+
+    const float cos0 = std::max(0.0f, NdotL);
+    const float cos1 = std::max(0.0f, QVector3D::dotProduct(V, R));
+    const float cos1m = std::pow(cos1, m_mCoef);
+
+    QVector3D lightColors = QVector3D(
+            static_cast<float>(lightColor.red()),
+            static_cast<float>(lightColor.green()),
+            static_cast<float>(lightColor.blue())) / 255.0f;
+
+    QVector3D objColors = QVector3D(
+            static_cast<float>(color.red()),
+            static_cast<float>(color.green()),
+            static_cast<float>(color.blue())) / 255.0f;
+
+    QVector3D resultColors{};
+    for (int i = 0; i < 3; ++i) {
+        const float left = m_kdCoef * lightColors[i] * objColors[i] * cos0;
+        const float right = m_ksCoef * lightColors[i] * objColors[i] * cos1m;
+        resultColors[i] = std::clamp(left + right, 0.0f, 1.0f);
+    }
+
+    resultColors *= 255.0f;
+
+    return {static_cast<int>(resultColors.x()),
+            static_cast<int>(resultColors.y()),
+            static_cast<int>(resultColors.z())};
+}
+
+void DrawingWidget::setStopLight(bool value) {
+    m_stopLight = value;
 }

@@ -54,8 +54,8 @@ public:
 
     [[nodiscard]] QPointF dropPointToScreen(const QVector3D &point) const;
 
-    template<typename ColorGetT, typename ColorSetT, size_t N>
-    void colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const PolygonArr<N> &polygon);
+    template<typename ColorGetT, size_t N>
+    void colorPolygon(ColorGetT colorGet, const PolygonArr<N> &polygon);
 
 
     // void setNormals();
@@ -86,6 +86,8 @@ public slots:
 
     void setLightZ(int value);
 
+    void setStopLight(bool value);
+
     // ------------------------------
     // Class signals
     // ------------------------------
@@ -115,7 +117,9 @@ protected:
 
     void _fillTriangle(const Triangle &triangleToFill);
 
-    QColor _getTextureColor(const QVector3D &pos, const Triangle &triangle) const;
+    [[nodiscard]] QColor _getTextureColor(const QVector3D &pos, const Triangle &triangle) const;
+
+    [[nodiscard]] QColor _getPlainColor(const QVector3D &pos, const PolygonArr<3> &polygon) const;
 
     void _setupLight();
 
@@ -125,8 +129,14 @@ protected:
 
     void _addLightDrawing();
 
-    [[nodiscard]] QPointF _getLightPosition() const;
-    [[nodiscard]] QColor _adjustColorByLighting(const Vertex &vertex, const QColor &color, const QVector3D& position) const;
+    [[nodiscard]] QPointF _getLightPosition2D() const;
+
+    [[nodiscard]] QVector3D _getLightPosition3D() const;
+
+    [[nodiscard]] static std::tuple<float, float, QVector3D>
+    _interpolateFromTrianglePoint(const QVector3D &pos, const Triangle &triangle);
+
+    [[nodiscard]] QColor _applyLightToTriangleColor(const QColor &color, const QVector3D &normalVector, const QVector3D &pos) const;
 
     // ------------------------------
     // Class fields
@@ -149,6 +159,8 @@ protected:
     float m_mCoef{};
     int m_lightZ{};
     float m_lightPos{};
+    bool m_stopLight{};
+    QColor m_lightColor{};
 
     double m_observerDistance{};
     std::vector<QVector3D> m_points{};
@@ -157,8 +169,8 @@ protected:
     std::vector<Triangle> *m_triangles{};
 };
 
-template<typename ColorGetT, typename ColorSetT, size_t N>
-void DrawingWidget::colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const PolygonArr<N> &polygon) {
+template<typename ColorGetT, size_t N>
+void DrawingWidget::colorPolygon(ColorGetT colorGet, const PolygonArr<N> &polygon) {
     QPainter painter(m_pixMap);
 
     /* sort the vertices by y coordinate */
@@ -167,7 +179,7 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const P
         sorted[i] = i;
     }
 
-    for (int i = 1; i < N; i++) {
+    for (int i = 1; i < static_cast<int>(N); i++) {
         size_t key = sorted[i];
         int j = i - 1;
 
@@ -180,12 +192,13 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const P
 
     std::list<ActiveEdge> aet{};
     Vertex vBuffer{};
-    int y = static_cast<int>(std::floor(polygon[sorted[0]].rotatedPosition.y()));
+    int scanLineY = static_cast<int>(std::floor(polygon[sorted[0]].rotatedPosition.y()));
     size_t nextVertex = 0;
 
     while (nextVertex < N || !aet.empty()) {
         /* Detect et edges on the current y */
-        while (nextVertex < N && static_cast<int>(std::floor(polygon[sorted[nextVertex]].rotatedPosition.y())) == y) {
+        while (nextVertex < N &&
+               static_cast<int>(std::floor(polygon[sorted[nextVertex]].rotatedPosition.y())) == scanLineY) {
             const size_t curr = sorted[nextVertex];
             const size_t prev = (curr + N - 1) % N;
             const size_t next = (curr + 1) % N;
@@ -224,12 +237,11 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const P
 
             for (int x = x1; x <= x2; x++) {
                 vBuffer.position.setX(static_cast<float>(x));
-                vBuffer.position.setY(static_cast<float>(y));
+                vBuffer.position.setY(static_cast<float>(scanLineY));
+                vBuffer.position.setZ(100);
 
                 /* Process color values */
                 QColor color = colorGet(vBuffer.position, polygon);
-                color = colorSet(vBuffer, color);
-
                 QVector3D screenPos(vBuffer.position.x() + m_width / 2,
                                     vBuffer.position.y() + m_height / 2,
                                     0);
@@ -241,15 +253,15 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const P
             std::advance(it, 2);
         }
 
-        ++y;
+        ++scanLineY;
 
         /* Update x coordinates for each edge */
         for (auto &edge: aet) {
             edge.x += edge.dx;
         }
 
-        aet.remove_if([y](const ActiveEdge &edge) {
-            return y >= edge.yMax;
+        aet.remove_if([scanLineY](const ActiveEdge &edge) {
+            return scanLineY >= edge.yMax;
         });
     }
 
@@ -268,8 +280,6 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const P
                 vBuffer.position.setY(static_cast<float>(y));
 
                 QColor color = colorGet(vBuffer.position, polygon);
-                color = colorSet(vBuffer, color);
-
                 QVector3D screenPos(vBuffer.position.x() + m_width / 2,
                                     vBuffer.position.y() + m_height / 2,
                                     0);

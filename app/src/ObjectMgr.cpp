@@ -80,13 +80,13 @@ void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
 
 void ObjectMgr::loadDefaultSettings() {
     m_drawNet = true;
-    m_triangleAccuracy = DEFAULT_TRIANGLE_ACCURACY;
+    m_triangleAccuracy = VIEW_SETTINGS::DEFAULT_TRIANGLE_ACCURACY;
     m_alpha = 0;
     m_beta = 0;
-    m_drawingWidget->setColor(DEFAULT_PLAIN_COLOR);
+    m_drawingWidget->setColor(UI_CONSTANTS::DEFAULT_PLAIN_COLOR);
 
-    _loadBezierPoints(DEFAULT_CONTROL_POINTS_PATH);
-    _loadTexture(DEFAULT_TEXTURE_PATH);
+    _loadBezierPoints(RESOURCE_CONSTANTS::DEFAULT_CONTROL_POINTS_PATH);
+    _loadTexture(RESOURCE_CONSTANTS::DEFAULT_TEXTURE_PATH);
     redraw();
 }
 
@@ -255,8 +255,8 @@ ObjectMgr::ControlPoints ObjectMgr::_loadBezierPointsParse(QFile &file, bool *ok
         float z = tokens[2].toFloat(&okZ);
 
         if (okX && okY && okZ) {
-            if (idx >= CONTROL_POINTS_COUNT) {
-                qWarning() << "Too many control points, expected:" << CONTROL_POINTS_COUNT;
+            if (idx >= BEZIER_CONSTANTS::CONTROL_POINTS_COUNT) {
+                qWarning() << "Too many control points, expected:" << BEZIER_CONSTANTS::CONTROL_POINTS_COUNT;
 
                 if (ok) {
                     *ok = false;
@@ -279,8 +279,8 @@ ObjectMgr::ControlPoints ObjectMgr::_loadBezierPointsParse(QFile &file, bool *ok
         }
     }
 
-    if (idx != CONTROL_POINTS_COUNT) {
-        qWarning() << "Invalid number of control points, expected:" << CONTROL_POINTS_COUNT << "got:" << idx;
+    if (idx != BEZIER_CONSTANTS::CONTROL_POINTS_COUNT) {
+        qWarning() << "Invalid number of control points, expected:" << BEZIER_CONSTANTS::CONTROL_POINTS_COUNT << "got:" << idx;
 
         if (ok) {
             *ok = false;
@@ -325,8 +325,8 @@ void ObjectMgr::_drawNet() {
     }
 
     /* Draw lines for control points */
-    static constexpr int CONTROL_POINTS_MATRIX_SIZE_INT = CONTROL_POINTS_MATRIX_SIZE;
-    static constexpr int CONTROL_POINTS_COUNT_INT = CONTROL_POINTS_COUNT;
+    static constexpr int CONTROL_POINTS_MATRIX_SIZE_INT = BEZIER_CONSTANTS::CONTROL_POINTS_MATRIX_SIZE;
+    static constexpr int CONTROL_POINTS_COUNT_INT = BEZIER_CONSTANTS::CONTROL_POINTS_COUNT;
     for (int i = 0; i < CONTROL_POINTS_COUNT_INT - 1; i++) {
         const int row = i / CONTROL_POINTS_MATRIX_SIZE_INT;
         const int col = i % CONTROL_POINTS_MATRIX_SIZE_INT;
@@ -492,5 +492,7 @@ QImage *ObjectMgr::_loadTextureFromFile(const QString &path) {
         return nullptr;
     }
 
-    return new QImage(image.scaled(1000, 1000, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    return new QImage(
+            image.scaled(RESOURCE_CONSTANTS::TEXTURE_IMAGE_SIZE, RESOURCE_CONSTANTS::TEXTURE_IMAGE_SIZE,
+                         Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 }

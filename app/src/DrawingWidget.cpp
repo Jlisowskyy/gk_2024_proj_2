@@ -16,7 +16,7 @@
 
 DrawingWidget::DrawingWidget(QWidget *parent) : QGraphicsView(parent),
                                                 m_scene(new QGraphicsScene(this)),
-                                                m_observerDistance(DEFAULT_OBSERVER_DISTANCE) {
+                                                m_observerDistance(VIEW_SETTINGS::DEFAULT_OBSERVER_DISTANCE) {
     Q_ASSERT(parent != nullptr);
     setScene(m_scene);
     m_scene->setBackgroundBrush(Qt::white);
@@ -30,6 +30,7 @@ DrawingWidget::DrawingWidget(QWidget *parent) : QGraphicsView(parent),
     setRenderHint(QPainter::Antialiasing, true);
     setTransformationAnchor(AnchorViewCenter);
 
+    _setupLight();
     updateScene();
 }
 
@@ -119,7 +120,7 @@ void DrawingWidget::updateElements() {
 }
 
 void DrawingWidget::_drawBezierPoint(const QVector3D &point, const size_t idx) const {
-    auto *pointItem = new BezierPoint3DItem(point, DEFAULT_BEZIER_POINT_RADIUS, idx);
+    auto *pointItem = new BezierPoint3DItem(point, BEZIER_CONSTANTS::DEFAULT_POINT_RADIUS, idx);
     m_scene->addItem(pointItem);
     pointItem->setPos(dropPointToScreen(point));
     pointItem->setZValue(2);
@@ -136,7 +137,7 @@ void DrawingWidget::_drawBezierLine(const std::pair<QVector3D, QVector3D> &line)
     const auto pLine = m_scene->addLine(start.x(), start.y(), end.x(), end.y());
 
     pLine->setZValue(1);
-    QPen pen(DEFAULT_BEZIER_LINE_COLOR);
+    QPen pen(UI_CONSTANTS::DEFAULT_BEZIER_LINE_COLOR);
     pen.setWidth(3);
     pLine->setPen(pen);
 }
@@ -165,7 +166,7 @@ void DrawingWidget::_drawTriangleLine(const std::pair<QVector3D, QVector3D> &lin
     const auto pLine = m_scene->addLine(start.x(), start.y(), end.x(), end.y());
 
     pLine->setZValue(0);
-    auto pen = QPen(DEFAULT_TRIANGLE_LINE_COLOR);
+    auto pen = QPen(UI_CONSTANTS::DEFAULT_TRIANGLE_LINE_COLOR);
     pen.setWidth(1);
     pLine->setPen(pen);
 }
@@ -207,24 +208,23 @@ void DrawingWidget::setTexture(QImage *texture) {
 }
 
 QColor DrawingWidget::_getTextureColor(const QVector3D &pos, const Triangle &triangle) {
-    const QVector2D v0(
-            triangle[1].rotatedPosition.x() - triangle[0].rotatedPosition.x(),
-            triangle[1].rotatedPosition.y() - triangle[0].rotatedPosition.y()
-    );
-    const QVector2D v1(
-            triangle[2].rotatedPosition.x() - triangle[0].rotatedPosition.x(),
-            triangle[2].rotatedPosition.y() - triangle[0].rotatedPosition.y()
-    );
-    const QVector2D v2(
-            pos.x() - triangle[0].rotatedPosition.x(),
-            pos.y() - triangle[0].rotatedPosition.y()
-    );
+    /* custom dot product */
+    const auto dotProduct2D = [](float x1, float y1, float x2, float y2) {
+        return x1 * x2 + y1 * y2;
+    };
 
-    const float d00 = QVector2D::dotProduct(v0, v0);
-    const float d01 = QVector2D::dotProduct(v0, v1);
-    const float d11 = QVector2D::dotProduct(v1, v1);
-    const float d20 = QVector2D::dotProduct(v2, v0);
-    const float d21 = QVector2D::dotProduct(v2, v1);
+    const float v0x = triangle[1].rotatedPosition.x() - triangle[0].rotatedPosition.x();
+    const float v0y = triangle[1].rotatedPosition.y() - triangle[0].rotatedPosition.y();
+    const float v1x = triangle[2].rotatedPosition.x() - triangle[0].rotatedPosition.x();
+    const float v1y = triangle[2].rotatedPosition.y() - triangle[0].rotatedPosition.y();
+    const float v2x = pos.x() - triangle[0].rotatedPosition.x();
+    const float v2y = pos.y() - triangle[0].rotatedPosition.y();
+
+    const float d00 = dotProduct2D(v0x, v0y, v0x, v0y);
+    const float d01 = dotProduct2D(v0x, v0y, v1x, v1y);
+    const float d11 = dotProduct2D(v1x, v1y, v1x, v1y);
+    const float d20 = dotProduct2D(v2x, v2y, v0x, v0y);
+    const float d21 = dotProduct2D(v2x, v2y, v1x, v1y);
 
     const float denom = d00 * d11 - d01 * d01;
     const float v = (d11 * d20 - d01 * d21) / denom;
@@ -240,4 +240,24 @@ QColor DrawingWidget::_getTextureColor(const QVector3D &pos, const Triangle &tri
             static_cast<int>(interpolatedU * static_cast<float>(m_texture->width() - 1)),
             static_cast<int>(interpolatedV * static_cast<float>(m_texture->height() - 1))
     );
+}
+
+void DrawingWidget::_setupLight() {
+
+}
+
+void DrawingWidget::setKsCoef(float value) {
+    m_ksCoef = value;
+}
+
+void DrawingWidget::setKdCoef(float value) {
+    m_kdCoef = value;
+}
+
+void DrawingWidget::setMCoef(float value) {
+    m_mCoef = value;
+}
+
+void DrawingWidget::setLightZ(int value) {
+    m_lightZ = value;
 }

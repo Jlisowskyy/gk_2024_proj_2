@@ -13,8 +13,8 @@
 BezierPoint3DItem::BezierPoint3DItem(const QVector3D &point3d, double size, size_t idx, QGraphicsItem *parent)
         : QGraphicsEllipseItem(parent), m_point(point3d) {
     setRect(-size / 2, -size / 2, size, size);
-    setBrush(DEFAULT_BEZIER_POINT_COLOR);
-    setPen(QPen(DEFAULT_BEZIER_POINT_COLOR));
+    setBrush(UI_CONSTANTS::DEFAULT_BEZIER_POINT_COLOR);
+    setPen(QPen(UI_CONSTANTS::DEFAULT_BEZIER_POINT_COLOR));
 
     auto *label = new QGraphicsTextItem(QString::number(idx), this);
 
@@ -23,5 +23,5 @@ BezierPoint3DItem::BezierPoint3DItem(const QVector3D &point3d, double size, size
     label->setFont(font);
 
     label->setPos(-size / 2 - 10, -size / 2 - 20);
-    label->setDefaultTextColor(DEFAULT_BEZIER_POINT_COLOR);
+    label->setDefaultTextColor(UI_CONSTANTS::DEFAULT_BEZIER_POINT_COLOR);
 }

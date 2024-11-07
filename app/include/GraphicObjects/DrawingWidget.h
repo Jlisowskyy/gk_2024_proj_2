@@ -52,16 +52,9 @@ public:
 
     [[nodiscard]] QPointF dropPointToScreen(const QVector3D &point) const;
 
-    void setTriangles(std::vector<Triangle> *triangles);
-
     template<typename ColorGetT, typename ColorSetT, size_t N>
     void colorPolygon(ColorGetT colorGet, ColorSetT colorSet, const PolygonArr<N> &polygon);
 
-    void setColor(const QColor &color);
-
-    void setFillType(FillType fillType);
-
-    void setTexture(QImage *texture);
 
     // void setNormals();
 
@@ -74,6 +67,22 @@ public slots:
     void clearContent();
 
     void setObserverDistance(double distance);
+
+    void setColor(const QColor &color);
+
+    void setFillType(FillType fillType);
+
+    void setTexture(QImage *texture);
+
+    void setTriangles(std::vector<Triangle> *triangles);
+
+    void setKsCoef(float value);
+
+    void setKdCoef(float value);
+
+    void setMCoef(float value);
+
+    void setLightZ(int value);
 
     // ------------------------------
     // Class signals
@@ -102,6 +111,8 @@ private:
 
     QColor _getTextureColor(const QVector3D &pos, const Triangle &triangle);
 
+    void _setupLight();
+
     // ------------------------------
     // Class fields
     // ------------------------------
@@ -115,6 +126,11 @@ private:
     QColor m_color{};
     FillType m_fillType{};
     QImage *m_texture{};
+
+    float m_ksCoef{};
+    float m_kdCoef{};
+    float m_mCoef{};
+    int m_lightZ{};
 
     double m_observerDistance{};
     std::vector<QVector3D> m_points{};

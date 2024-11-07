@@ -37,8 +37,8 @@ public:
     // Class types
     // ------------------------------
 
-    using ControlPoints = std::array<QVector3D, CONTROL_POINTS_COUNT>;
-    using BernsteinTable = std::array<float, BERNSTEIN_TABLE_SIZE>;
+    using ControlPoints = std::array<QVector3D,BEZIER_CONSTANTS::CONTROL_POINTS_COUNT>;
+    using BernsteinTable = std::array<float, BEZIER_CONSTANTS::BERNSTEIN_TABLE_SIZE>;
 
     // ------------------------------
     // Class interaction
@@ -110,7 +110,7 @@ protected:
 
     [[nodiscard]] QImage *_loadTextureFromFile(const QString &path);
 
-    void showToast(const QString &message, int duration = DEFAULT_TOAST_DURATION_MS);
+    void showToast(const QString &message, int duration = UI_CONSTANTS::DEFAULT_TOAST_DURATION_MS);
 
     void _drawNet();
 

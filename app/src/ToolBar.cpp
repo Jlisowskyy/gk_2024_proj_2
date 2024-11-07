@@ -53,16 +53,20 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
 
     // Triangulation slider
     m_triangulationSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
-                                             TRIANGULATION_SLIDER_MIN, TRIANGULATION_SLIDER_MAX,
-                                             TRIANGULATION_SLIDER_STEPS, TRIANGULATION_SLIDER_DEFAULT,
+                                             SLIDER_CONSTANTS::TRIANGULATION::MIN,
+                                             SLIDER_CONSTANTS::TRIANGULATION::MAX,
+                                             SLIDER_CONSTANTS::TRIANGULATION::STEPS,
+                                             SLIDER_CONSTANTS::TRIANGULATION::DEFAULT_STEP,
                                              "Triangulation accuracy",
                                              "Change accuracy of triangulation for rendered plain");
     m_toolBar->addWidget(m_triangulationSlider->getContainer());
 
     // Observer distance slider
     m_observerDistanceSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
-                                                OBSERVER_DISTANCE_MIN, OBSERVER_DISTANCE_MAX,
-                                                OBSERVER_DISTANCE_STEPS, OBSERVER_DISTANCE_DEFAULT,
+                                                SLIDER_CONSTANTS::OBSERVER::MIN,
+                                                SLIDER_CONSTANTS::OBSERVER::MAX,
+                                                SLIDER_CONSTANTS::OBSERVER::STEPS,
+                                                SLIDER_CONSTANTS::OBSERVER::DEFAULT_STEP,
                                                 "Observer distance",
                                                 "Change distance of observer from the plain");
     m_toolBar->addWidget(m_observerDistanceSlider->getContainer());
@@ -125,16 +129,20 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
 
     // Alpha angle slider
     m_alphaSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
-                                     ALPHA_ANGLE_MIN, ALPHA_ANGLE_MAX,
-                                     ALPHA_ANGLE_STEPS, ALPHA_ANGLE_DEFAULT,
+                                     SLIDER_CONSTANTS::ALPHA::MIN,
+                                     SLIDER_CONSTANTS::ALPHA::MAX,
+                                     SLIDER_CONSTANTS::ALPHA::STEPS,
+                                     SLIDER_CONSTANTS::ALPHA::DEFAULT_STEP,
                                      "Alpha angle",
                                      "Z Axis rotation angle");
     m_toolBar->addWidget(m_alphaSlider->getContainer());
 
     // Beta angle slider
     m_betaSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
-                                    BETA_ANGLE_MIN, BETA_ANGLE_MAX,
-                                    BETA_ANGLE_STEPS, BETA_ANGLE_DEFAULT,
+                                    SLIDER_CONSTANTS::BETA::MIN,
+                                    SLIDER_CONSTANTS::BETA::MAX,
+                                    SLIDER_CONSTANTS::BETA::STEPS,
+                                    SLIDER_CONSTANTS::BETA::DEFAULT_STEP,
                                     "Beta angle",
                                     "X Axis rotation angle");
     m_toolBar->addWidget(m_betaSlider->getContainer());
@@ -145,32 +153,40 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
 
     // Ks coefficient slider
     m_ksSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
-                                  LIGHTING_COEFFICIENT_MIN, LIGHTING_COEFFICIENT_MAX,
-                                  LIGHTING_COEFFICIENT_STEPS, LIGHTING_COEFFICIENT_DEFAULT,
+                                  SLIDER_CONSTANTS::KS::MIN,
+                                  SLIDER_CONSTANTS::KS::MAX,
+                                  SLIDER_CONSTANTS::KS::STEPS,
+                                  SLIDER_CONSTANTS::KS::DEFAULT_STEP,
                                   "Ks coefficient",
                                   "Ks coefficient for lighting equation");
     m_toolBar->addWidget(m_ksSlider->getContainer());
 
     // Kd coefficient slider
     m_kdSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
-                                  LIGHTING_COEFFICIENT_MIN, LIGHTING_COEFFICIENT_MAX,
-                                  LIGHTING_COEFFICIENT_STEPS, LIGHTING_COEFFICIENT_DEFAULT,
+                                  SLIDER_CONSTANTS::KD::MIN,
+                                  SLIDER_CONSTANTS::KD::MAX,
+                                  SLIDER_CONSTANTS::KD::STEPS,
+                                  SLIDER_CONSTANTS::KD::DEFAULT_STEP,
                                   "Kd coefficient",
                                   "Kd coefficient for lightning equation");
     m_toolBar->addWidget(m_kdSlider->getContainer());
 
     // M coefficient slider
     m_mSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
-                                 M_COEFFICIENT_MIN, M_COEFFICIENT_MAX,
-                                 M_COEFFICIENT_STEPS, M_COEFFICIENT_DEFAULT,
+                                 SLIDER_CONSTANTS::M::MIN,
+                                 SLIDER_CONSTANTS::M::MAX,
+                                 SLIDER_CONSTANTS::M::STEPS,
+                                 SLIDER_CONSTANTS::M::DEFAULT_STEP,
                                  "M coefficient",
                                  "M coefficient for lighting equation");
     m_toolBar->addWidget(m_mSlider->getContainer());
 
     // Light position slider
     m_lightningPositionSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
-                                                 LIGHTING_COEFFICIENT_MIN, LIGHTING_COEFFICIENT_MAX,
-                                                 LIGHTING_COEFFICIENT_STEPS, LIGHTING_COEFFICIENT_DEFAULT,
+                                                 SLIDER_CONSTANTS::LIGHT_POSITION::MIN,
+                                                 SLIDER_CONSTANTS::LIGHT_POSITION::MAX,
+                                                 SLIDER_CONSTANTS::LIGHT_POSITION::STEPS,
+                                                 SLIDER_CONSTANTS::LIGHT_POSITION::DEFAULT_STEP,
                                                  "Light position",
                                                  "Position of lighting equation");
     m_toolBar->addWidget(m_lightningPositionSlider->getContainer());

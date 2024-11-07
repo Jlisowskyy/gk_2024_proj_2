@@ -24,7 +24,7 @@ TextButton::TextButton(QWidget *parent, const char *toolTip, const char *title, 
     m_button->setIcon(QIcon(icon));
     m_button->setIconVisibleInMenu(true);
     pToolButton->setDefaultAction(m_button);
-    pToolButton->setIconSize(QSize(DEFAULT_ICON_SIZE, DEFAULT_ICON_SIZE));
+    pToolButton->setIconSize(QSize(UI_CONSTANTS::DEFAULT_ICON_SIZE, UI_CONSTANTS::DEFAULT_ICON_SIZE));
 
     pLayout->addWidget(new QLabel(QString(tr(title)) + QString(tr(":")), this));
     pLayout->addStretch();

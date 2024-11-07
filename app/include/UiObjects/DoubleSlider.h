@@ -22,7 +22,7 @@ public:
 
     explicit DoubleSlider(Qt::Orientation orientation, QWidget *parent, double minValue, double maxValue,
                           int precisionPoints, int startValuePrecision, const char *title,
-                          const char *toolTip, int sliderSize = DEFAULT_SLIDER_SIZE);
+                          const char *toolTip, int sliderSize = UI_CONSTANTS::DEFAULT_SLIDER_SIZE);
 
     ~DoubleSlider() override = default;
 

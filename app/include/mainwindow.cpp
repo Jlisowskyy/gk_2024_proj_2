@@ -7,8 +7,8 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "./GraphicObjects/DrawingWidget.h"
-#include "./ManagingObjects/ObjectMgr.h"
-#include "./ManagingObjects/ToolBar.h"
+#include "./ManagingObjects/StateMgr.h"
+#include "UiObjects/ToolBar.h"
 
 /* external includes */
 #include <QFrame>
@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
           m_ui(new Ui::MainWindow),
           m_toolBar(new ToolBar(this)),
           m_drawingWidget(new DrawingWidget(this)),
-          m_objectMgr(new ObjectMgr(this, this, m_drawingWidget)) {
+          m_objectMgr(new StateMgr(this, this, m_drawingWidget)) {
     setMinimumSize(600, 900);
     setWindowTitle("Bezier 3D drawer");
 

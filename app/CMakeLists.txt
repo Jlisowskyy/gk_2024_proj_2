@@ -23,7 +23,7 @@ set(PROJECT_SOURCES
         include/mainwindow.h
         include/mainwindow.ui
         src/ToolBar.cpp
-        include/ManagingObjects/ToolBar.h
+        include/UiObjects/ToolBar.h
         src/DrawingWidget.cpp
         include/GraphicObjects/DrawingWidget.h
         include/Constants.h
@@ -33,7 +33,7 @@ set(PROJECT_SOURCES
         src/TextButton.cpp
         include/UiObjects/TextButton.h
         src/ObjectMgr.cpp
-        include/ManagingObjects/ObjectMgr.h
+        include/ManagingObjects/StateMgr.h
         src/BezierPoint3D.cpp
         include/GraphicObjects/BezierPoint3D.h
         include/PrimitiveData/Vertex.h
@@ -47,6 +47,7 @@ set(PROJECT_SOURCES
         src/Texture.cpp
         include/Rendering/Texture.h
         include/Intf.h
+        include/ManagingObjects/SceneMgr.h
 )
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)

@@ -12,7 +12,7 @@
 /* Forward declarations */
 class DrawingWidget;
 class ToolBar;
-class ObjectMgr;
+class StateMgr;
 
 QT_BEGIN_NAMESPACE
 
@@ -46,7 +46,7 @@ private:
     Ui::MainWindow *m_ui;
     ToolBar *m_toolBar;
     DrawingWidget *m_drawingWidget;
-    ObjectMgr *m_objectMgr;
+    StateMgr *m_objectMgr;
 };
 
 #endif // MAINWINDOW_H

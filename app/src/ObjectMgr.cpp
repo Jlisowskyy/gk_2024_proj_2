@@ -3,11 +3,12 @@
 //
 
 /* internal includes */
-#include "../include/ManagingObjects/ObjectMgr.h"
-#include "../include/ManagingObjects/ToolBar.h"
+#include "../include/ManagingObjects/StateMgr.h"
+#include "../include/UiObjects/ToolBar.h"
 #include "../include/UiObjects/DoubleSlider.h"
 #include "../include/GraphicObjects/DrawingWidget.h"
 #include "../include/Rendering/Mesh.h"
+#include "../include/Rendering/Texture.h"
 
 /* external includes */
 #include <vector>
@@ -23,24 +24,23 @@
 #include <QTimer>
 #include <cmath>
 
-ObjectMgr::ObjectMgr(QObject *parent, QWidget *widgetParent, DrawingWidget *drawingWidget) : QObject(parent),
+StateMgr::StateMgr(QObject *parent, QWidget *widgetParent, DrawingWidget *drawingWidget) : QObject(parent),
     m_parentWidget(widgetParent),
     m_drawingWidget(drawingWidget) {
     Q_ASSERT(parent && widgetParent && drawingWidget);
-    m_drawingWidget->setTriangles(&m_triangles);
 }
 
-ObjectMgr::~ObjectMgr() = default;
+StateMgr::~StateMgr() = default;
 
-void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
+void StateMgr::connectToToolBar(ToolBar *toolBar) {
     /* State changes */
-    std::vector<std::pair<DoubleSlider *, void (ObjectMgr::*)(double)> > vSliderProc{
-        {toolBar->m_triangulationSlider, &ObjectMgr::onTriangulationChanged},
-        {toolBar->m_alphaSlider, &ObjectMgr::onAlphaChanged},
-        {toolBar->m_betaSlider, &ObjectMgr::onBetaChanged},
-        {toolBar->m_ksSlider, &ObjectMgr::onKSChanged},
-        {toolBar->m_kdSlider, &ObjectMgr::onKDChanged},
-        {toolBar->m_mSlider, &ObjectMgr::onMChanged},
+    std::vector<std::pair<DoubleSlider *, void (StateMgr::*)(double)> > vSliderProc{
+        {toolBar->m_triangulationSlider, &StateMgr::onTriangulationChanged},
+        {toolBar->m_alphaSlider, &StateMgr::onAlphaChanged},
+        {toolBar->m_betaSlider, &StateMgr::onBetaChanged},
+        {toolBar->m_ksSlider, &StateMgr::onKSChanged},
+        {toolBar->m_kdSlider, &StateMgr::onKDChanged},
+        {toolBar->m_mSlider, &StateMgr::onMChanged},
     };
 
     for (const auto &[slider, proc]: vSliderProc) {
@@ -48,12 +48,12 @@ void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
     }
 
     /* simple actions */
-    std::vector<std::pair<QAction *, void (ObjectMgr::*)()> > vActionProc{
-        {toolBar->m_loadTextureButton, &ObjectMgr::onLoadTexturesTriggered},
-        {toolBar->m_loadBezierPointsButton, &ObjectMgr::onLoadBezierPointsTriggered},
-        {toolBar->m_loadNormalVectorsButton, &ObjectMgr::onLoadNormalVectorsTriggered},
-        {toolBar->m_changePlainColorButton, &ObjectMgr::onColorChangedTriggered},
-        {toolBar->m_changeLightColorButton, &ObjectMgr::onLightColorChangedTriggered},
+    std::vector<std::pair<QAction *, void (StateMgr::*)()> > vActionProc{
+        {toolBar->m_loadTextureButton, &StateMgr::onLoadTexturesTriggered},
+        {toolBar->m_loadBezierPointsButton, &StateMgr::onLoadBezierPointsTriggered},
+        {toolBar->m_loadNormalVectorsButton, &StateMgr::onLoadNormalVectorsTriggered},
+        {toolBar->m_changePlainColorButton, &StateMgr::onColorChangedTriggered},
+        {toolBar->m_changeLightColorButton, &StateMgr::onLightColorChangedTriggered},
     };
 
     for (const auto &[action, proc]: vActionProc) {
@@ -61,11 +61,11 @@ void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
     }
 
     /* Check able actions */
-    std::vector<std::pair<QAction *, void (ObjectMgr::*)(bool)> > vActionBoolProc{
-        {toolBar->m_drawNetButton, &ObjectMgr::onDrawNetChanged},
-        {toolBar->m_enableTextureButton, &ObjectMgr::onEnableTextureChanged},
-        {toolBar->m_enableNormalVectorsButton, &ObjectMgr::onEnableNormalVectorsChanged},
-        {toolBar->m_stopLightMovementButton, &ObjectMgr::onStopLightingMovementChanged},
+    std::vector<std::pair<QAction *, void (StateMgr::*)(bool)> > vActionBoolProc{
+        {toolBar->m_drawNetButton, &StateMgr::onDrawNetChanged},
+        {toolBar->m_enableTextureButton, &StateMgr::onEnableTextureChanged},
+        {toolBar->m_enableNormalVectorsButton, &StateMgr::onEnableNormalVectorsChanged},
+        {toolBar->m_stopLightMovementButton, &StateMgr::onStopLightingMovementChanged},
     };
 
     for (const auto &[action, proc]: vActionBoolProc) {
@@ -80,20 +80,13 @@ void ObjectMgr::connectToToolBar(ToolBar *toolBar) {
     );
 }
 
-void ObjectMgr::loadDefaultSettings() {
+void StateMgr::loadDefaultSettings() {
     m_drawNet = true;
     m_useTexture = false;
+    m_color = UI_CONSTANTS::DEFAULT_PLAIN_COLOR;
 
-    m_drawingWidget->setKdCoef(LIGHTING_CONSTANTS::DEFAULT_KD);
-    m_drawingWidget->setKsCoef(LIGHTING_CONSTANTS::DEFAULT_KS);
-    m_drawingWidget->setMCoef(LIGHTING_CONSTANTS::DEFAULT_M);
     m_drawingWidget->setObserverDistance(VIEW_SETTINGS::DEFAULT_OBSERVER_DISTANCE);
     m_drawingWidget->setLightZ(VIEW_SETTINGS::DEFAULT_LIGHT_Z);
-    m_drawingWidget->setColor(UI_CONSTANTS::DEFAULT_PLAIN_COLOR);
-
-    m_drawingWidget->setKdCoef(LIGHTING_CONSTANTS::DEFAULT_KD);
-    m_drawingWidget->setKsCoef(LIGHTING_CONSTANTS::DEFAULT_KS);
-    m_drawingWidget->setMCoef(LIGHTING_CONSTANTS::DEFAULT_M);
     m_drawingWidget->setLightColor(LIGHTING_CONSTANTS::DEFAULT_LIGHT_COLOR);
     m_drawingWidget->setLightZ(VIEW_SETTINGS::DEFAULT_LIGHT_Z);
 
@@ -103,93 +96,96 @@ void ObjectMgr::loadDefaultSettings() {
                       VIEW_SETTINGS::DEFAULT_ALPHA, VIEW_SETTINGS::DEFAULT_BETA,
                       VIEW_SETTINGS::DEFAULT_TRIANGLE_ACCURACY);
 
+    m_texture = new Texture(LIGHTING_CONSTANTS::DEFAULT_KS, LIGHTING_CONSTANTS::DEFAULT_KD,
+                            LIGHTING_CONSTANTS::DEFAULT_M, LIGHTING_CONSTANTS::DEFAULT_LIGHT_COLOR);
+
     redraw();
 }
 
-void ObjectMgr::redraw() {
+void StateMgr::redraw() {
     m_drawingWidget->clearContent();
-    m_triangles.clear();
 
     if (m_drawNet) {
         _drawNet();
     }
     m_drawingWidget->updateScene();
+    _drawTexture();
 }
 
-void ObjectMgr::onTriangulationChanged(const double value) {
+void StateMgr::onTriangulationChanged(const double value) {
     m_mesh->setAccuracy(value);
     redraw();
 }
 
-void ObjectMgr::onAlphaChanged(const double value) {
+void StateMgr::onAlphaChanged(const double value) {
     m_mesh->setAlpha(value);
     redraw();
 }
 
-void ObjectMgr::onBetaChanged(const double value) {
+void StateMgr::onBetaChanged(const double value) {
     m_mesh->setBeta(value);
     redraw();
 }
 
-void ObjectMgr::onKSChanged(const double value) {
-    m_drawingWidget->setKsCoef(static_cast<float>(value));
+void StateMgr::onKSChanged(const double value) {
+    m_texture->setKsCoef(static_cast<float>(value));
 }
 
-void ObjectMgr::onKDChanged(const double value) {
-    m_drawingWidget->setKdCoef(static_cast<float>(value));
+void StateMgr::onKDChanged(const double value) {
+    m_texture->setKdCoef(static_cast<float>(value));
 }
 
-void ObjectMgr::onMChanged(const double value) {
-    m_drawingWidget->setMCoef(static_cast<float>(value));
+void StateMgr::onMChanged(const double value) {
+    m_texture->setMCoef(static_cast<float>(value));
 }
 
-void ObjectMgr::onDrawNetChanged(const bool isChecked) {
+void StateMgr::onDrawNetChanged(const bool isChecked) {
     m_drawNet = isChecked;
     redraw();
 }
 
-void ObjectMgr::onEnableTextureChanged(const bool isChecked) {
+void StateMgr::onEnableTextureChanged(const bool isChecked) {
     m_useTexture = isChecked;
-    m_drawingWidget->setFillType(m_texture && m_useTexture ? FillType::TEXTURE : FillType::SIMPLE_COLOR);
+    m_drawingWidget->setFillType(m_textureImg && m_useTexture ? FillType::TEXTURE : FillType::SIMPLE_COLOR);
 }
 
-void ObjectMgr::onEnableNormalVectorsChanged(bool isChecked) {
+void StateMgr::onEnableNormalVectorsChanged(bool isChecked) {
 }
 
-void ObjectMgr::onStopLightingMovementChanged(const bool isChecked) {
+void StateMgr::onStopLightingMovementChanged(const bool isChecked) {
     m_drawingWidget->setStopLight(isChecked);
 }
 
-void ObjectMgr::onLoadBezierPointsTriggered() {
+void StateMgr::onLoadBezierPointsTriggered() {
     _openFileDialog([this](const QString &path) {
                         _loadBezierPoints(path);
                     },
                     "Text Files (*.txt);;All Files (*)");
 }
 
-void ObjectMgr::onLoadTexturesTriggered() {
+void StateMgr::onLoadTexturesTriggered() {
     _openFileDialog([this](const QString &path) {
         _loadTexture(path);
     }, "Images (*.png *.jpg *.bmp);;All Files (*)");
 }
 
-void ObjectMgr::onLoadNormalVectorsTriggered() {
+void StateMgr::onLoadNormalVectorsTriggered() {
     _openFileDialog([](const QString &path) {
         qDebug() << "Loading normal vectors from path:" << path;
     }, "");
 }
 
-void ObjectMgr::onColorChangedTriggered() {
+void StateMgr::onColorChangedTriggered() {
     const QColor selectedColor = QColorDialog::getColor(Qt::white, m_parentWidget, "Choose Color");
     if (!selectedColor.isValid()) {
         qDebug() << "Error getting color";
         return;
     }
 
-    m_drawingWidget->setColor(selectedColor);
+    m_color = selectedColor;
 }
 
-void ObjectMgr::_loadBezierPoints(const QString &path) {
+void StateMgr::_loadBezierPoints(const QString &path) {
     bool ok;
     const ControlPoints controlPoints = _loadBezierPointsOpenFile(path, &ok);
     if (!ok) {
@@ -201,7 +197,7 @@ void ObjectMgr::_loadBezierPoints(const QString &path) {
     redraw();
 }
 
-void ObjectMgr::_openFileDialog(const std::function<void(const QString &)> &callback, const char *filter) {
+void StateMgr::_openFileDialog(const std::function<void(const QString &)> &callback, const char *filter) {
     Q_ASSERT(callback);
 
     const QString initialPath = m_previousDirectory.isEmpty() ? QDir::homePath() : m_previousDirectory;
@@ -221,7 +217,7 @@ void ObjectMgr::_openFileDialog(const std::function<void(const QString &)> &call
     }
 }
 
-ControlPoints ObjectMgr::_loadBezierPointsOpenFile(const QString &path, bool *ok) {
+ControlPoints StateMgr::_loadBezierPointsOpenFile(const QString &path, bool *ok) {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qWarning() << "Unable to open file:" << path;
@@ -239,7 +235,7 @@ ControlPoints ObjectMgr::_loadBezierPointsOpenFile(const QString &path, bool *ok
     return controlPoints;
 }
 
-ControlPoints ObjectMgr::_loadBezierPointsParse(QFile &file, bool *ok) {
+ControlPoints StateMgr::_loadBezierPointsParse(QFile &file, bool *ok) {
     ControlPoints controlPoints{};
 
     QTextStream istream(&file);
@@ -313,7 +309,7 @@ ControlPoints ObjectMgr::_loadBezierPointsParse(QFile &file, bool *ok) {
     return controlPoints;
 }
 
-void ObjectMgr::_showToast(const QString &message, int duration) {
+void StateMgr::_showToast(const QString &message, int duration) {
     /* temporary */
     return;
 
@@ -335,7 +331,7 @@ void ObjectMgr::_showToast(const QString &message, int duration) {
     QTimer::singleShot(duration, toast, &QLabel::deleteLater);
 }
 
-void ObjectMgr::_drawNet() {
+void StateMgr::_drawNet() {
     /* Draw control points */
     for (auto point: m_mesh->getControlPoints()) {
         m_drawingWidget->drawBezierPoint(m_mesh->getPointAlignedWithMeshPlain(point));
@@ -376,24 +372,29 @@ void ObjectMgr::_drawNet() {
     }
 }
 
-void ObjectMgr::_loadTexture(const QString &path) {
+void StateMgr::_drawTexture() {
+    if ()
+        m_texture->fillPixmap(m_drawingWidget->getPixMap(), m_mesh)
+}
+
+void StateMgr::_loadTexture(const QString &path) {
     const auto pTexture = _loadTextureFromFile(path);
 
     if (!pTexture) {
         return;
     }
 
-    delete m_texture;
-    m_texture = pTexture;
+    delete m_textureImg;
+    m_textureImg = pTexture;
 
-    m_drawingWidget->setTexture(m_texture);
+    m_drawingWidget->setTexture(m_textureImg);
 
     if (m_useTexture) {
         m_drawingWidget->setFillType(FillType::TEXTURE);
     }
 }
 
-QImage *ObjectMgr::_loadTextureFromFile(const QString &path) {
+QImage *StateMgr::_loadTextureFromFile(const QString &path) {
     const QImage image(path);
 
     if (image.isNull()) {
@@ -407,7 +408,7 @@ QImage *ObjectMgr::_loadTextureFromFile(const QString &path) {
                      Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 }
 
-void ObjectMgr::onLightColorChangedTriggered() {
+void StateMgr::onLightColorChangedTriggered() {
     const QColor selectedColor = QColorDialog::getColor(Qt::white, m_parentWidget, "Choose Color");
     if (!selectedColor.isValid()) {
         qDebug() << "Error getting color";

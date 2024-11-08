@@ -6,8 +6,8 @@
 #define OBJECTMGR_H
 
 /* internal includes */
-#include "../Constants.h"
-#include "../PrimitiveData/Triangle.h"
+#include "../include/Intf.h"
+
 
 /* external includes */
 #include <QObject>
@@ -24,16 +24,18 @@ class DrawingWidget;
 
 class Mesh;
 
-class ObjectMgr : public QObject {
+class Texture;
+
+class StateMgr : public QObject {
     Q_OBJECT
 
     // ------------------------------
     // Class creation
     // ------------------------------
 public:
-    explicit ObjectMgr(QObject *parent, QWidget *widgetParent, DrawingWidget *drawingWidget);
+    explicit StateMgr(QObject *parent, QWidget *widgetParent, DrawingWidget *drawingWidget);
 
-    ~ObjectMgr() override;
+    ~StateMgr() override;
 
     // ------------------------------
     // Class interaction
@@ -91,7 +93,7 @@ public slots:
 protected:
     void _loadBezierPoints(const QString &path);
 
-    void _openFileDialog(const std::function<void(const QString &)> &callback, const char* filter);
+    void _openFileDialog(const std::function<void(const QString &)> &callback, const char *filter);
 
     [[nodiscard]] ControlPoints _loadBezierPointsOpenFile(const QString &path, bool *ok);
 
@@ -105,6 +107,8 @@ protected:
 
     void _drawNet();
 
+    void _drawTexture();
+
     // ------------------------------
     // Class fields
     // ------------------------------
@@ -113,10 +117,12 @@ protected:
     DrawingWidget *m_drawingWidget{};
     QString m_previousDirectory{};
     Mesh *m_mesh{};
+    Texture *m_texture{};
 
     bool m_drawNet{};
     bool m_useTexture{};
-    QImage *m_texture{};
+    QImage *m_textureImg{};
+    QColor m_color{};
 };
 
 

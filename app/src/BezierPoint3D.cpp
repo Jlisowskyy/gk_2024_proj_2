@@ -4,7 +4,7 @@
 
 /* internal includes */
 #include "../include/GraphicObjects/BezierPoint3D.h"
-#include "../include/Constants.h"
+#include "../include/Intf.h"
 
 /* external includes */
 #include <QDebug>

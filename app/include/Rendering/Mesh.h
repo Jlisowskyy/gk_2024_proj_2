@@ -7,8 +7,7 @@
 
 
 /* internal includes */
-#include "../PrimitiveData/Triangle.h"
-#include "../Constants.h"
+#include "../include/Intf.h"
 
 /* external includes */
 #include <QObject>

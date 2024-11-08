@@ -5,7 +5,7 @@
 /* internal includes */
 #include "../include/PrimitiveData/Vertex.h"
 #include "../include/Rendering/Mesh.h"
-#include "../include/ManagingObjects/ObjectMgr.h"
+#include "../include/ManagingObjects/StateMgr.h"
 
 Vertex::Vertex(const QVector3D &p,
                const QVector3D &pu,

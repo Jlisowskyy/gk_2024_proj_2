@@ -7,7 +7,7 @@
 #include <string>
 
 /* internal includes */
-#include "../include/ManagingObjects/ToolBar.h"
+#include "../include/UiObjects/ToolBar.h"
 #include "../include/GraphicObjects/DrawingWidget.h"
 #include "../include/UiObjects/DoubleSlider.h"
 #include "../include/UiObjects/TextButton.h"

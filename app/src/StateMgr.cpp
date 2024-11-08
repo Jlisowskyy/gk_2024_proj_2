@@ -134,14 +134,17 @@ void StateMgr::onBetaChanged(const double value) {
 
 void StateMgr::onKSChanged(const double value) {
     m_texture->setKsCoef(static_cast<float>(value));
+    redraw();
 }
 
 void StateMgr::onKDChanged(const double value) {
     m_texture->setKdCoef(static_cast<float>(value));
+    redraw();
 }
 
 void StateMgr::onMChanged(const double value) {
     m_texture->setMCoef(static_cast<float>(value));
+    redraw();
 }
 
 void StateMgr::onDrawNetChanged(const bool isChecked) {

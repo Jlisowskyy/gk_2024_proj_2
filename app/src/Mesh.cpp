@@ -120,12 +120,12 @@ void Mesh::rotate(QVector3D &p, const float xRotationAngle, const float zRotatio
     const float xRad = xRotationAngle * static_cast<float>(M_PI) / 180.0f;
 
     /* Z rotation */
-    p.setX(x * std::cos(zRad) - y * std::sin(zRad));
-    y = x * std::sin(zRad) + y * std::cos(zRad);
+    p.setX(x * std::cos(xRad) - y * std::sin(xRad));
+    y = x * std::sin(xRad) + y * std::cos(xRad);
 
     /* x rotation */
-    p.setY(y * std::cos(xRad) - z * std::sin(xRad));
-    p.setZ(y * std::sin(xRad) + z * std::cos(xRad));
+    p.setY(y * std::cos(zRad) - z * std::sin(zRad));
+    p.setZ(y * std::sin(zRad) + z * std::cos(zRad));
 }
 
 void Mesh::setControlPoints(const ControlPoints &controlPoints) {

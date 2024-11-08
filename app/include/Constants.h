@@ -96,9 +96,9 @@ namespace SLIDER_CONSTANTS {
     }
 
     namespace BETA {
-        static constexpr double MIN = 0.0;
-        static constexpr double MAX = 10.0;
-        static constexpr int STEPS = 100;
+        static constexpr double MIN = -90.0;
+        static constexpr double MAX = 90.0;
+        static constexpr int STEPS = 1000;
         static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(
             VIEW_SETTINGS::DEFAULT_BETA,
             MIN,

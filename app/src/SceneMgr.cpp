@@ -38,6 +38,7 @@ void SceneMgr::redrawScene(DrawingWidget &drawingWidget, const Texture &texture,
     if (m_drawNet) {
         _drawNet(drawingWidget, mesh);
     }
+
     drawingWidget.updateScene();
 }
 
@@ -47,9 +48,9 @@ void SceneMgr::bondWithComponents(DrawingWidget *drawingWidget, Texture *texture
     m_texture = texture;
     m_mesh = mesh;
     m_drawingWidget = drawingWidget;
-    m_isBound = false;
+    m_isBound = true;
 
-    connect(drawingWidget, &DrawingWidget::onElementsUpdate, this, &SceneMgr::_addLightItem);
+    connect(drawingWidget, &DrawingWidget::onElementsUpdate, this, &SceneMgr::_onElementsUpdate);
     _addLightItem(drawingWidget);
 
     connect(m_timer, &QTimer::timeout, this, &SceneMgr::_onTimer);
@@ -60,8 +61,12 @@ void SceneMgr::unbound() {
     m_texture = nullptr;
     m_mesh = nullptr;
     m_drawingWidget = nullptr;
+    m_isBound = false;
 
     /* stop clock */
+    m_timer->stop();
+    delete m_timer;
+    m_timer = nullptr;
 }
 
 void SceneMgr::setColor(const QColor &color) {

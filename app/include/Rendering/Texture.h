@@ -16,7 +16,7 @@
 #include <QPainter>
 #include <QPixmap>
 
-class Texture {
+class Texture : public QObject {
     Q_OBJECT
 
 public:
@@ -33,10 +33,11 @@ public:
     // ------------------------------
 
     template<typename ColorGetterT>
-    void fillPixmap(QPixmap &pixmap, const Mesh &mesh, ColorGetterT colorGetter, const QVector3D &lightPos);
+    void fillPixmap(QPixmap &pixmap, const Mesh &mesh, ColorGetterT colorGetter, const QVector3D &lightPos) const;
 
     template<typename ColorGetterT, size_t N>
-    void colorPolygon(QPixmap &pixmap, ColorGetterT colorGet, const PolygonArr<N> &polygon, const QVector3D &lightPos);
+    void colorPolygon(QPixmap &pixmap, ColorGetterT colorGet, const PolygonArr<N> &polygon,
+                      const QVector3D &lightPos) const;
 
     // ------------------------------
     // Public slots
@@ -85,7 +86,10 @@ protected:
 };
 
 template<typename colorGet>
-void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, colorGet colorGetter, const QVector3D &lightPos) {
+void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, colorGet colorGetter, const QVector3D &lightPos) const {
+    pixmap.fill(Qt::white);
+
+    // #pragma omp parallel for schedule(static)
     for (auto triangle: mesh.getMeshArr()) {
         colorPolygon(pixmap, triangle, colorGetter, lightPos);
     }
@@ -93,7 +97,7 @@ void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, colorGet colorGetter
 
 template<typename ColorGetterT, size_t N>
 void Texture::colorPolygon(QPixmap &pixmap, ColorGetterT colorGet, const PolygonArr<N> &polygon,
-                           const QVector3D &lightPos) {
+                           const QVector3D &lightPos) const {
     QPainter painter(&pixmap);
 
     /* sort the vertices by y coordinate */

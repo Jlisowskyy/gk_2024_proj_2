@@ -6,7 +6,7 @@
 #define APP_DOUBLESLIDER_H
 
 /* internal includes */
-#include "../include/Intf.h"
+#include "../Intf.h"
 
 /* external includes */
 #include <QSlider>

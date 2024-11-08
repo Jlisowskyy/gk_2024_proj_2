@@ -25,6 +25,11 @@ namespace UI_CONSTANTS {
 
     /* Timing */
     static constexpr int DEFAULT_TOAST_DURATION_MS = 3000;
+
+    /* others */
+    static constexpr bool DEFAULT_USE_TEXTURE = false;
+    static constexpr bool DEFAULT_DRAW_NET = true;
+    static constexpr bool DEFAULT_PLAY_ANIMATION = false;
 }
 
 namespace BEZIER_CONSTANTS {
@@ -59,10 +64,10 @@ namespace SLIDER_CONSTANTS {
         static constexpr double MAX = 90.0;
         static constexpr int STEPS = 88;
         static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(
-                VIEW_SETTINGS::DEFAULT_TRIANGLE_ACCURACY,
-                MIN,
-                MAX,
-                STEPS
+            VIEW_SETTINGS::DEFAULT_TRIANGLE_ACCURACY,
+            MIN,
+            MAX,
+            STEPS
         );
     }
 
@@ -71,10 +76,10 @@ namespace SLIDER_CONSTANTS {
         static constexpr double MAX = 5000.0;
         static constexpr int STEPS = 400;
         static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(
-                VIEW_SETTINGS::DEFAULT_OBSERVER_DISTANCE,
-                MIN,
-                MAX,
-                STEPS
+            VIEW_SETTINGS::DEFAULT_OBSERVER_DISTANCE,
+            MIN,
+            MAX,
+            STEPS
         );
     }
 
@@ -83,10 +88,10 @@ namespace SLIDER_CONSTANTS {
         static constexpr double MAX = 45.0;
         static constexpr int STEPS = 900;
         static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(
-                VIEW_SETTINGS::DEFAULT_ALPHA,
-                MIN,
-                MAX,
-                STEPS
+            VIEW_SETTINGS::DEFAULT_ALPHA,
+            MIN,
+            MAX,
+            STEPS
         );
     }
 
@@ -95,10 +100,10 @@ namespace SLIDER_CONSTANTS {
         static constexpr double MAX = 10.0;
         static constexpr int STEPS = 100;
         static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(
-                VIEW_SETTINGS::DEFAULT_BETA,
-                MIN,
-                MAX,
-                STEPS
+            VIEW_SETTINGS::DEFAULT_BETA,
+            MIN,
+            MAX,
+            STEPS
         );
     }
 
@@ -107,10 +112,10 @@ namespace SLIDER_CONSTANTS {
         static constexpr double MAX = 1.0;
         static constexpr int STEPS = 100;
         static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(
-                LIGHTING_CONSTANTS::DEFAULT_KS,
-                MIN,
-                MAX,
-                STEPS
+            LIGHTING_CONSTANTS::DEFAULT_KS,
+            MIN,
+            MAX,
+            STEPS
         );
     }
 
@@ -119,10 +124,10 @@ namespace SLIDER_CONSTANTS {
         static constexpr double MAX = 1.0;
         static constexpr int STEPS = 100;
         static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(
-                LIGHTING_CONSTANTS::DEFAULT_KD,
-                MIN,
-                MAX,
-                STEPS
+            LIGHTING_CONSTANTS::DEFAULT_KD,
+            MIN,
+            MAX,
+            STEPS
         );
     }
 
@@ -131,10 +136,10 @@ namespace SLIDER_CONSTANTS {
         static constexpr double MAX = 100.0;
         static constexpr int STEPS = 99;
         static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(
-                LIGHTING_CONSTANTS::DEFAULT_M,
-                MIN,
-                MAX,
-                STEPS
+            LIGHTING_CONSTANTS::DEFAULT_M,
+            MIN,
+            MAX,
+            STEPS
         );
     }
 
@@ -143,18 +148,18 @@ namespace SLIDER_CONSTANTS {
         static constexpr double MAX = 10000.0;
         static constexpr int STEPS = static_cast<int>((MAX - MIN) / 10.0);
         static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(
-                VIEW_SETTINGS::DEFAULT_LIGHT_Z,
-                MIN,
-                MAX,
-                STEPS
+            VIEW_SETTINGS::DEFAULT_LIGHT_Z,
+            MIN,
+            MAX,
+            STEPS
         );
     }
 }
 
 
 namespace RESOURCE_CONSTANTS {
-    static constexpr const char* DEFAULT_CONTROL_POINTS_PATH = ":/data/example1";
-    static constexpr const char* DEFAULT_TEXTURE_PATH = ":/data/test_texture.png";
+    static constexpr const char *DEFAULT_CONTROL_POINTS_PATH = ":/data/example1";
+    static constexpr const char *DEFAULT_TEXTURE_PATH = ":/data/test_texture.png";
     static constexpr int TEXTURE_IMAGE_SIZE = 1000;
 }
 

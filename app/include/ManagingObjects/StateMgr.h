@@ -6,7 +6,7 @@
 #define OBJECTMGR_H
 
 /* internal includes */
-#include "../include/Intf.h"
+#include "../Intf.h"
 
 
 /* external includes */
@@ -25,6 +25,8 @@ class DrawingWidget;
 class Mesh;
 
 class Texture;
+
+class SceneMgr;
 
 class StateMgr : public QObject {
     Q_OBJECT
@@ -105,24 +107,16 @@ protected:
 
     void _showToast(const QString &message, int duration = UI_CONSTANTS::DEFAULT_TOAST_DURATION_MS);
 
-    void _drawNet();
-
-    void _drawTexture();
-
     // ------------------------------
     // Class fields
     // ------------------------------
-protected:
+
     QWidget *m_parentWidget{};
     DrawingWidget *m_drawingWidget{};
     QString m_previousDirectory{};
     Mesh *m_mesh{};
     Texture *m_texture{};
-
-    bool m_drawNet{};
-    bool m_useTexture{};
-    QImage *m_textureImg{};
-    QColor m_color{};
+    SceneMgr *m_sceneMgr{};
 };
 
 

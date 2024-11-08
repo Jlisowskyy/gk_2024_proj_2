@@ -54,8 +54,6 @@ public:
         return m_pixMap;
     }
 
-    // void setNormals();
-
     // ------------------------------
     // Class slots
     // ------------------------------
@@ -66,16 +64,14 @@ public slots:
 
     void setObserverDistance(double distance);
 
-    void setLightZ(int value);
-
-    void setStopLight(bool value);
-
-    void setLightColor(const QColor &color);
+    void setPixmap(const QPixmap *pixmap) const;
 
     // ------------------------------
     // Class signals
     // ------------------------------
 signals:
+    void onElementsUpdate(DrawingWidget *sender);
+
     // ------------------------------
     // Protected methods
     // ------------------------------
@@ -83,11 +79,8 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
     // ------------------------------
-    // Private methods
+    // Protected methods
     // ------------------------------
-
-protected slots:
-    void _onTimer();
 
 protected:
     void updateElements();
@@ -98,18 +91,6 @@ protected:
 
     void _drawTriangleLine(const std::pair<QVector3D, QVector3D> &line) const;
 
-    void _setupLight();
-
-    void _processLightPosition();
-
-    void _drawTexture();
-
-    void _addLightDrawing();
-
-    [[nodiscard]] QPointF _getLightPosition2D() const;
-
-    [[nodiscard]] QVector3D _getLightPosition3D() const;
-
     // ------------------------------
     // Class fields
     // ------------------------------
@@ -117,16 +98,11 @@ protected:
     QGraphicsScene *m_scene{};
     StateMgr *m_objectMgr{};
     QPixmap *m_pixMap{};
-    QTimer *m_timer{};
-    QGraphicsEllipseItem *m_lightEllipse{};
     QGraphicsPixmapItem *m_pixMapItem{};
 
     float m_width{};
     float m_height{};
 
-    int m_lightZ{};
-    float m_lightPos{};
-    bool m_stopLight{};
     double m_observerDistance{};
 
     std::vector<QVector3D> m_points{};

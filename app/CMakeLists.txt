@@ -32,7 +32,7 @@ set(PROJECT_SOURCES
         include/UiObjects/DoubleSlider.h
         src/TextButton.cpp
         include/UiObjects/TextButton.h
-        src/ObjectMgr.cpp
+        src/StateMgr.cpp
         include/ManagingObjects/StateMgr.h
         src/BezierPoint3D.cpp
         include/GraphicObjects/BezierPoint3D.h
@@ -48,6 +48,7 @@ set(PROJECT_SOURCES
         include/Rendering/Texture.h
         include/Intf.h
         include/ManagingObjects/SceneMgr.h
+        src/SceneMgr.cpp
 )
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)

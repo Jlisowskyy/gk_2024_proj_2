@@ -9,6 +9,7 @@
 #include "../include/GraphicObjects/DrawingWidget.h"
 #include "../include/Rendering/Mesh.h"
 #include "../include/Rendering/Texture.h"
+#include "../include/ManagingObjects/SceneMgr.h"
 
 /* external includes */
 #include <vector>
@@ -81,9 +82,11 @@ void StateMgr::connectToToolBar(ToolBar *toolBar) {
 }
 
 void StateMgr::loadDefaultSettings() {
-    m_drawNet = true;
-    m_useTexture = false;
-    m_color = UI_CONSTANTS::DEFAULT_PLAIN_COLOR;
+    m_sceneMgr = new SceneMgr(this, UI_CONSTANTS::DEFAULT_PLAIN_COLOR,
+                              UI_CONSTANTS::DEFAULT_DRAW_NET,
+                              UI_CONSTANTS::DEFAULT_USE_TEXTURE,
+                              UI_CONSTANTS::DEFAULT_PLAY_ANIMATION,
+                              _loadTextureFromFile(RESOURCE_CONSTANTS::DEFAULT_TEXTURE_PATH));
 
     m_drawingWidget->setObserverDistance(VIEW_SETTINGS::DEFAULT_OBSERVER_DISTANCE);
     m_drawingWidget->setLightZ(VIEW_SETTINGS::DEFAULT_LIGHT_Z);
@@ -103,13 +106,7 @@ void StateMgr::loadDefaultSettings() {
 }
 
 void StateMgr::redraw() {
-    m_drawingWidget->clearContent();
-
-    if (m_drawNet) {
-        _drawNet();
-    }
-    m_drawingWidget->updateScene();
-    _drawTexture();
+    m_sceneMgr->redrawScene(*m_drawingWidget, *m_texture, *m_mesh);
 }
 
 void StateMgr::onTriangulationChanged(const double value) {
@@ -140,13 +137,12 @@ void StateMgr::onMChanged(const double value) {
 }
 
 void StateMgr::onDrawNetChanged(const bool isChecked) {
-    m_drawNet = isChecked;
+    m_sceneMgr->setDrawNet(isChecked);
     redraw();
 }
 
 void StateMgr::onEnableTextureChanged(const bool isChecked) {
-    m_useTexture = isChecked;
-    m_drawingWidget->setFillType(m_textureImg && m_useTexture ? FillType::TEXTURE : FillType::SIMPLE_COLOR);
+    m_sceneMgr->setUseTexture(isChecked);
 }
 
 void StateMgr::onEnableNormalVectorsChanged(bool isChecked) {
@@ -182,7 +178,7 @@ void StateMgr::onColorChangedTriggered() {
         return;
     }
 
-    m_color = selectedColor;
+    m_sceneMgr->setColor(selectedColor);
 }
 
 void StateMgr::_loadBezierPoints(const QString &path) {
@@ -331,52 +327,6 @@ void StateMgr::_showToast(const QString &message, int duration) {
     QTimer::singleShot(duration, toast, &QLabel::deleteLater);
 }
 
-void StateMgr::_drawNet() {
-    /* Draw control points */
-    for (auto point: m_mesh->getControlPoints()) {
-        m_drawingWidget->drawBezierPoint(m_mesh->getPointAlignedWithMeshPlain(point));
-    }
-
-    /* Draw lines for control points */
-    static constexpr int CONTROL_POINTS_MATRIX_SIZE_INT = BEZIER_CONSTANTS::CONTROL_POINTS_MATRIX_SIZE;
-    static constexpr int CONTROL_POINTS_COUNT_INT = BEZIER_CONSTANTS::CONTROL_POINTS_COUNT;
-    for (int i = 0; i < CONTROL_POINTS_COUNT_INT - 1; i++) {
-        const int row = i / CONTROL_POINTS_MATRIX_SIZE_INT;
-        const int col = i % CONTROL_POINTS_MATRIX_SIZE_INT;
-
-        static constexpr int dx[] = {0, 1};
-        static constexpr int dy[] = {1, 0};
-
-        for (int j = 0; j < 2; j++) {
-            const int newRow = row + dx[j];
-            const int newCol = col + dy[j];
-
-            if (newRow >= CONTROL_POINTS_MATRIX_SIZE_INT || newCol >= CONTROL_POINTS_MATRIX_SIZE_INT) {
-                continue;
-            }
-
-            const int idx = newRow * CONTROL_POINTS_MATRIX_SIZE_INT + newCol;
-            auto point1 = m_mesh->getControlPoints()[i];
-            auto point2 = m_mesh->getControlPoints()[idx];
-
-            m_drawingWidget->drawBezierLine(m_mesh->getPointAlignedWithMeshPlain(point1),
-                                            m_mesh->getPointAlignedWithMeshPlain(point2));
-        }
-    }
-
-    /* Add triangle lines */
-    for (const auto &triangle: m_triangles) {
-        m_drawingWidget->drawTriangleLines(triangle[0].rotatedPosition, triangle[1].rotatedPosition);
-        m_drawingWidget->drawTriangleLines(triangle[1].rotatedPosition, triangle[2].rotatedPosition);
-        m_drawingWidget->drawTriangleLines(triangle[2].rotatedPosition, triangle[0].rotatedPosition);
-    }
-}
-
-void StateMgr::_drawTexture() {
-    if ()
-        m_texture->fillPixmap(m_drawingWidget->getPixMap(), m_mesh)
-}
-
 void StateMgr::_loadTexture(const QString &path) {
     const auto pTexture = _loadTextureFromFile(path);
 
@@ -384,14 +334,7 @@ void StateMgr::_loadTexture(const QString &path) {
         return;
     }
 
-    delete m_textureImg;
-    m_textureImg = pTexture;
-
-    m_drawingWidget->setTexture(m_textureImg);
-
-    if (m_useTexture) {
-        m_drawingWidget->setFillType(FillType::TEXTURE);
-    }
+    m_sceneMgr->setTextureImg(pTexture);
 }
 
 QImage *StateMgr::_loadTextureFromFile(const QString &path) {

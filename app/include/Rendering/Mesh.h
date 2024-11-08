@@ -13,7 +13,7 @@
 #include <QObject>
 #include <Qt>
 
-class Mesh {
+class Mesh : public QObject {
     Q_OBJECT
     // ------------------------------
     // Class creation

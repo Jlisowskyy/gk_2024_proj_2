@@ -172,11 +172,11 @@ protected:
     std::vector<Triangle> *m_triangles{};
 };
 
+
 template<typename ColorGetT, size_t N>
 void DrawingWidget::colorPolygon(ColorGetT colorGet, const PolygonArr<N> &polygon) {
     QPainter painter(m_pixMap);
 
-    /* sort the vertices by y coordinate */
     std::array<size_t, N> sorted{};
     for (size_t i = 0; i < N; i++) {
         sorted[i] = i;
@@ -199,7 +199,6 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, const PolygonArr<N> &polygo
     size_t nextVertex = 0;
 
     while (nextVertex < N || !aet.empty()) {
-        /* Detect et edges on the current y */
         while (nextVertex < N &&
                static_cast<int>(std::floor(polygon[sorted[nextVertex]].rotatedPosition.y())) == scanLineY) {
             const size_t curr = sorted[nextVertex];
@@ -227,30 +226,34 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, const PolygonArr<N> &polygo
             nextVertex++;
         }
 
-        /* sort the aet edges by the x coordinate */
         aet.sort([](const ActiveEdge &a, const ActiveEdge &b) {
             return a.x < b.x || (a.x == b.x && a.dx < b.dx);
         });
 
-        /* Draw the pixels */
         auto it = aet.begin();
         while (it != aet.end() && std::next(it) != aet.end()) {
             int x1 = static_cast<int>(std::floor(it->x));
             int x2 = static_cast<int>(std::ceil(std::next(it)->x));
 
+            float zLeft = it->z;
+            float zRight = std::next(it)->z;
+            float zStep = (x2 - x1) != 0 ? (zRight - zLeft) / (x2 - x1) : 0.0f;
+
             for (int x = x1; x <= x2; x++) {
-                vBuffer.position.setX(static_cast<float>(x));
-                vBuffer.position.setY(static_cast<float>(scanLineY));
-                vBuffer.position.setZ(100);
+                float z = zLeft + (x - x1) * zStep;
 
-                /* Process color values */
-                QColor color = colorGet(vBuffer.position, polygon);
-                QVector3D screenPos(vBuffer.position.x() + m_width / 2,
-                                    vBuffer.position.y() + m_height / 2,
-                                    0);
+                int screenX = static_cast<int>(x + m_width / 2);
+                int screenY = static_cast<int>(scanLineY + m_height / 2);
 
-                painter.setPen(QPen(color));
-                painter.drawPoint(static_cast<int>(screenPos.x()), static_cast<int>(screenPos.y()));
+                if (screenX >= 0 && screenX < m_width && screenY >= 0 && screenY < m_height) {
+                    vBuffer.position.setX(static_cast<float>(x));
+                    vBuffer.position.setY(static_cast<float>(scanLineY));
+                    vBuffer.position.setZ(z);
+
+                    QColor color = colorGet(vBuffer.position, polygon);
+                    painter.setPen(QPen(color));
+                    painter.drawPoint(screenX, screenY);
+                }
             }
 
             std::advance(it, 2);
@@ -258,9 +261,8 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, const PolygonArr<N> &polygo
 
         ++scanLineY;
 
-        /* Update x coordinates for each edge */
         for (auto &edge: aet) {
-            edge.x += edge.dx;
+            edge.update();
         }
 
         aet.remove_if([scanLineY](const ActiveEdge &edge) {
@@ -268,7 +270,6 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, const PolygonArr<N> &polygo
         });
     }
 
-     /* WTF: HORIZONTAL EDGES? */
     for (size_t i = 0; i < N; i++) {
         const auto& v1 = polygon[i].rotatedPosition;
         const auto& v2 = polygon[(i + 1) % N].rotatedPosition;
@@ -278,17 +279,25 @@ void DrawingWidget::colorPolygon(ColorGetT colorGet, const PolygonArr<N> &polygo
             const int x1 = static_cast<int>(std::floor(std::min(v1.x(), v2.x())));
             const int x2 = static_cast<int>(std::floor(std::max(v1.x(), v2.x())));
 
+            float zStart = v1.z();
+            float zEnd = v2.z();
+            float zStep = (x2 - x1) != 0 ? (zEnd - zStart) / (x2 - x1) : 0.0f;
+
             for (int x = x1; x <= x2; x++) {
-                vBuffer.position.setX(static_cast<float>(x));
-                vBuffer.position.setY(static_cast<float>(y));
+                float z = zStart + (x - x1) * zStep;
 
-                QColor color = colorGet(vBuffer.position, polygon);
-                QVector3D screenPos(vBuffer.position.x() + m_width / 2,
-                                    vBuffer.position.y() + m_height / 2,
-                                    0);
+                int screenX = static_cast<int>(x + m_width / 2);
+                int screenY = static_cast<int>(y + m_height / 2);
 
-                painter.setPen(QPen(color));
-                painter.drawPoint(static_cast<int>(screenPos.x()), static_cast<int>(screenPos.y()));
+                if (screenX >= 0 && screenX < m_width && screenY >= 0 && screenY < m_height) {
+                    vBuffer.position.setX(static_cast<float>(x));
+                    vBuffer.position.setY(static_cast<float>(y));
+                    vBuffer.position.setZ(z);
+
+                    QColor color = colorGet(vBuffer.position, polygon);
+                    painter.setPen(QPen(color));
+                    painter.drawPoint(screenX, screenY);
+                }
             }
         }
     }

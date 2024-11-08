@@ -298,10 +298,11 @@ void DrawingWidget::_drawTexture() {
 }
 
 QPointF DrawingWidget::_getLightPosition2D() const {
-    const float radian = 2.0f * M_PIf * m_lightPos;
+    const float spiralRadius = UI_CONSTANTS::DEFAULT_LIGHT_MOVE_RADIUS * m_lightPos;
+    const float radian = 2.0f * M_PIf * LIGHTING_CONSTANTS::NUMBER_OF_SPIRALS * m_lightPos;
 
-    const float x = UI_CONSTANTS::DEFAULT_LIGHT_MOVE_RADIUS * std::cos(radian);
-    const float y = UI_CONSTANTS::DEFAULT_LIGHT_MOVE_RADIUS * std::sin(radian);
+    const float x = spiralRadius * std::cos(radian);
+    const float y = spiralRadius * std::sin(radian);
 
     return {x, y};
 }
@@ -362,7 +363,7 @@ DrawingWidget::_interpolateFromTrianglePoint(const QVector3D &pos, const Triangl
 
 QColor DrawingWidget::_applyLightToTriangleColor(const QColor &color, const QVector3D &normalVector,
                                                  const QVector3D &pos) const {
-    return color;
+//    return color;
 
     const QVector3D L = (_getLightPosition3D() - pos).normalized();
     const QVector3D N = normalVector.normalized();
@@ -370,8 +371,8 @@ QColor DrawingWidget::_applyLightToTriangleColor(const QColor &color, const QVec
     const float NdotL = QVector3D::dotProduct(N, L);
     const QVector3D R = (2.0f * NdotL * N - L).normalized();
 
-    const float cos0 = std::max(0.0f, NdotL);
-    const float cos1 = std::max(0.0f, QVector3D::dotProduct(V, R));
+    const float cos0 = std::max(0.0f, -NdotL);
+    const float cos1 = std::max(0.0f, -QVector3D::dotProduct(V, R));
     const float cos1m = std::pow(cos1, m_mCoef);
 
     QVector3D lightColors = QVector3D(

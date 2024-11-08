@@ -47,9 +47,10 @@ namespace LIGHTING_CONSTANTS {
     static constexpr float DEFAULT_KD = 0.5f;
     static constexpr int DEFAULT_M = 50;
     static constexpr int ANIMATION_TIME_STEP_MS = 50;
-    static constexpr float LIGHT_SPEED = 0.01f;
+    static constexpr float LIGHT_SPEED = 0.1f;
     static constexpr float LIGHT_MOVEMENT_STEP = (ANIMATION_TIME_STEP_MS / 1000.0) * LIGHT_SPEED;
     static constexpr Qt::GlobalColor DEFAULT_LIGHT_COLOR = Qt::white;
+    static constexpr float NUMBER_OF_SPIRALS = 5.0f;
 }
 
 namespace SLIDER_CONSTANTS {

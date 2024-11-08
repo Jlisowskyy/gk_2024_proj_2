@@ -205,6 +205,7 @@ void Texture::colorPolygon(QPixmap &pixmap, ColorGetterT colorGet, const Polygon
             for (int x = x1; x <= x2; x++) {
                 vBuffer.position.setX(static_cast<float>(x));
                 vBuffer.position.setY(static_cast<float>(y));
+                vBuffer.position.setZ(100);
 
                 const QColor color = _processColor(colorGet, vBuffer.position, polygon, lightPos);
                 QVector3D screenPos(vBuffer.position.x() + static_cast<float>(pixmap.width()) / 2.0f,

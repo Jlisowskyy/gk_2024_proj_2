@@ -13,7 +13,7 @@ namespace UI_CONSTANTS {
     /* Element Sizes */
     static constexpr int DEFAULT_SLIDER_SIZE = 200;
     static constexpr int DEFAULT_ICON_SIZE = 24;
-    static constexpr int DEFAULT_LIGHT_MOVE_RADIUS = 600;
+    static constexpr int DEFAULT_LIGHT_MOVE_RADIUS = 450;
     static constexpr int DEFAULT_LIGHT_SOURCE_RADIUS = 15;
 
     /* Colors */
@@ -51,7 +51,7 @@ namespace LIGHTING_CONSTANTS {
     static constexpr float DEFAULT_KS = 0.5f;
     static constexpr float DEFAULT_KD = 0.5f;
     static constexpr int DEFAULT_M = 50;
-    static constexpr int ANIMATION_TIME_STEP_MS = 50;
+    static constexpr int ANIMATION_TIME_STEP_MS = 33;
     static constexpr float LIGHT_SPEED = 0.1f;
     static constexpr float LIGHT_MOVEMENT_STEP = (ANIMATION_TIME_STEP_MS / 1000.0) * LIGHT_SPEED;
     static constexpr Qt::GlobalColor DEFAULT_LIGHT_COLOR = Qt::white;

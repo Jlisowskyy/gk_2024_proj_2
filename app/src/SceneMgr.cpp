@@ -154,8 +154,7 @@ void SceneMgr::_onTimer() {
         return;
     }
 
-    m_lightPos += std::fmod(
-        LIGHTING_CONSTANTS::LIGHT_MOVEMENT_STEP, 1.0f);
+    m_lightPos = std::fmod(m_lightPos + LIGHTING_CONSTANTS::LIGHT_MOVEMENT_STEP, 1.0f);
 
     _processLightPosition();
     _drawTexture(*m_drawingWidget, *m_texture, *m_mesh);
@@ -217,7 +216,7 @@ void SceneMgr::_drawTexture(const DrawingWidget &drawingWidget, const Texture &t
     switch (m_fillType) {
         case FillType::TEXTURE: {
             texture.fillPixmap(*drawingWidget.getPixMap(), mesh,
-                               [this](const int u, const int v) {
+                               [this](const float u, const float v) {
                                    return m_textureImg->pixelColor(
                                        static_cast<int>(u * static_cast<float>(m_textureImg->width() - 1)),
                                        static_cast<int>(v * static_cast<float>(m_textureImg->height() - 1))
@@ -229,7 +228,7 @@ void SceneMgr::_drawTexture(const DrawingWidget &drawingWidget, const Texture &t
         break;
         case FillType::SIMPLE_COLOR: {
             texture.fillPixmap(*drawingWidget.getPixMap(), mesh,
-                               [this]([[maybe_unused]] const int u, [[maybe_unused]] const int v) {
+                               [this]([[maybe_unused]] const float u, [[maybe_unused]] const float v) {
                                    return m_color;
                                },
                                _getLightPos()

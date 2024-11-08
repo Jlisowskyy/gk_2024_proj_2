@@ -299,7 +299,7 @@ void DrawingWidget::_drawTexture() {
 
 QPointF DrawingWidget::_getLightPosition2D() const {
     const float spiralRadius = UI_CONSTANTS::DEFAULT_LIGHT_MOVE_RADIUS * m_lightPos;
-    const float radian = 2.0f * M_PIf * LIGHTING_CONSTANTS::NUMBER_OF_SPIRALS * m_lightPos;
+    const float radian = 2.0f * static_cast<float>(M_PI) * LIGHTING_CONSTANTS::NUMBER_OF_SPIRALS * m_lightPos;
 
     const float x = spiralRadius * std::cos(radian);
     const float y = spiralRadius * std::sin(radian);

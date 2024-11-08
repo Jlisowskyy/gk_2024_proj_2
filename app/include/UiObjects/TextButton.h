@@ -8,8 +8,8 @@
 /* internal includes */
 
 /* external includes */
-#include <Qt>
 #include <QAction>
+#include <QWidget>
 
 class TextButton : public QWidget {
     Q_OBJECT

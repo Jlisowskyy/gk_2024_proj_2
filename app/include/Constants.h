@@ -4,7 +4,7 @@
 #include <QColor>
 
 /* Utility Functions */
-constexpr inline int CONVERT_TO_DEFAULT_STEP(double value, double min, double max, int steps) {
+constexpr inline int CONVERT_TO_DEFAULT_STEP(const double value, const double min, const double max, const int steps) {
     const double step = (max - min) / steps;
     return static_cast<int>((value - min) / step);
 }

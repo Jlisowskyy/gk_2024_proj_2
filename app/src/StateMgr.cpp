@@ -108,6 +108,8 @@ void StateMgr::loadDefaultSettings() {
     );
 
     m_drawingWidget->setObserverDistance(VIEW_SETTINGS::DEFAULT_OBSERVER_DISTANCE);
+
+    m_sceneMgr->bondWithComponents(m_drawingWidget, m_texture, m_mesh);
     redraw();
 }
 
@@ -144,7 +146,6 @@ void StateMgr::onMChanged(const double value) {
 
 void StateMgr::onDrawNetChanged(const bool isChecked) {
     m_sceneMgr->setDrawNet(isChecked);
-    redraw();
 }
 
 void StateMgr::onEnableTextureChanged(const bool isChecked) {

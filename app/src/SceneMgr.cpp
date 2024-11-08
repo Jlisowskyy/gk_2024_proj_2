@@ -18,7 +18,7 @@ SceneMgr::SceneMgr(QObject *parent,
                    const int lightZ,
                    QImage *image) : QObject(parent),
                                     m_useTexture(useTexture),
-                                    m_isAnimationPlayed(playAnimation),
+                                    m_isAnimationPlaying(playAnimation),
                                     m_drawNet(drawNet),
                                     m_fillType(getFillType()),
                                     m_textureImg(image),
@@ -39,15 +39,15 @@ void SceneMgr::redrawScene(DrawingWidget &drawingWidget, const Texture &texture,
         _drawNet(drawingWidget, mesh);
     }
     drawingWidget.updateScene();
-    _drawTexture(drawingWidget, texture, mesh);
 }
 
-void SceneMgr::setupLightAnim(DrawingWidget *drawingWidget, Texture *texture, Mesh *mesh) {
+void SceneMgr::bondWithComponents(DrawingWidget *drawingWidget, Texture *texture, Mesh *mesh) {
     Q_ASSERT(drawingWidget && texture && mesh);
     Q_ASSERT(!m_texture && !m_mesh && !m_drawingWidget);
     m_texture = texture;
     m_mesh = mesh;
     m_drawingWidget = drawingWidget;
+    m_isBound = false;
 
     connect(drawingWidget, &DrawingWidget::onElementsUpdate, this, &SceneMgr::_addLightItem);
     _addLightItem(drawingWidget);
@@ -56,8 +56,96 @@ void SceneMgr::setupLightAnim(DrawingWidget *drawingWidget, Texture *texture, Me
     m_timer->start(LIGHTING_CONSTANTS::ANIMATION_TIME_STEP_MS);
 }
 
+void SceneMgr::unbound() {
+    m_texture = nullptr;
+    m_mesh = nullptr;
+    m_drawingWidget = nullptr;
+
+    /* stop clock */
+}
+
+void SceneMgr::setColor(const QColor &color) {
+    if (color == m_color) {
+        return;
+    }
+
+    m_color = color;
+
+    if (m_isBound && !m_isAnimationPlaying) {
+        _drawTexture(*m_drawingWidget, *m_texture, *m_mesh);
+    }
+}
+
+void SceneMgr::setIsAnimationPlayed(const bool isAnimationPlaying) {
+    m_isAnimationPlaying = isAnimationPlaying;
+}
+
+void SceneMgr::setDrawNet(const bool drawNet) {
+    if (m_drawNet == drawNet) {
+        return;
+    }
+
+    m_drawNet = drawNet;
+    redrawScene(*m_drawingWidget, *m_texture, *m_mesh);
+}
+
+void SceneMgr::setUseTexture(const bool useTexture) {
+    if (m_useTexture == useTexture) {
+        return;
+    }
+
+    m_useTexture = useTexture;
+
+    const FillType oldFill = m_fillType;
+    m_fillType = getFillType();
+
+    if (m_isBound && !m_isAnimationPlaying && m_fillType != oldFill) {
+        _drawTexture(*m_drawingWidget, *m_texture, *m_mesh);
+    }
+}
+
+void SceneMgr::setTextureImg(QImage *image) {
+    if (image == m_textureImg) {
+        return;
+    }
+
+    delete m_textureImg;
+    m_textureImg = image;
+
+    const FillType oldFill = m_fillType;
+    m_fillType = getFillType();
+
+    if (m_isBound && !m_isAnimationPlaying && m_fillType != oldFill) {
+        _drawTexture(*m_drawingWidget, *m_texture, *m_mesh);
+    }
+}
+
+void SceneMgr::setLightZ(const int z) {
+    if (m_lightZ == z) {
+        return;
+    }
+
+    m_lightZ = z;
+
+    if (m_isBound && !m_isAnimationPlaying) {
+        _drawTexture(*m_drawingWidget, *m_texture, *m_mesh);
+    }
+}
+
+void SceneMgr::setLightColor(const QColor &color) {
+    if (m_lightColor == color) {
+        return;
+    }
+
+    m_lightColor = color;
+
+    if (m_isBound && !m_isAnimationPlaying) {
+        _drawTexture(*m_drawingWidget, *m_texture, *m_mesh);
+    }
+}
+
 void SceneMgr::_onTimer() {
-    if (!m_isAnimationPlayed) {
+    if (!m_isAnimationPlaying) {
         return;
     }
 
@@ -68,10 +156,15 @@ void SceneMgr::_onTimer() {
     _drawTexture(*m_drawingWidget, *m_texture, *m_mesh);
 }
 
-void SceneMgr::_addLightItem(const DrawingWidget *sender) {
+void SceneMgr::_onElementsUpdate(const DrawingWidget *sender) {
+    _addLightItem(sender);
+    _drawTexture(*sender, *m_texture, *m_mesh);
+}
+
+void SceneMgr::_addLightItem(const DrawingWidget *drawingWidget) {
     const auto point = _getLightPosition2D();
 
-    m_lightEllipse = sender->scene()->addEllipse(
+    m_lightEllipse = drawingWidget->scene()->addEllipse(
         point.x() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
         point.y() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
         2 * UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,

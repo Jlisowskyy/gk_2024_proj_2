@@ -183,6 +183,7 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
                              ":/icons/stop_icon.png");
     m_stopLightMovementButton = pButton->getAction();
     m_stopLightMovementButton->setCheckable(true);
+    m_stopLightMovementButton->setChecked(true);
     m_toolBar->addWidget(pButton);
 
     pButton = new TextButton(m_toolBar,

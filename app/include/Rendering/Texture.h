@@ -26,7 +26,7 @@ public:
 
     Texture(QObject *parent, float ksCoef, float kdCoef, float mCoef, const QColor &lightColor);
 
-    ~Texture() = default;
+    ~Texture() override = default;
 
     // ------------------------------
     // Class interaction

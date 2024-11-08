@@ -20,14 +20,17 @@ Mesh::Mesh(QObject *parent, const ControlPoints &controlPoints, const float alph
 
 void Mesh::setAlpha(const double alpha) {
     m_alpha = static_cast<float>(alpha);
+    m_triangles = _interpolateBezier(m_controlPoints);
 }
 
 void Mesh::setBeta(const double beta) {
     m_beta = static_cast<float>(beta);
+    m_triangles = _interpolateBezier(m_controlPoints);
 }
 
 void Mesh::setAccuracy(const double accuracy) {
     m_triangleAccuracy = static_cast<int>(accuracy);
+    m_triangles = _interpolateBezier(m_controlPoints);
 }
 
 MeshArr Mesh::_interpolateBezier(const ControlPoints &controlPoints) const {

@@ -39,6 +39,8 @@ public:
                       int lightZ,
                       QImage *image = nullptr);
 
+    ~SceneMgr() override = default;
+
     // ------------------------------
     // Class interaction
     // ------------------------------
@@ -47,45 +49,28 @@ public:
 
     void redrawScene(DrawingWidget &drawingWidget, const Texture &texture, const Mesh &mesh);
 
-    void setupLightAnim(DrawingWidget *drawingWidget, Texture *texture, Mesh *mesh);
+    void bondWithComponents(DrawingWidget *drawingWidget, Texture *texture, Mesh *mesh);
+
+    void unbound();
 
     // ------------------------------
     // Class public slots
     // ------------------------------
 
 public slots:
-    void setColor(const QColor &color) {
-        m_color = color;
-    }
+    void setColor(const QColor &color);
 
-    void setIsAnimationPlayed(const bool isAnimationPlayed) {
-        m_isAnimationPlayed = isAnimationPlayed;
-    }
+    void setIsAnimationPlayed(bool isAnimationPlaying);
 
-    void setDrawNet(const bool drawNet) {
-        m_drawNet = drawNet;
-    }
+    void setDrawNet(bool drawNet);
 
-    void setUseTexture(const bool useTexture) {
-        m_useTexture = useTexture;
+    void setUseTexture(bool useTexture);
 
-        m_fillType = getFillType();
-    }
+    void setTextureImg(QImage *image);
 
-    void setTextureImg(QImage *image) {
-        delete m_textureImg;
-        m_textureImg = image;
+    void setLightZ(int z);
 
-        m_fillType = getFillType();
-    }
-
-    void setLightZ(const int z) {
-        m_lightZ = z;
-    }
-
-    void setLightColor(const QColor &color) {
-        m_lightColor = color;
-    }
+    void setLightColor(const QColor &color);
 
     // ------------------------------
     // Class protected methods
@@ -93,7 +78,7 @@ public slots:
 protected slots:
     void _onTimer();
 
-    void _addLightItem(const DrawingWidget *sender);
+    void _onElementsUpdate(const DrawingWidget *sender);
 
 protected:
     static void _drawNet(DrawingWidget &drawingWidget, const Mesh &mesh);
@@ -106,16 +91,19 @@ protected:
 
     [[nodiscard]] QVector3D _getLightPos() const;
 
+    void _addLightItem(const DrawingWidget *drawingWidget);
+
     // ------------------------------
     // Class fields
     // ------------------------------
 
     /* Settings fields */
     bool m_useTexture{};
-    bool m_isAnimationPlayed{};
+    bool m_isAnimationPlaying{};
     bool m_drawNet{};
 
     /* connected objects */
+    bool m_isBound{};
     DrawingWidget *m_drawingWidget{};
     Texture *m_texture{};
     Mesh *m_mesh{};

@@ -20,7 +20,7 @@
 #include <QGraphicsEllipseItem>
 
 /* internal includes */
-#include "../include/Intf.h"
+#include "../Intf.h"
 
 /* Forward declaration */
 class StateMgr;

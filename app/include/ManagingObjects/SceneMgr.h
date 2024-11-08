@@ -30,7 +30,13 @@ class SceneMgr final : public QObject {
     // Class creation
     // ------------------------------
 public:
-    explicit SceneMgr(QObject *parent, const QColor &color, bool drawNet, bool useTexture, bool playAnimation,
+    explicit SceneMgr(QObject *parent,
+                      const QColor &color,
+                      bool drawNet,
+                      bool useTexture,
+                      bool playAnimation,
+                      const QColor &lightColor,
+                      int lightZ,
                       QImage *image = nullptr);
 
     // ------------------------------
@@ -77,6 +83,10 @@ public slots:
         m_lightZ = z;
     }
 
+    void setLightColor(const QColor &color) {
+        m_lightColor = color;
+    }
+
     // ------------------------------
     // Class protected methods
     // ------------------------------
@@ -121,6 +131,7 @@ protected:
     QTimer *m_timer{};
     int m_lightZ{};
     float m_lightPos{};
+    QColor m_lightColor{};
     QGraphicsEllipseItem *m_lightEllipse{};
 };
 

@@ -7,7 +7,7 @@
 
 
 /* internal includes */
-#include "../include/Intf.h"
+#include "../Intf.h"
 
 /* external includes */
 #include <QObject>
@@ -19,7 +19,7 @@ class Mesh : public QObject {
     // Class creation
     // ------------------------------
 public:
-    explicit Mesh(const ControlPoints &controlPoints, float alpha, float beta, int accuracy);
+    explicit Mesh(QObject *parent, const ControlPoints &controlPoints, float alpha, float beta, int accuracy);
 
     ~Mesh() = default;
 

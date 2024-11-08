@@ -14,13 +14,18 @@ SceneMgr::SceneMgr(QObject *parent,
                    const bool drawNet,
                    const bool useTexture,
                    const bool playAnimation,
+                   const QColor &lightColor,
+                   const int lightZ,
                    QImage *image) : QObject(parent),
                                     m_useTexture(useTexture),
                                     m_isAnimationPlayed(playAnimation),
                                     m_drawNet(drawNet),
                                     m_fillType(getFillType()),
+                                    m_textureImg(image),
                                     m_color(color),
-                                    m_timer(new QTimer(this)) {
+                                    m_timer(new QTimer(this)),
+                                    m_lightZ(lightZ),
+                                    m_lightColor(lightColor) {
 }
 
 FillType SceneMgr::getFillType() const {
@@ -44,7 +49,7 @@ void SceneMgr::setupLightAnim(DrawingWidget *drawingWidget, Texture *texture, Me
     m_mesh = mesh;
     m_drawingWidget = drawingWidget;
 
-    connect(drawingWidget, DrawingWidget::onElementsUpdate, this, &SceneMgr::_addLightItem);
+    connect(drawingWidget, &DrawingWidget::onElementsUpdate, this, &SceneMgr::_addLightItem);
     _addLightItem(drawingWidget);
 
     connect(m_timer, &QTimer::timeout, this, &SceneMgr::_onTimer);

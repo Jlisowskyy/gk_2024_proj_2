@@ -4,8 +4,9 @@
 
 #include "../include/Rendering/Texture.h"
 
-Texture::Texture(const float ksCoef, const float kdCoef, const float mCoef,
-                 const QColor &lightColor) : m_kdCoef(kdCoef),
+Texture::Texture(QObject *parent, const float ksCoef, const float kdCoef, const float mCoef,
+                 const QColor &lightColor) : QObject(parent),
+                                             m_kdCoef(kdCoef),
                                              m_ksCoef(ksCoef),
                                              m_mCoef(mCoef),
                                              m_lightColor(lightColor) {

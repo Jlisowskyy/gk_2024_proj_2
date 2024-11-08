@@ -86,22 +86,28 @@ void StateMgr::loadDefaultSettings() {
                               UI_CONSTANTS::DEFAULT_DRAW_NET,
                               UI_CONSTANTS::DEFAULT_USE_TEXTURE,
                               UI_CONSTANTS::DEFAULT_PLAY_ANIMATION,
-                              _loadTextureFromFile(RESOURCE_CONSTANTS::DEFAULT_TEXTURE_PATH));
-
-    m_drawingWidget->setObserverDistance(VIEW_SETTINGS::DEFAULT_OBSERVER_DISTANCE);
-    m_drawingWidget->setLightZ(VIEW_SETTINGS::DEFAULT_LIGHT_Z);
-    m_drawingWidget->setLightColor(LIGHTING_CONSTANTS::DEFAULT_LIGHT_COLOR);
-    m_drawingWidget->setLightZ(VIEW_SETTINGS::DEFAULT_LIGHT_Z);
+                              LIGHTING_CONSTANTS::DEFAULT_LIGHT_COLOR,
+                              VIEW_SETTINGS::DEFAULT_LIGHT_Z,
+                              _loadTextureFromFile(RESOURCE_CONSTANTS::DEFAULT_TEXTURE_PATH)
+    );
 
     _loadTexture(RESOURCE_CONSTANTS::DEFAULT_TEXTURE_PATH);
 
-    m_mesh = new Mesh(_loadBezierPointsOpenFile(RESOURCE_CONSTANTS::DEFAULT_CONTROL_POINTS_PATH, nullptr),
-                      VIEW_SETTINGS::DEFAULT_ALPHA, VIEW_SETTINGS::DEFAULT_BETA,
-                      VIEW_SETTINGS::DEFAULT_TRIANGLE_ACCURACY);
+    m_mesh = new Mesh(this,
+                      _loadBezierPointsOpenFile(RESOURCE_CONSTANTS::DEFAULT_CONTROL_POINTS_PATH, nullptr),
+                      VIEW_SETTINGS::DEFAULT_ALPHA,
+                      VIEW_SETTINGS::DEFAULT_BETA,
+                      VIEW_SETTINGS::DEFAULT_TRIANGLE_ACCURACY
+    );
 
-    m_texture = new Texture(LIGHTING_CONSTANTS::DEFAULT_KS, LIGHTING_CONSTANTS::DEFAULT_KD,
-                            LIGHTING_CONSTANTS::DEFAULT_M, LIGHTING_CONSTANTS::DEFAULT_LIGHT_COLOR);
+    m_texture = new Texture(this,
+                            LIGHTING_CONSTANTS::DEFAULT_KS,
+                            LIGHTING_CONSTANTS::DEFAULT_KD,
+                            LIGHTING_CONSTANTS::DEFAULT_M,
+                            LIGHTING_CONSTANTS::DEFAULT_LIGHT_COLOR
+    );
 
+    m_drawingWidget->setObserverDistance(VIEW_SETTINGS::DEFAULT_OBSERVER_DISTANCE);
     redraw();
 }
 
@@ -149,7 +155,7 @@ void StateMgr::onEnableNormalVectorsChanged(bool isChecked) {
 }
 
 void StateMgr::onStopLightingMovementChanged(const bool isChecked) {
-    m_drawingWidget->setStopLight(isChecked);
+    m_sceneMgr->setIsAnimationPlayed(!isChecked);
 }
 
 void StateMgr::onLoadBezierPointsTriggered() {
@@ -358,5 +364,5 @@ void StateMgr::onLightColorChangedTriggered() {
         return;
     }
 
-    m_drawingWidget->setLightColor(selectedColor);
+    m_sceneMgr->setLightColor(selectedColor);
 }

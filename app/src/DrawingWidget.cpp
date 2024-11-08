@@ -82,7 +82,7 @@ void DrawingWidget::updateElements() {
     pMapItem->setPos(QPointF(-m_width / 2, -m_height / 2));
     m_pixMapItem = pMapItem;
 
-    emit onElementsUpdate;
+    emit onElementsUpdate(this);
 }
 
 void DrawingWidget::_drawBezierPoint(const QVector3D &point, const size_t idx) const {

@@ -6,8 +6,8 @@
 #define TEXTURE_H
 
 /* internal includes */
-#include "../include/Intf.h"
-#include "../include/Rendering/Mesh.h"
+#include "../Intf.h"
+#include "../Rendering/Mesh.h"
 
 /* external includes */
 #include <QObject>
@@ -24,7 +24,7 @@ public:
     // Class creation
     // ------------------------------
 
-    Texture(float ksCoef, float kdCoef, float mCoef, const QColor &lightColor);
+    Texture(QObject *parent, float ksCoef, float kdCoef, float mCoef, const QColor &lightColor);
 
     ~Texture() = default;
 
@@ -90,8 +90,8 @@ void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, colorGet colorGetter
     pixmap.fill(Qt::white);
 
     // #pragma omp parallel for schedule(static)
-    for (auto triangle: mesh.getMeshArr()) {
-        colorPolygon(pixmap, triangle, colorGetter, lightPos);
+    for (const auto &triangle: mesh.getMeshArr()) {
+        colorPolygon(pixmap, colorGetter, triangle, lightPos);
     }
 }
 

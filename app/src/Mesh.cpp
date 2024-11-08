@@ -9,8 +9,9 @@
 #include <cmath>
 
 
-Mesh::Mesh(const ControlPoints &controlPoints, const float alpha, const float beta,
-           const int accuracy): m_triangleAccuracy(accuracy),
+Mesh::Mesh(QObject *parent, const ControlPoints &controlPoints, const float alpha, const float beta,
+           const int accuracy): QObject(parent),
+                                m_triangleAccuracy(accuracy),
                                 m_alpha(alpha),
                                 m_beta(beta),
                                 m_controlPoints(controlPoints),

@@ -22,6 +22,8 @@ class ToolBar;
 
 class DrawingWidget;
 
+class Mesh;
+
 class ObjectMgr : public QObject {
     Q_OBJECT
 
@@ -34,13 +36,6 @@ public:
     ~ObjectMgr() override;
 
     // ------------------------------
-    // Class types
-    // ------------------------------
-
-    using ControlPoints = std::array<QVector3D,BEZIER_CONSTANTS::CONTROL_POINTS_COUNT>;
-    using BernsteinTable = std::array<float, BEZIER_CONSTANTS::BERNSTEIN_TABLE_SIZE>;
-
-    // ------------------------------
     // Class interaction
     // ------------------------------
 
@@ -49,12 +44,6 @@ public:
     void loadDefaultSettings();
 
     void redraw();
-
-    static QVector3D &rotateZ(QVector3D &point, double angle);
-
-    static QVector3D &rotateX(QVector3D &point, double angle);
-
-    QVector3D &rotate(QVector3D &point) const;
 
     // ------------------------------
     // Class slots
@@ -112,16 +101,9 @@ protected:
 
     [[nodiscard]] QImage *_loadTextureFromFile(const QString &path);
 
-    void showToast(const QString &message, int duration = UI_CONSTANTS::DEFAULT_TOAST_DURATION_MS);
+    void _showToast(const QString &message, int duration = UI_CONSTANTS::DEFAULT_TOAST_DURATION_MS);
 
     void _drawNet();
-
-    void _interpolateBezier();
-
-    [[nodiscard]] static BernsteinTable _computeBernstein(float t);
-
-    [[nodiscard]] std::tuple<QVector3D, QVector3D, QVector3D> _computePointAndDeriv(
-        const BernsteinTable &bu, const BernsteinTable &bv) const;
 
     // ------------------------------
     // Class fields
@@ -130,16 +112,11 @@ protected:
     QWidget *m_parentWidget{};
     DrawingWidget *m_drawingWidget{};
     QString m_previousDirectory{};
+    Mesh *m_mesh{};
 
-    int m_triangleAccuracy{};
     bool m_drawNet{};
     bool m_useTexture{};
-    double m_alpha{};
-    double m_beta{};
     QImage *m_texture{};
-
-    ControlPoints m_controlPoints{};
-    std::vector<Triangle> m_triangles{};
 };
 
 

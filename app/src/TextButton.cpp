@@ -4,7 +4,7 @@
 
 /* internal includes */
 #include "../include/UiObjects/TextButton.h"
-#include "../include/Constants.h"
+#include "../include/Intf.h"
 
 /* external includes */
 #include <QHBoxLayout>

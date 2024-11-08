@@ -40,8 +40,13 @@ set(PROJECT_SOURCES
         include/PrimitiveData/Triangle.h
         src/Vertex.cpp
         include/PrimitiveData/ActiveEdge.h
-        include/GraphicObjects/BitMap.cpp
-        include/GraphicObjects/BitMap.h
+        src/BitMap.cpp
+        include/Rendering/BitMap.h
+        include/Rendering/Mesh.h
+        src/Mesh.cpp
+        src/Texture.cpp
+        include/Rendering/Texture.h
+        include/Intf.h
 )
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)

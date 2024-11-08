@@ -7,6 +7,7 @@
 #include "../include/ManagingObjects/ToolBar.h"
 #include "../include/UiObjects/DoubleSlider.h"
 #include "../include/GraphicObjects/DrawingWidget.h"
+#include "../include/Rendering/Mesh.h"
 
 /* external includes */
 #include <vector>
@@ -83,10 +84,6 @@ void ObjectMgr::loadDefaultSettings() {
     m_drawNet = true;
     m_useTexture = false;
 
-    m_triangleAccuracy = VIEW_SETTINGS::DEFAULT_TRIANGLE_ACCURACY;
-    m_alpha = 0;
-    m_beta = 0;
-
     m_drawingWidget->setKdCoef(LIGHTING_CONSTANTS::DEFAULT_KD);
     m_drawingWidget->setKsCoef(LIGHTING_CONSTANTS::DEFAULT_KS);
     m_drawingWidget->setMCoef(LIGHTING_CONSTANTS::DEFAULT_M);
@@ -100,8 +97,12 @@ void ObjectMgr::loadDefaultSettings() {
     m_drawingWidget->setLightColor(LIGHTING_CONSTANTS::DEFAULT_LIGHT_COLOR);
     m_drawingWidget->setLightZ(VIEW_SETTINGS::DEFAULT_LIGHT_Z);
 
-    _loadBezierPoints(RESOURCE_CONSTANTS::DEFAULT_CONTROL_POINTS_PATH);
     _loadTexture(RESOURCE_CONSTANTS::DEFAULT_TEXTURE_PATH);
+
+    m_mesh = new Mesh(_loadBezierPointsOpenFile(RESOURCE_CONSTANTS::DEFAULT_CONTROL_POINTS_PATH, nullptr),
+                      VIEW_SETTINGS::DEFAULT_ALPHA, VIEW_SETTINGS::DEFAULT_BETA,
+                      VIEW_SETTINGS::DEFAULT_TRIANGLE_ACCURACY);
+
     redraw();
 }
 
@@ -109,26 +110,24 @@ void ObjectMgr::redraw() {
     m_drawingWidget->clearContent();
     m_triangles.clear();
 
-    _interpolateBezier();
-
     if (m_drawNet) {
         _drawNet();
     }
     m_drawingWidget->updateScene();
 }
 
-void ObjectMgr::onTriangulationChanged(double value) {
-    m_triangleAccuracy = static_cast<int>(value);
+void ObjectMgr::onTriangulationChanged(const double value) {
+    m_mesh->setAccuracy(value);
     redraw();
 }
 
 void ObjectMgr::onAlphaChanged(const double value) {
-    m_alpha = value;
+    m_mesh->setAlpha(value);
     redraw();
 }
 
 void ObjectMgr::onBetaChanged(const double value) {
-    m_beta = value;
+    m_mesh->setBeta(value);
     redraw();
 }
 
@@ -198,7 +197,7 @@ void ObjectMgr::_loadBezierPoints(const QString &path) {
         return;
     }
 
-    m_controlPoints = controlPoints;
+    m_mesh->setControlPoints(controlPoints);
     redraw();
 }
 
@@ -222,11 +221,11 @@ void ObjectMgr::_openFileDialog(const std::function<void(const QString &)> &call
     }
 }
 
-ObjectMgr::ControlPoints ObjectMgr::_loadBezierPointsOpenFile(const QString &path, bool *ok) {
+ControlPoints ObjectMgr::_loadBezierPointsOpenFile(const QString &path, bool *ok) {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qWarning() << "Unable to open file:" << path;
-        showToast("Failed to open file");
+        _showToast("Failed to open file");
 
         if (ok) {
             *ok = false;
@@ -240,7 +239,7 @@ ObjectMgr::ControlPoints ObjectMgr::_loadBezierPointsOpenFile(const QString &pat
     return controlPoints;
 }
 
-ObjectMgr::ControlPoints ObjectMgr::_loadBezierPointsParse(QFile &file, bool *ok) {
+ControlPoints ObjectMgr::_loadBezierPointsParse(QFile &file, bool *ok) {
     ControlPoints controlPoints{};
 
     QTextStream istream(&file);
@@ -259,7 +258,7 @@ ObjectMgr::ControlPoints ObjectMgr::_loadBezierPointsParse(QFile &file, bool *ok
                     *ok = false;
                 }
 
-                showToast("Invalid file format");
+                _showToast("Invalid file format");
                 return controlPoints;
             }
 
@@ -279,7 +278,7 @@ ObjectMgr::ControlPoints ObjectMgr::_loadBezierPointsParse(QFile &file, bool *ok
                     *ok = false;
                 }
 
-                showToast("Too many control points");
+                _showToast("Too many control points");
                 return controlPoints;
             }
 
@@ -291,7 +290,7 @@ ObjectMgr::ControlPoints ObjectMgr::_loadBezierPointsParse(QFile &file, bool *ok
                 *ok = false;
             }
 
-            showToast("Invalid file format");
+            _showToast("Invalid file format");
             return controlPoints;
         }
     }
@@ -304,7 +303,7 @@ ObjectMgr::ControlPoints ObjectMgr::_loadBezierPointsParse(QFile &file, bool *ok
             *ok = false;
         }
 
-        showToast("Wrong number of control points");
+        _showToast("Wrong number of control points");
         return controlPoints;
     }
 
@@ -314,7 +313,7 @@ ObjectMgr::ControlPoints ObjectMgr::_loadBezierPointsParse(QFile &file, bool *ok
     return controlPoints;
 }
 
-void ObjectMgr::showToast(const QString &message, int duration) {
+void ObjectMgr::_showToast(const QString &message, int duration) {
     /* temporary */
     return;
 
@@ -338,8 +337,8 @@ void ObjectMgr::showToast(const QString &message, int duration) {
 
 void ObjectMgr::_drawNet() {
     /* Draw control points */
-    for (auto point: m_controlPoints) {
-        m_drawingWidget->drawBezierPoint(rotate(point));
+    for (auto point: m_mesh->getControlPoints()) {
+        m_drawingWidget->drawBezierPoint(m_mesh->getPointAlignedWithMeshPlain(point));
     }
 
     /* Draw lines for control points */
@@ -361,10 +360,11 @@ void ObjectMgr::_drawNet() {
             }
 
             const int idx = newRow * CONTROL_POINTS_MATRIX_SIZE_INT + newCol;
-            auto point1 = m_controlPoints[i];
-            auto point2 = m_controlPoints[idx];
+            auto point1 = m_mesh->getControlPoints()[i];
+            auto point2 = m_mesh->getControlPoints()[idx];
 
-            m_drawingWidget->drawBezierLine(rotate(point1), rotate(point2));
+            m_drawingWidget->drawBezierLine(m_mesh->getPointAlignedWithMeshPlain(point1),
+                                            m_mesh->getPointAlignedWithMeshPlain(point2));
         }
     }
 
@@ -374,114 +374,6 @@ void ObjectMgr::_drawNet() {
         m_drawingWidget->drawTriangleLines(triangle[1].rotatedPosition, triangle[2].rotatedPosition);
         m_drawingWidget->drawTriangleLines(triangle[2].rotatedPosition, triangle[0].rotatedPosition);
     }
-}
-
-QVector3D &ObjectMgr::rotateZ(QVector3D &point, const double angle) {
-    if (angle == 0) {
-        return point;
-    }
-
-    const double x = point.x();
-    const double y = point.y();
-    const double rad = angle * M_PI / 180.0;
-
-    point.setX(static_cast<float>(x * std::cos(rad) - y * sin(rad)));
-    point.setY(static_cast<float>(x * std::sin(rad) + y * cos(rad)));
-
-    return point;
-}
-
-QVector3D &ObjectMgr::rotateX(QVector3D &point, const double angle) {
-    if (angle == 0) {
-        return point;
-    }
-
-    const double y = point.y();
-    const double z = point.z();
-    const double rad = angle * M_PI / 180.0;
-
-    point.setY(static_cast<float>(y * std::cos(rad) - z * sin(rad)));
-    point.setZ(static_cast<float>(y * std::sin(rad) + z * cos(rad)));
-
-    return point;
-}
-
-QVector3D &ObjectMgr::rotate(QVector3D &point) const {
-    return rotateX(rotateZ(point, m_alpha), m_beta);
-}
-
-void ObjectMgr::_interpolateBezier() {
-    m_triangles.clear();
-    const float step = 1.0f / static_cast<float>(m_triangleAccuracy - 1);
-    const int steps = m_triangleAccuracy;
-
-    for (int i = 0; i < steps - 1; ++i) {
-        for (int j = 0; j < steps - 1; ++j) {
-            const float u = static_cast<float>(i) * step;
-            const float v = static_cast<float>(j) * step;
-            const float u_next = static_cast<float>(i + 1) * step;
-            const float v_next = static_cast<float>(j + 1) * step;
-
-            const auto bu = _computeBernstein(u);
-            const auto bv = _computeBernstein(v);
-            const auto bu_next = _computeBernstein(u_next);
-            const auto bv_next = _computeBernstein(v_next);
-
-            const auto [p00, pu00, pv00] = _computePointAndDeriv(bu, bv);
-            const auto [p10, pu10, pv10] = _computePointAndDeriv(bu_next, bv);
-            const auto [p01, pu01, pv01] = _computePointAndDeriv(bu, bv_next);
-            const auto [p11, pu11, pv11] = _computePointAndDeriv(bu_next, bv_next);
-
-            const QVector3D n00 = QVector3D::crossProduct(pu00, pv00).normalized();
-            const QVector3D n10 = QVector3D::crossProduct(pu10, pv10).normalized();
-            const QVector3D n01 = QVector3D::crossProduct(pu01, pv01).normalized();
-            const QVector3D n11 = QVector3D::crossProduct(pu11, pv11).normalized();
-
-            Triangle t1, t2;
-
-            t1[0] = Vertex(p00, pu00, pv00, n00, u, v, m_alpha, m_beta);
-            t1[1] = Vertex(p10, pu10, pv10, n10, u_next, v, m_alpha, m_beta);
-            t1[2] = Vertex(p01, pu01, pv01, n01, u, v_next, m_alpha, m_beta);
-
-            t2[0] = Vertex(p10, pu10, pv10, n10, u_next, v, m_alpha, m_beta);
-            t2[1] = Vertex(p11, pu11, pv11, n11, u_next, v_next, m_alpha, m_beta);
-            t2[2] = Vertex(p01, pu01, pv01, n01, u, v_next, m_alpha, m_beta);
-
-            m_triangles.push_back(t1);
-            m_triangles.push_back(t2);
-        }
-    }
-}
-
-ObjectMgr::BernsteinTable ObjectMgr::_computeBernstein(const float t) {
-    const float t2 = t * t;
-    const float t3 = t2 * t;
-    const float mt = 1.0f - t;
-    const float mt2 = mt * mt;
-    const float mt3 = mt2 * mt;
-    return {
-        mt3, // (1-t)^3
-        3.0f * mt2 * t, // 3(1-t)^2t
-        3.0f * mt * t2, // 3(1-t)t^2
-        t3 // t^3
-    };
-}
-
-std::tuple<QVector3D, QVector3D, QVector3D>
-ObjectMgr::_computePointAndDeriv(const BernsteinTable &bu, const BernsteinTable &bv) const {
-    QVector3D derivativeU{};
-    QVector3D derivativeV{};
-    QVector3D point{};
-    static constexpr std::array<float, 4> derivativeCoeffs = {-3.0f, -6.0f, 3.0f, 6.0f};
-
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            derivativeV += m_controlPoints[i * 4 + j] * (derivativeCoeffs[i] * bv[j]);
-            derivativeU += m_controlPoints[i * 4 + j] * (bu[i] * derivativeCoeffs[j]);
-            point += m_controlPoints[i * 4 + j] * (bu[i] * bv[j]);
-        }
-    }
-    return {point, derivativeU, derivativeV};
 }
 
 void ObjectMgr::_loadTexture(const QString &path) {
@@ -506,7 +398,7 @@ QImage *ObjectMgr::_loadTextureFromFile(const QString &path) {
 
     if (image.isNull()) {
         qWarning() << "Failed to load image from path:" << path;
-        showToast("Failed to load image");
+        _showToast("Failed to load image");
         return nullptr;
     }
 

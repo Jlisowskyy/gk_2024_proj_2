@@ -28,7 +28,7 @@ struct Vertex {
     Vertex() = default;
 
     Vertex(const QVector3D &p, const QVector3D &pu, const QVector3D &pv, const QVector3D &n, float u, float v,
-           double alpha, double beta);
+           float alpha, float beta);
 };
 
 #endif //APP_VERTEX_H

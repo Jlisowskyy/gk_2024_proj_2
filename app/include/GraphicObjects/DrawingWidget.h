@@ -20,9 +20,7 @@
 #include <QGraphicsEllipseItem>
 
 /* internal includes */
-#include "../Constants.h"
-#include "../PrimitiveData/ActiveEdge.h"
-#include "../PrimitiveData/Triangle.h"
+#include "../include/Intf.h"
 
 /* Forward declaration */
 class ObjectMgr;

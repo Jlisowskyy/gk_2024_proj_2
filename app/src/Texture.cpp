@@ -14,45 +14,38 @@ Texture::Texture(QObject *parent, const float ksCoef, const float kdCoef, const 
 
 std::tuple<float, float, QVector3D> Texture::_interpolateFromTrianglePoint(const QVector3D &pos,
                                                                            const Triangle &triangle) {
-    /* custom dot product */
-    const auto dotProduct2D = [](const float x1, const float y1, const float x2, const float y2) {
-        return x1 * x2 + y1 * y2;
-    };
+    const QVector3D v0 = triangle[1].rotatedPosition - triangle[0].rotatedPosition;
+    const QVector3D v1 = triangle[2].rotatedPosition - triangle[0].rotatedPosition;
+    const QVector3D v2 = pos - triangle[0].rotatedPosition;
 
-    const float v0x = triangle[1].rotatedPosition.x() - triangle[0].rotatedPosition.x();
-    const float v0y = triangle[1].rotatedPosition.y() - triangle[0].rotatedPosition.y();
-    const float v1x = triangle[2].rotatedPosition.x() - triangle[0].rotatedPosition.x();
-    const float v1y = triangle[2].rotatedPosition.y() - triangle[0].rotatedPosition.y();
-    const float v2x = pos.x() - triangle[0].rotatedPosition.x();
-    const float v2y = pos.y() - triangle[0].rotatedPosition.y();
-
-    const float d00 = dotProduct2D(v0x, v0y, v0x, v0y);
-    const float d01 = dotProduct2D(v0x, v0y, v1x, v1y);
-    const float d11 = dotProduct2D(v1x, v1y, v1x, v1y);
-    const float d20 = dotProduct2D(v2x, v2y, v0x, v0y);
-    const float d21 = dotProduct2D(v2x, v2y, v1x, v1y);
+    const float d00 = QVector3D::dotProduct(v0, v0);
+    const float d01 = QVector3D::dotProduct(v0, v1);
+    const float d11 = QVector3D::dotProduct(v1, v1);
+    const float d20 = QVector3D::dotProduct(v2, v0);
+    const float d21 = QVector3D::dotProduct(v2, v1);
 
     const float denom = d00 * d11 - d01 * d01;
     const float v = (d11 * d20 - d01 * d21) / denom;
     const float w = (d00 * d21 - d01 * d20) / denom;
     const float u = 1.0f - v - w;
 
-    const float interpolatedU
-            = std::clamp(u * triangle[0].u + v * triangle[1].u + w * triangle[2].u, 0.0f, 1.0f);
-    const float interpolatedV
-            = std::clamp(u * triangle[0].v + v * triangle[1].v + w * triangle[2].v, 0.0f, 1.0f);
+    const float interpolatedU =
+            std::clamp(u * triangle[0].u + v * triangle[1].u + w * triangle[2].u, 0.0f, 1.0f);
+    const float interpolatedV =
+            std::clamp(u * triangle[0].v + v * triangle[1].v + w * triangle[2].v, 0.0f, 1.0f);
 
-    QVector3D interpolatedNormalVector = (u * triangle[0].rotatedNormal + v * triangle[1].rotatedNormal +
-                                          w * triangle[2].rotatedNormal);
+    QVector3D interpolatedNormalVector =
+            (u * triangle[0].rotatedNormal + v * triangle[1].rotatedNormal + w * triangle[2].rotatedNormal);
 
     return {interpolatedU, interpolatedV, interpolatedNormalVector};
 }
 
 QColor Texture::_applyLightToTriangleColor(const QColor &color, const QVector3D &normalVector,
                                            const QVector3D &pos, const QVector3D &lightPos) const {
+    static constexpr QVector3D V(0, 0, 1);
+
     const QVector3D L = (lightPos - pos).normalized();
     const QVector3D N = normalVector.normalized();
-    const QVector3D V(0, 0, 1);
     const float NdotL = QVector3D::dotProduct(N, L);
     const QVector3D R = (2.0f * NdotL * N - L).normalized();
 

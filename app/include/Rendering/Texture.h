@@ -117,7 +117,6 @@ void Texture::colorPolygon(QPixmap &pixmap, ColorGetterT colorGet, const Polygon
     }
 
     std::list<ActiveEdge> aet{};
-    Vertex vBuffer{};
     int scanLineY = static_cast<int>(std::floor(polygon[sorted[0]].rotatedPosition.y()));
     size_t nextVertex = 0;
 
@@ -169,11 +168,13 @@ void Texture::colorPolygon(QPixmap &pixmap, ColorGetterT colorGet, const Polygon
                 const int screenY = scanLineY + pixmap.height() / 2;
 
                 if (screenX >= 0 && screenX < pixmap.width() && screenY >= 0 && screenY < pixmap.height()) {
-                    vBuffer.position.setX(static_cast<float>(x));
-                    vBuffer.position.setY(static_cast<float>(scanLineY));
-                    vBuffer.position.setZ(z);
+                    const QVector3D drawPoint{
+                        static_cast<float>(x),
+                        static_cast<float>(scanLineY),
+                        z
+                    };
 
-                    const QColor color = _processColor(colorGet, vBuffer.position, polygon, lightPos);
+                    const QColor color = _processColor(colorGet, drawPoint, polygon, lightPos);
                     painter.setPen(QPen(color));
                     painter.drawPoint(screenX, screenY);
                 }
@@ -213,11 +214,13 @@ void Texture::colorPolygon(QPixmap &pixmap, ColorGetterT colorGet, const Polygon
                 const int screenY = y + pixmap.height() / 2;
 
                 if (screenX >= 0 && screenX < pixmap.width() && screenY >= 0 && screenY < pixmap.height()) {
-                    vBuffer.position.setX(static_cast<float>(x));
-                    vBuffer.position.setY(static_cast<float>(y));
-                    vBuffer.position.setZ(z);
+                    const QVector3D drawPoint{
+                        static_cast<float>(x),
+                        static_cast<float>(scanLineY),
+                        z
+                    };
 
-                    const QColor color = _processColor(colorGet, vBuffer.position, polygon, lightPos);
+                    const QColor color = _processColor(colorGet, drawPoint, polygon, lightPos);
                     painter.setPen(QPen(color));
                     painter.drawPoint(screenX, screenY);
                 }

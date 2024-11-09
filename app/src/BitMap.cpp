@@ -34,12 +34,25 @@ void BitMap::setWhiteAll() {
 }
 
 void BitMap::dropToPixMap(QPixmap &pixMap) const {
-    QPainter painter(&pixMap);
+    const QImage image = createQImage();
+    pixMap = QPixmap::fromImage(image);
+}
 
-    for (int32_t x = 0; x < m_width; x++) {
-        for (int32_t y = 0; y < m_height; y++) {
-            painter.setPen(QPen(colorAt(x, y)));
-            painter.drawPoint(x, y);
+QImage BitMap::createQImage() const {
+    QImage image(m_width, m_height, QImage::Format_RGB32);
+
+    for (int32_t y = 0; y < m_height; y++) {
+        uchar *line = image.scanLine(y);
+        for (int32_t x = 0; x < m_width; x++) {
+            const size_t pixelIndex = _atCord(x, y, m_width);
+            const size_t lineIndex = x * 4;
+
+            line[lineIndex + 0] = static_cast<uchar>(m_blueMap[pixelIndex]);
+            line[lineIndex + 1] = static_cast<uchar>(m_greenMap[pixelIndex]);
+            line[lineIndex + 2] = static_cast<uchar>(m_redMap[pixelIndex]);
+            line[lineIndex + 3] = 255;
         }
     }
+
+    return image;
 }

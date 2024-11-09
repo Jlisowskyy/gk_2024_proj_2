@@ -42,7 +42,7 @@ namespace BEZIER_CONSTANTS {
 }
 
 namespace VIEW_SETTINGS {
-    static constexpr int DEFAULT_TRIANGLE_ACCURACY = 6;
+    static constexpr int DEFAULT_TRIANGLE_ACCURACY = 90;
     static constexpr int DEFAULT_OBSERVER_DISTANCE = 1500;
     static constexpr int DEFAULT_LIGHT_Z = 1000;
     static constexpr float DEFAULT_ALPHA = 0.0f;

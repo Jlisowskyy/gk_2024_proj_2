@@ -123,7 +123,6 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
                 -O3
                 -march=native
                 -fopenmp
-                -funroll-loops
         )
     elseif (BUILD_TYPE_UPPER STREQUAL "DEBUG")
         target_compile_options(app PUBLIC

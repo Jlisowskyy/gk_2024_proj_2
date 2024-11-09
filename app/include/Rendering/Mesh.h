@@ -63,9 +63,7 @@ public slots:
 protected:
     [[nodiscard]] MeshArr _interpolateBezier(const ControlPoints &controlPoints) const;
 
-    [[nodiscard]] static BernsteinTable _computeBernstein(float t);
-
-    [[nodiscard]] static BernsteinTable _computeBernsteinDerivative(float t);
+    [[nodiscard]] static std::tuple<BernsteinTable, BernsteinTable> _computeBernstein(float t);
 
     [[nodiscard]] static std::tuple<QVector3D, QVector3D, QVector3D> _computePointAndDeriv(
         const ControlPoints &points,

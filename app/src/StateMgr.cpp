@@ -42,6 +42,7 @@ void StateMgr::connectToToolBar(ToolBar *toolBar) {
         {toolBar->m_ksSlider, &StateMgr::onKSChanged},
         {toolBar->m_kdSlider, &StateMgr::onKDChanged},
         {toolBar->m_mSlider, &StateMgr::onMChanged},
+        {toolBar->m_lightningPositionSlider, &StateMgr::onLightZChanged},
     };
 
     for (const auto &[slider, proc]: vSliderProc) {
@@ -145,6 +146,10 @@ void StateMgr::onKDChanged(const double value) {
 void StateMgr::onMChanged(const double value) {
     m_texture->setMCoef(static_cast<float>(value));
     redraw();
+}
+
+void StateMgr::onLightZChanged(double value) {
+    m_sceneMgr->setLightZ(static_cast<float>(value));
 }
 
 void StateMgr::onDrawNetChanged(const bool isChecked) {

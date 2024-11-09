@@ -67,6 +67,8 @@ public slots:
 
     void onMChanged(double value);
 
+    void onLightZChanged(double value);
+
     /* toggle actions */
 
     void onDrawNetChanged(bool isChecked);

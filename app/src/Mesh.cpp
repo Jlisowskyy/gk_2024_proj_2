@@ -46,15 +46,10 @@ MeshArr Mesh::_interpolateBezier(const ControlPoints &controlPoints) const {
             const float u_next = static_cast<float>(i + 1) * step;
             const float v_next = static_cast<float>(j + 1) * step;
 
-            const auto bu = _computeBernstein(u);
-            const auto bv = _computeBernstein(v);
-            const auto bu_next = _computeBernstein(u_next);
-            const auto bv_next = _computeBernstein(v_next);
-
-            const auto buDeriv = _computeBernsteinDerivative(u);
-            const auto bvDeriv = _computeBernsteinDerivative(v);
-            const auto buDeriv_next = _computeBernsteinDerivative(u_next);
-            const auto bvDeriv_next = _computeBernsteinDerivative(v_next);
+            const auto [bu, buDeriv] = _computeBernstein(u);
+            const auto [bv, bvDeriv] = _computeBernstein(v);
+            const auto [bu_next, buDeriv_next] = _computeBernstein(u_next);
+            const auto [bv_next, bvDeriv_next] = _computeBernstein(v_next);
 
             const auto [p00, pu00, pv00] = _computePointAndDeriv(controlPoints, bu, bv, buDeriv, bvDeriv);
             const auto [p10, pu10, pv10] = _computePointAndDeriv(controlPoints, bu_next, bv, buDeriv_next, bvDeriv);
@@ -83,20 +78,6 @@ MeshArr Mesh::_interpolateBezier(const ControlPoints &controlPoints) const {
     }
 
     return arr;
-}
-
-BernsteinTable Mesh::_computeBernstein(const float t) {
-    const float t2 = t * t;
-    const float t3 = t2 * t;
-    const float mt = 1.0f - t;
-    const float mt2 = mt * mt;
-    const float mt3 = mt2 * mt;
-    return {
-        mt3, // (1-t)^3
-        3.0f * mt2 * t, // 3(1-t)^2t
-        3.0f * mt * t2, // 3(1-t)t^2
-        t3 // t^3
-    };
 }
 
 std::tuple<QVector3D, QVector3D, QVector3D> Mesh::_computePointAndDeriv(
@@ -132,13 +113,14 @@ std::tuple<QVector3D, QVector3D, QVector3D> Mesh::_computePointAndDeriv(
         }
     }
 
-    derivativeU *= static_cast<float>(BEZIER_CONSTANTS::CONTROL_POINTS_DIM);
-    derivativeV *= static_cast<float>(BEZIER_CONSTANTS::CONTROL_POINTS_DIM);
+    derivativeU *= static_cast<float>(BEZIER_CONSTANTS::CONTROL_POINTS_DIM - 1);
+    derivativeV *= static_cast<float>(BEZIER_CONSTANTS::CONTROL_POINTS_DIM - 1);
 
     return {point, derivativeU, derivativeV};
 }
 
 void Mesh::_adjustAfterRotation() {
+#pragma omp parallel for
     for (auto &triangle: m_triangles) {
         for (auto &vertex: triangle) {
             vertex.resetRotation();
@@ -169,14 +151,24 @@ void Mesh::setControlPoints(const ControlPoints &controlPoints) {
     m_triangles = _interpolateBezier(m_controlPoints);
 }
 
-BernsteinTable Mesh::_computeBernsteinDerivative(const float t) {
+std::tuple<BernsteinTable, BernsteinTable> Mesh::_computeBernstein(const float t) {
     const float t2 = t * t;
+    const float t3 = t2 * t;
     const float mt = 1.0f - t;
     const float mt2 = mt * mt;
+    const float mt3 = mt2 * mt;
     return {
-        -3.0f * mt2, // -3(1-t)^2
-        3.0f * mt * (1.0f - 3.0f * t), // 3(1-t)(1-3t)
-        3.0f * t * (2.0f - 3.0f * t), // 3t(2-3t)
-        3.0f * t2 // 3t^2
+        {
+            mt3,
+            3.0f * mt2 * t,
+            3.0f * mt * t2,
+            t3,
+        },
+        {
+            mt2,
+            2.0f * t * mt,
+            t2,
+            0.0f,
+        }
     };
 }

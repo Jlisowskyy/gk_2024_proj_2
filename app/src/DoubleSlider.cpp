@@ -23,32 +23,44 @@ DoubleSlider::DoubleSlider(const Qt::Orientation orientation, QWidget *parent, c
 
     auto *pContainer = new QWidget(parent);
     const auto pLayout = new QVBoxLayout(pContainer);
+    pLayout->setContentsMargins(2, 2, 2, 2);
+    pLayout->setSpacing(1);
 
     auto *pLabelsContainer = new QWidget(pContainer);
     auto *pLabelsLayout = new QHBoxLayout(pLabelsContainer);
+    pLabelsLayout->setContentsMargins(0, 0, 0, 0);
+    pLabelsLayout->setSpacing(2);
 
     setParent(pContainer);
 
     auto *pLabel = new QLabel(tr(title), pContainer);
     pLabel->setToolTip(tr(toolTip));
+    pLabel->setAlignment(Qt::AlignCenter);
     pLayout->addWidget(pLabel);
     pLayout->addWidget(this);
     pLayout->addWidget(pLabelsContainer);
-    pLayout->setAlignment(pLabel, Qt::AlignCenter);
+
     pContainer->setLayout(pLayout);
 
-    pLabelsLayout->addWidget(new QLabel(QString::number(minValue), pLabelsContainer));
+    auto *minLabel = new QLabel(QString::number(minValue), pLabelsContainer);
+    minLabel->setFixedWidth(minLabel->sizeHint().width());
+
     pLabel = new QLabel(QString::number(getDoubleValue()), pLabelsContainer);
+    pLabel->setAlignment(Qt::AlignCenter);
+
+    auto *maxLabel = new QLabel(QString::number(maxValue), pLabelsContainer);
+    maxLabel->setFixedWidth(maxLabel->sizeHint().width());
+
+    pLabelsLayout->addWidget(minLabel);
     pLabelsLayout->addStretch();
     pLabelsLayout->addWidget(pLabel);
     pLabelsLayout->addStretch();
-    pLabelsLayout->addWidget(new QLabel(QString::number(maxValue), pLabelsContainer));
+    pLabelsLayout->addWidget(maxLabel);
 
     connect(this, &DoubleSlider::doubleValueChanged, pLabel, [pLabel](double value) {
         pLabel->setText(QString::number(value));
     });
-    pLabelsLayout->setContentsMargins(0, 0, 0, 0);
-    pLabelsLayout->setSpacing(0);
+
     pLabelsContainer->setLayout(pLabelsLayout);
 
     m_container = pContainer;

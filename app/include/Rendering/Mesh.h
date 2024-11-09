@@ -19,7 +19,8 @@ class Mesh : public QObject {
     // Class creation
     // ------------------------------
 public:
-    explicit Mesh(QObject *parent, const ControlPoints &controlPoints, float alpha, float beta, int accuracy);
+    explicit Mesh(QObject *parent, const ControlPoints &controlPoints, float alpha, float beta, float delta,
+                  int accuracy);
 
     ~Mesh() = default;
 
@@ -35,9 +36,9 @@ public:
         return m_triangles;
     }
 
-    static void rotate(QVector3D &p, float xRotationAngle, float zRotationAngle);
+    static void rotate(QVector3D &p, float xRotationAngle, float zRotationAngle, float yRotationAngle);
 
-    void alignWithMeshPlain(QVector3D &p) const { rotate(p, m_alpha, m_beta); }
+    void alignWithMeshPlain(QVector3D &p) const { rotate(p, m_alpha, m_beta, m_delta); }
 
     [[nodiscard]] QVector3D getPointAlignedWithMeshPlain(const QVector3D &p) const {
         QVector3D pAligned = p;
@@ -54,6 +55,8 @@ public slots:
     void setAlpha(double alpha);
 
     void setBeta(double beta);
+
+    void setDelta(double delta);
 
     void setAccuracy(double accuracy);
 
@@ -81,6 +84,7 @@ protected:
     int m_triangleAccuracy;
     float m_alpha;
     float m_beta;
+    float m_delta;
 
     ControlPoints m_controlPoints;
     MeshArr m_triangles;

@@ -59,6 +59,7 @@ public:
     DoubleSlider *m_triangulationSlider{};
     DoubleSlider *m_alphaSlider{};
     DoubleSlider *m_betaSlider{};
+    DoubleSlider *m_deltaSlider{};
     DoubleSlider *m_ksSlider{};
     DoubleSlider *m_kdSlider{};
     DoubleSlider *m_mSlider{};

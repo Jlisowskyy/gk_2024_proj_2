@@ -28,10 +28,10 @@ struct Vertex {
     Vertex() = default;
 
     Vertex(const QVector3D &p, const QVector3D &pu, const QVector3D &pv, const QVector3D &n, float u, float v,
-           float alpha, float beta);
+           float alpha, float beta, float delta);
 
     void resetRotation();
-    void rotate(float alpha, float beta);
+    void rotate(float alpha, float beta, float delta);
 };
 
 #endif //APP_VERTEX_H

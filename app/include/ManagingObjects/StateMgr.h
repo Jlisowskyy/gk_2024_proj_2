@@ -61,6 +61,8 @@ public slots:
 
     void onBetaChanged(double value);
 
+    void onDeltaChanged(double value);
+
     void onKSChanged(double value);
 
     void onKDChanged(double value);

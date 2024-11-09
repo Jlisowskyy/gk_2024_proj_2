@@ -47,6 +47,7 @@ namespace VIEW_SETTINGS {
     static constexpr int DEFAULT_LIGHT_Z = 1000;
     static constexpr float DEFAULT_ALPHA = 0.0f;
     static constexpr float DEFAULT_BETA = 0.0f;
+    static constexpr float DEFAULT_DELTA = 0.0f;
 }
 
 namespace LIGHTING_CONSTANTS {
@@ -86,8 +87,8 @@ namespace SLIDER_CONSTANTS {
     }
 
     namespace ALPHA {
-        static constexpr double MIN = -45.0;
-        static constexpr double MAX = 45.0;
+        static constexpr double MIN = -180.0;
+        static constexpr double MAX = 180.0;
         static constexpr int STEPS = 900;
         static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(
             VIEW_SETTINGS::DEFAULT_ALPHA,
@@ -98,11 +99,23 @@ namespace SLIDER_CONSTANTS {
     }
 
     namespace BETA {
-        static constexpr double MIN = -90.0;
-        static constexpr double MAX = 90.0;
+        static constexpr double MIN = -180.0;
+        static constexpr double MAX = 180.0;
         static constexpr int STEPS = 1000;
         static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(
             VIEW_SETTINGS::DEFAULT_BETA,
+            MIN,
+            MAX,
+            STEPS
+        );
+    }
+
+    namespace DELTA {
+        static constexpr double MIN = -180.0;
+        static constexpr double MAX = 180.0;
+        static constexpr int STEPS = 1000;
+        static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(
+            VIEW_SETTINGS::DEFAULT_DELTA,
             MIN,
             MAX,
             STEPS

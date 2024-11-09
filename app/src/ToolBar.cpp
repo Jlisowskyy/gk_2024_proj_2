@@ -137,6 +137,15 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
                                     "X Axis rotation angle");
     m_toolBar->addWidget(m_betaSlider->getContainer());
 
+    m_deltaSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
+                                     SLIDER_CONSTANTS::DELTA::MIN,
+                                     SLIDER_CONSTANTS::DELTA::MAX,
+                                     SLIDER_CONSTANTS::DELTA::STEPS,
+                                     SLIDER_CONSTANTS::DELTA::DEFAULT_STEP,
+                                     "Delta angle",
+                                     "Y Axis rotation angle");
+    m_toolBar->addWidget(m_deltaSlider->getContainer());
+
     // Lightning section
     _addSeparator();
     _addToolbarLiteral("Lightning options:");

@@ -9,11 +9,12 @@
 #include <cmath>
 
 
-Mesh::Mesh(QObject *parent, const ControlPoints &controlPoints, const float alpha, const float beta,
+Mesh::Mesh(QObject *parent, const ControlPoints &controlPoints, const float alpha, const float beta, const float delta,
            const int accuracy): QObject(parent),
                                 m_triangleAccuracy(accuracy),
                                 m_alpha(alpha),
                                 m_beta(beta),
+                                m_delta(delta),
                                 m_controlPoints(controlPoints),
                                 m_triangles(_interpolateBezier(controlPoints)) {
 }
@@ -25,6 +26,11 @@ void Mesh::setAlpha(const double alpha) {
 
 void Mesh::setBeta(const double beta) {
     m_beta = static_cast<float>(beta);
+    _adjustAfterRotation();
+}
+
+void Mesh::setDelta(const double delta) {
+    m_delta = static_cast<float>(delta);
     _adjustAfterRotation();
 }
 
@@ -64,13 +70,13 @@ MeshArr Mesh::_interpolateBezier(const ControlPoints &controlPoints) const {
 
             Triangle t1, t2;
 
-            t1[0] = Vertex(p00, pu00, pv00, n00, u, v, m_alpha, m_beta);
-            t1[1] = Vertex(p10, pu10, pv10, n10, u_next, v, m_alpha, m_beta);
-            t1[2] = Vertex(p01, pu01, pv01, n01, u, v_next, m_alpha, m_beta);
+            t1[0] = Vertex(p00, pu00, pv00, n00, u, v, m_alpha, m_beta, m_delta);
+            t1[1] = Vertex(p10, pu10, pv10, n10, u_next, v, m_alpha, m_beta, m_delta);
+            t1[2] = Vertex(p01, pu01, pv01, n01, u, v_next, m_alpha, m_beta, m_delta);
 
-            t2[0] = Vertex(p10, pu10, pv10, n10, u_next, v, m_alpha, m_beta);
-            t2[1] = Vertex(p11, pu11, pv11, n11, u_next, v_next, m_alpha, m_beta);
-            t2[2] = Vertex(p01, pu01, pv01, n01, u, v_next, m_alpha, m_beta);
+            t2[0] = Vertex(p10, pu10, pv10, n10, u_next, v, m_alpha, m_beta, m_delta);
+            t2[1] = Vertex(p11, pu11, pv11, n11, u_next, v_next, m_alpha, m_beta, m_delta);
+            t2[2] = Vertex(p01, pu01, pv01, n01, u, v_next, m_alpha, m_beta, m_delta);
 
             arr.push_back(t1);
             arr.push_back(t2);
@@ -124,26 +130,35 @@ void Mesh::_adjustAfterRotation() {
     for (auto &triangle: m_triangles) {
         for (auto &vertex: triangle) {
             vertex.resetRotation();
-            vertex.rotate(m_alpha, m_beta);
+            vertex.rotate(m_alpha, m_beta, m_delta);
         }
     }
 }
 
-void Mesh::rotate(QVector3D &p, const float xRotationAngle, const float zRotationAngle) {
-    const float x = p.x();
-    float y = p.y();
-    const float z = p.z();
-
-    const float zRad = zRotationAngle * static_cast<float>(M_PI) / 180.0f;
+void Mesh::rotate(QVector3D &p, const float xRotationAngle, const float zRotationAngle, const float yRotationAngle) {
     const float xRad = xRotationAngle * static_cast<float>(M_PI) / 180.0f;
+    const float yRad = yRotationAngle * static_cast<float>(M_PI) / 180.0f;
+    const float zRad = zRotationAngle * static_cast<float>(M_PI) / 180.0f;
 
-    /* Z rotation */
-    p.setX(x * std::cos(xRad) - y * std::sin(xRad));
-    y = x * std::sin(xRad) + y * std::cos(xRad);
+    float x = p.x();
+    float y = p.y();
+    float z = p.z();
 
     /* x rotation */
-    p.setY(y * std::cos(zRad) - z * std::sin(zRad));
-    p.setZ(y * std::sin(zRad) + z * std::cos(zRad));
+    y = y * std::cos(xRad) - z * std::sin(xRad);
+    z = y * std::sin(xRad) + z * std::cos(xRad);
+
+    /* y rotation */
+    x = x * std::cos(yRad) + z * std::sin(yRad);
+    z = -x * std::sin(yRad) + z * std::cos(yRad);
+
+    /* z rotation */
+    x = x * std::cos(zRad) - y * std::sin(zRad);
+    y = x * std::sin(zRad) + y * std::cos(zRad);
+
+    p.setX(x);
+    p.setY(y);
+    p.setZ(z);
 }
 
 void Mesh::setControlPoints(const ControlPoints &controlPoints) {

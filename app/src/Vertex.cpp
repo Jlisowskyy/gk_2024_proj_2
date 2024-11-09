@@ -14,17 +14,18 @@ Vertex::Vertex(const QVector3D &p,
                const float u,
                const float v,
                const float alpha,
-               const float beta) : position(p),
-                                   puVector(pu),
-                                   pvVector(pv),
-                                   normal(n),
-                                   rotatedPosition(p),
-                                   rotatedPuVector(pu),
-                                   rotatedPvVector(pv),
-                                   rotatedNormal(n),
-                                   u(u),
-                                   v(v) {
-    rotate(alpha, beta);
+               const float beta,
+               const float delta) : position(p),
+                                    puVector(pu),
+                                    pvVector(pv),
+                                    normal(n),
+                                    rotatedPosition(p),
+                                    rotatedPuVector(pu),
+                                    rotatedPvVector(pv),
+                                    rotatedNormal(n),
+                                    u(u),
+                                    v(v) {
+    rotate(alpha, beta, delta);
 }
 
 void Vertex::resetRotation() {
@@ -34,9 +35,9 @@ void Vertex::resetRotation() {
     rotatedPvVector = pvVector;
 }
 
-void Vertex::rotate(const float alpha, const float beta) {
-    Mesh::rotate(rotatedPosition, alpha, beta);
-    Mesh::rotate(rotatedPuVector, alpha, beta);
-    Mesh::rotate(rotatedPvVector, alpha, beta);
-    Mesh::rotate(rotatedNormal, alpha, beta);
+void Vertex::rotate(const float alpha, const float beta, const float delta) {
+    Mesh::rotate(rotatedPosition, alpha, beta, delta);
+    Mesh::rotate(rotatedPuVector, alpha, beta, delta);
+    Mesh::rotate(rotatedPvVector, alpha, beta, delta);
+    Mesh::rotate(rotatedNormal, alpha, beta, delta);
 }

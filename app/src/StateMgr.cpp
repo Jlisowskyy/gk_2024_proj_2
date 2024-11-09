@@ -39,6 +39,7 @@ void StateMgr::connectToToolBar(ToolBar *toolBar) {
         {toolBar->m_triangulationSlider, &StateMgr::onTriangulationChanged},
         {toolBar->m_alphaSlider, &StateMgr::onAlphaChanged},
         {toolBar->m_betaSlider, &StateMgr::onBetaChanged},
+        {toolBar->m_deltaSlider, &StateMgr::onDeltaChanged},
         {toolBar->m_ksSlider, &StateMgr::onKSChanged},
         {toolBar->m_kdSlider, &StateMgr::onKDChanged},
         {toolBar->m_mSlider, &StateMgr::onMChanged},
@@ -98,6 +99,7 @@ void StateMgr::loadDefaultSettings() {
                       _loadBezierPointsOpenFile(RESOURCE_CONSTANTS::DEFAULT_CONTROL_POINTS_PATH, nullptr),
                       VIEW_SETTINGS::DEFAULT_ALPHA,
                       VIEW_SETTINGS::DEFAULT_BETA,
+                      VIEW_SETTINGS::DEFAULT_DELTA,
                       VIEW_SETTINGS::DEFAULT_TRIANGLE_ACCURACY
     );
 
@@ -130,6 +132,11 @@ void StateMgr::onAlphaChanged(const double value) {
 
 void StateMgr::onBetaChanged(const double value) {
     m_mesh->setBeta(value);
+    redraw();
+}
+
+void StateMgr::onDeltaChanged(const double value) {
+    m_mesh->setDelta(value);
     redraw();
 }
 

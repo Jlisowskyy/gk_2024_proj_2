@@ -101,7 +101,7 @@ void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, colorGet colorGetter
     BitMap bitMap(pixmap.width(), pixmap.height());
     bitMap.setWhiteAll();
 
-    // #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for (const auto &triangle: mesh.getMeshArr()) {
         colorPolygon(bitMap, zBuffer, colorGetter, triangle, lightPos);
     }

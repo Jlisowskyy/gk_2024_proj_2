@@ -64,8 +64,8 @@ namespace LIGHTING_CONSTANTS {
 namespace SLIDER_CONSTANTS {
     namespace TRIANGULATION {
         static constexpr double MIN = 2.0;
-        static constexpr double MAX = 90.0;
-        static constexpr int STEPS = 88;
+        static constexpr double MAX = 300.0;
+        static constexpr int STEPS = 298;
         static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(
             VIEW_SETTINGS::DEFAULT_TRIANGLE_ACCURACY,
             MIN,

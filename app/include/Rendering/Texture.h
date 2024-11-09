@@ -38,7 +38,7 @@ public:
     void fillPixmap(QPixmap &pixmap, const Mesh &mesh, ColorGetterT colorGetter, const QVector3D &lightPos) const;
 
     template<typename ColorGetterT, size_t N>
-    void colorPolygon(QPixmap &pixmap, ColorGetterT colorGet, const PolygonArr<N> &polygon,
+    void colorPolygon(QPixmap &pixmap, int16_t *zBuffer, ColorGetterT colorGet, const PolygonArr<N> &polygon,
                       const QVector3D &lightPos) const;
 
     // ------------------------------
@@ -90,12 +90,18 @@ protected:
 template<typename colorGet>
 void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, colorGet colorGetter, const QVector3D &lightPos) const {
     const auto t0 = std::chrono::steady_clock::now();
+    const size_t zBufferSize = pixmap.width() * pixmap.height();
+
+    const auto zBuffer = static_cast<int16_t *>(malloc(sizeof(int16_t) * zBufferSize));
+    for (size_t z = 0; z < zBufferSize; ++z) {
+        zBuffer[z] = INT16_MIN;
+    }
 
     pixmap.fill(Qt::white);
 
     // #pragma omp parallel for schedule(static)
     for (const auto &triangle: mesh.getMeshArr()) {
-        colorPolygon(pixmap, colorGetter, triangle, lightPos);
+        colorPolygon(pixmap, zBuffer, colorGetter, triangle, lightPos);
     }
 
     const auto t1 = std::chrono::steady_clock::now();
@@ -115,10 +121,12 @@ void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, colorGet colorGetter
     painter.setBrush(Qt::black);
 
     painter.drawText(0, 20, "Fps: " + QString::number(1000.0 / static_cast<double>(tm.count())));
+
+    free(zBuffer);
 }
 
 template<typename ColorGetterT, size_t N>
-void Texture::colorPolygon(QPixmap &pixmap, ColorGetterT colorGet, const PolygonArr<N> &polygon,
+void Texture::colorPolygon(QPixmap &pixmap, int16_t *zBuffer, ColorGetterT colorGet, const PolygonArr<N> &polygon,
                            const QVector3D &lightPos) const {
     QPainter painter(&pixmap);
 
@@ -190,15 +198,20 @@ void Texture::colorPolygon(QPixmap &pixmap, ColorGetterT colorGet, const Polygon
                 const int screenY = scanLineY + pixmap.height() / 2;
 
                 if (screenX >= 0 && screenX < pixmap.width() && screenY >= 0 && screenY < pixmap.height()) {
-                    const QVector3D drawPoint{
-                        static_cast<float>(x),
-                        static_cast<float>(scanLineY),
-                        z
-                    };
+                    if (const auto zRounded = static_cast<int16_t>(std::floor(z));
+                        zRounded > zBuffer[screenY * pixmap.width() + screenX]) {
+                        zBuffer[screenY * pixmap.width() + screenX] = zRounded;
 
-                    const QColor color = _processColor(colorGet, drawPoint, polygon, lightPos);
-                    painter.setPen(QPen(color));
-                    painter.drawPoint(screenX, screenY);
+                        const QVector3D drawPoint{
+                            static_cast<float>(x),
+                            static_cast<float>(scanLineY),
+                            z
+                        };
+
+                        const QColor color = _processColor(colorGet, drawPoint, polygon, lightPos);
+                        painter.setPen(QPen(color));
+                        painter.drawPoint(screenX, screenY);
+                    }
                 }
             }
 

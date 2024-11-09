@@ -51,10 +51,15 @@ MeshArr Mesh::_interpolateBezier(const ControlPoints &controlPoints) const {
             const auto bu_next = _computeBernstein(u_next);
             const auto bv_next = _computeBernstein(v_next);
 
-            const auto [p00, pu00, pv00] = _computePointAndDeriv(controlPoints, bu, bv);
-            const auto [p10, pu10, pv10] = _computePointAndDeriv(controlPoints, bu_next, bv);
-            const auto [p01, pu01, pv01] = _computePointAndDeriv(controlPoints, bu, bv_next);
-            const auto [p11, pu11, pv11] = _computePointAndDeriv(controlPoints, bu_next, bv_next);
+            const auto buDeriv = _computeBernsteinDerivative(u);
+            const auto bvDeriv = _computeBernsteinDerivative(v);
+            const auto buDeriv_next = _computeBernsteinDerivative(u_next);
+            const auto bvDeriv_next = _computeBernsteinDerivative(v_next);
+
+            const auto [p00, pu00, pv00] = _computePointAndDeriv(controlPoints, bu, bv, buDeriv, bvDeriv);
+            const auto [p10, pu10, pv10] = _computePointAndDeriv(controlPoints, bu_next, bv, buDeriv_next, bvDeriv);
+            const auto [p01, pu01, pv01] = _computePointAndDeriv(controlPoints, bu, bv_next, buDeriv, bvDeriv_next);
+            const auto [p11, pu11, pv11] = _computePointAndDeriv(controlPoints, bu_next, bv_next, buDeriv_next, bvDeriv_next);
 
             const QVector3D n00 = QVector3D::crossProduct(pu00, pv00).normalized();
             const QVector3D n10 = QVector3D::crossProduct(pu10, pv10).normalized();
@@ -93,21 +98,43 @@ BernsteinTable Mesh::_computeBernstein(const float t) {
     };
 }
 
-std::tuple<QVector3D, QVector3D, QVector3D> Mesh::_computePointAndDeriv(const ControlPoints &points,
-                                                                        const BernsteinTable &bu,
-                                                                        const BernsteinTable &bv) const {
+std::tuple<QVector3D, QVector3D, QVector3D> Mesh::_computePointAndDeriv(
+    const ControlPoints &points,
+    const BernsteinTable &bu,
+    const BernsteinTable &bv,
+    const BernsteinTable &buDeriv,
+    const BernsteinTable &bvDeriv
+) const
+{
+    QVector3D point{};
     QVector3D derivativeU{};
     QVector3D derivativeV{};
-    QVector3D point{};
-    static constexpr std::array<float, 4> derivativeCoeffs = {-3.0f, -6.0f, 3.0f, 6.0f};
 
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            derivativeV += points[i * 4 + j] * (derivativeCoeffs[i] * bv[j]);
-            derivativeU += points[i * 4 + j] * (bu[i] * derivativeCoeffs[j]);
-            point += points[i * 4 + j] * (bu[i] * bv[j]);
+    for (int i = 0; i < BEZIER_CONSTANTS::CONTROL_POINTS_DIM; ++i) {
+        for (int j = 0; j < BEZIER_CONSTANTS::CONTROL_POINTS_DIM; ++j) {
+            point += points[i * BEZIER_CONSTANTS::CONTROL_POINTS_DIM + j] * (bu[i] * bv[j]);
         }
     }
+
+    for (int i = 0; i < BEZIER_CONSTANTS::CONTROL_POINTS_DIM - 1; ++i) {
+        for (int j = 0; j < BEZIER_CONSTANTS::CONTROL_POINTS_DIM; ++j) {
+            const QVector3D& current = points[i * BEZIER_CONSTANTS::CONTROL_POINTS_DIM + j];
+            const QVector3D& next = points[(i + 1) * BEZIER_CONSTANTS::CONTROL_POINTS_DIM + j];
+            derivativeU += (next - current) * (buDeriv[i] * bv[j]);
+        }
+    }
+
+    for (int i = 0; i < BEZIER_CONSTANTS::CONTROL_POINTS_DIM; ++i) {
+        for (int j = 0; j < BEZIER_CONSTANTS::CONTROL_POINTS_DIM - 1; ++j) {
+            const QVector3D& current = points[i * BEZIER_CONSTANTS::CONTROL_POINTS_DIM + j];
+            const QVector3D& next = points[i * BEZIER_CONSTANTS::CONTROL_POINTS_DIM + j + 1];
+            derivativeV += (next - current) * (bu[i] * bvDeriv[j]);
+        }
+    }
+
+    derivativeU *= static_cast<float>(BEZIER_CONSTANTS::CONTROL_POINTS_DIM);
+    derivativeV *= static_cast<float>(BEZIER_CONSTANTS::CONTROL_POINTS_DIM);
+
     return {point, derivativeU, derivativeV};
 }
 
@@ -131,4 +158,16 @@ void Mesh::rotate(QVector3D &p, const float xRotationAngle, const float zRotatio
 void Mesh::setControlPoints(const ControlPoints &controlPoints) {
     m_controlPoints = controlPoints;
     m_triangles = _interpolateBezier(m_controlPoints);
+}
+
+BernsteinTable Mesh::_computeBernsteinDerivative(const float t) {
+    const float t2 = t * t;
+    const float mt = 1.0f - t;
+    const float mt2 = mt * mt;
+    return {
+        -3.0f * mt2,     // -3(1-t)^2
+        3.0f * mt * (1.0f - 3.0f * t),  // 3(1-t)(1-3t)
+        3.0f * t * (2.0f - 3.0f * t),   // 3t(2-3t)
+        3.0f * t2        // 3t^2
+    };
 }

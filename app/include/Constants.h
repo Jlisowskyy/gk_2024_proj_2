@@ -4,7 +4,7 @@
 #include <QColor>
 
 /* Utility Functions */
-constexpr inline int CONVERT_TO_DEFAULT_STEP(const double value, const double min, const double max, const int steps) {
+constexpr int CONVERT_TO_DEFAULT_STEP(const double value, const double min, const double max, const int steps) {
     const double step = (max - min) / steps;
     return static_cast<int>((value - min) / step);
 }
@@ -36,6 +36,7 @@ namespace BEZIER_CONSTANTS {
     static constexpr size_t CONTROL_POINTS_COUNT = 16;
     static constexpr size_t BERNSTEIN_TABLE_SIZE = 4;
     static constexpr size_t CONTROL_POINTS_MATRIX_SIZE = 4;
+    static constexpr int CONTROL_POINTS_DIM = 4;
     static constexpr double DEFAULT_POINT_RADIUS = 15.0;
 }
 

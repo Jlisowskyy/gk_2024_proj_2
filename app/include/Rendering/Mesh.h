@@ -65,8 +65,15 @@ protected:
 
     [[nodiscard]] static BernsteinTable _computeBernstein(float t);
 
+    [[nodiscard]] static BernsteinTable _computeBernsteinDerivative(float t);
+
     [[nodiscard]] std::tuple<QVector3D, QVector3D, QVector3D> _computePointAndDeriv(
-        const ControlPoints &points, const BernsteinTable &bu, const BernsteinTable &bv) const;
+        const ControlPoints &points,
+        const BernsteinTable &bu,
+        const BernsteinTable &bv,
+        const BernsteinTable &buDeriv,
+        const BernsteinTable &bvDeriv) const;
+
 
 
     // ------------------------------

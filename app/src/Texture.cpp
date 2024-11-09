@@ -56,8 +56,8 @@ QColor Texture::_applyLightToTriangleColor(const QColor &color, const QVector3D 
     const float NdotL = QVector3D::dotProduct(N, L);
     const QVector3D R = (2.0f * NdotL * N - L).normalized();
 
-    const float cos0 = std::max(0.0f, -NdotL);
-    const float cos1 = std::max(0.0f, -QVector3D::dotProduct(V, R));
+    const float cos0 = std::max(0.0f, NdotL);
+    const float cos1 = std::max(0.0f, QVector3D::dotProduct(V, R));
     const float cos1m = std::pow(cos1, m_mCoef);
 
     QVector3D lightColors = QVector3D(

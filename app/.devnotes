@@ -1,4 +1,12 @@
 TODO:
 
-templated funkcja z templated getterem koloru i templated setterem koloru - musi byc niezalezna od siatki -> krecace sie swiatlo
--> zatrzymanie swiatla -> suwak swiatla -> ladowanie tekstur -> wektory normalne
+DODAJ DELTA angle
+
+1) Popraw normalne
+2) z-buffer
+3) fast bitmap
+4) watki
+5) zmien rzutowanie przy rysowaniu na szybsze
+6) zoptymalizuj obliczenia
+7) dodawj rzutowanie z z-level
+8) Dodaj wektory normalne

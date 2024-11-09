@@ -218,8 +218,8 @@ void SceneMgr::_drawTexture(const DrawingWidget &drawingWidget, const Texture &t
             texture.fillPixmap(*drawingWidget.getPixMap(), mesh,
                                [this](const float u, const float v) {
                                    return m_textureImg->pixelColor(
-                                       static_cast<int>(u * static_cast<float>(m_textureImg->width() - 1)),
-                                       static_cast<int>(v * static_cast<float>(m_textureImg->height() - 1))
+                                       static_cast<int>(v * static_cast<float>(m_textureImg->width() - 1)),
+                                       static_cast<int>((1.0f - u) * static_cast<float>(m_textureImg->height() - 1))
                                    );
                                },
                                _getLightPos()

@@ -25,6 +25,7 @@ namespace UI_CONSTANTS {
 
     /* Timing */
     static constexpr int DEFAULT_TOAST_DURATION_MS = 3000;
+    static constexpr int DEFAULT_FPS_SIZE = 16;
 
     /* others */
     static constexpr bool DEFAULT_USE_TEXTURE = false;

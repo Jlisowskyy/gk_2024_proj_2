@@ -15,6 +15,8 @@
 #include <QColor>
 #include <QPainter>
 #include <QPixmap>
+#include <chrono>
+#include <QDebug>
 
 class Texture : public QObject {
     Q_OBJECT
@@ -87,12 +89,32 @@ protected:
 
 template<typename colorGet>
 void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, colorGet colorGetter, const QVector3D &lightPos) const {
+    const auto t0 = std::chrono::steady_clock::now();
+
     pixmap.fill(Qt::white);
 
     // #pragma omp parallel for schedule(static)
     for (const auto &triangle: mesh.getMeshArr()) {
         colorPolygon(pixmap, colorGetter, triangle, lightPos);
     }
+
+    const auto t1 = std::chrono::steady_clock::now();
+    const auto t = t1 - t0;
+
+    qDebug() << "Time spent on drawing texture: " << t.count() << " ns";
+
+    const auto tm = std::chrono::duration_cast<std::chrono::milliseconds>(t);
+
+    QPainter painter(&pixmap);
+    QFont font{};
+    font.setFamily("Courier");
+    font.setPointSize(UI_CONSTANTS::DEFAULT_FPS_SIZE);
+    font.setBold(true);
+    painter.setFont(font);
+    painter.setPen(Qt::black);
+    painter.setBrush(Qt::black);
+
+    painter.drawText(0, 20, "Fps: " + QString::number(1000.0 / static_cast<double>(tm.count())));
 }
 
 template<typename ColorGetterT, size_t N>

@@ -126,7 +126,7 @@ std::tuple<QVector3D, QVector3D, QVector3D> Mesh::_computePointAndDeriv(
 }
 
 void Mesh::_adjustAfterRotation() {
-#pragma omp parallel for
+    #pragma omp parallel for
     for (auto &triangle: m_triangles) {
         for (auto &vertex: triangle) {
             vertex.resetRotation();

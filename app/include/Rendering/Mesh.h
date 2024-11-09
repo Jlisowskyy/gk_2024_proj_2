@@ -67,14 +67,14 @@ protected:
 
     [[nodiscard]] static BernsteinTable _computeBernsteinDerivative(float t);
 
-    [[nodiscard]] std::tuple<QVector3D, QVector3D, QVector3D> _computePointAndDeriv(
+    [[nodiscard]] static std::tuple<QVector3D, QVector3D, QVector3D> _computePointAndDeriv(
         const ControlPoints &points,
         const BernsteinTable &bu,
         const BernsteinTable &bv,
         const BernsteinTable &buDeriv,
-        const BernsteinTable &bvDeriv) const;
+        const BernsteinTable &bvDeriv);
 
-
+    void _adjustAfterRotation();
 
     // ------------------------------
     // Class fields

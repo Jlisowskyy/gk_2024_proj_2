@@ -24,6 +24,17 @@ Vertex::Vertex(const QVector3D &p,
                                    rotatedNormal(n),
                                    u(u),
                                    v(v) {
+    rotate(alpha, beta);
+}
+
+void Vertex::resetRotation() {
+    rotatedPosition = position;
+    rotatedPuVector = puVector;
+    rotatedNormal = normal;
+    rotatedPvVector = pvVector;
+}
+
+void Vertex::rotate(const float alpha, const float beta) {
     Mesh::rotate(rotatedPosition, alpha, beta);
     Mesh::rotate(rotatedPuVector, alpha, beta);
     Mesh::rotate(rotatedPvVector, alpha, beta);

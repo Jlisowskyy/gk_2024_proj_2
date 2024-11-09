@@ -29,6 +29,9 @@ struct Vertex {
 
     Vertex(const QVector3D &p, const QVector3D &pu, const QVector3D &pv, const QVector3D &n, float u, float v,
            float alpha, float beta);
+
+    void resetRotation();
+    void rotate(float alpha, float beta);
 };
 
 #endif //APP_VERTEX_H

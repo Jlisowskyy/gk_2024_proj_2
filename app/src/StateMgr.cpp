@@ -94,7 +94,6 @@ void StateMgr::loadDefaultSettings() {
     );
 
     _loadTexture(RESOURCE_CONSTANTS::DEFAULT_TEXTURE_PATH);
-    _loadNormalMap(RESOURCE_CONSTANTS::DEFAULT_NORMAL_MAP_PATH);
 
     m_mesh = new Mesh(this,
                       _loadBezierPointsOpenFile(RESOURCE_CONSTANTS::DEFAULT_CONTROL_POINTS_PATH, nullptr),
@@ -112,8 +111,9 @@ void StateMgr::loadDefaultSettings() {
     );
 
     m_drawingWidget->setObserverDistance(VIEW_SETTINGS::DEFAULT_OBSERVER_DISTANCE);
-
     m_sceneMgr->bondWithComponents(m_drawingWidget, m_texture, m_mesh);
+
+    _loadNormalMap(RESOURCE_CONSTANTS::DEFAULT_NORMAL_MAP_PATH);
     redraw();
 }
 
@@ -190,8 +190,8 @@ void StateMgr::onLoadTexturesTriggered() {
 }
 
 void StateMgr::onLoadNormalVectorsTriggered() {
-    _openFileDialog([](const QString &path) {
-        qDebug() << "Loading normal vectors from path:" << path;
+    _openFileDialog([this](const QString &path) {
+        _loadNormalMap(path);
     }, "");
 }
 
@@ -220,7 +220,7 @@ void StateMgr::_loadBezierPoints(const QString &path) {
 void StateMgr::_openFileDialog(const std::function<void(const QString &)> &callback, const char *filter) {
     Q_ASSERT(callback);
 
-    const QString initialPath = m_previousDirectory.isEmpty() ? QDir::homePath() : m_previousDirectory;
+    const QString initialPath = m_previousDirectory.isEmpty() ? QDir::currentPath(): m_previousDirectory;
     const QString filePath = QFileDialog::getOpenFileName(
         nullptr,
         "Open File",

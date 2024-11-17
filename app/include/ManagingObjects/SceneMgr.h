@@ -127,7 +127,6 @@ protected:
     QTimer *m_timer{};
     int m_lightZ{};
     float m_lightPos{};
-    QColor m_lightColor{};
     QGraphicsEllipseItem *m_lightEllipse{};
 
     QImage *m_normalMap{};

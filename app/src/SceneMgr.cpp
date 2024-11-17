@@ -24,9 +24,7 @@ SceneMgr::SceneMgr(QObject *parent,
                                     m_textureImg(image),
                                     m_color(color),
                                     m_timer(new QTimer(this)),
-                                    m_lightZ(lightZ),
-                                    m_lightColor(lightColor) {
-}
+                                    m_lightZ(lightZ) {}
 
 FillType SceneMgr::getFillType() const {
     return m_useTexture && m_textureImg ? FillType::TEXTURE : FillType::SIMPLE_COLOR;
@@ -138,11 +136,7 @@ void SceneMgr::setLightZ(const int z) {
 }
 
 void SceneMgr::setLightColor(const QColor &color) {
-    if (m_lightColor == color) {
-        return;
-    }
-
-    m_lightColor = color;
+    m_texture->setLightColor(color);
 
     if (m_isBound && !m_isAnimationPlaying) {
         _drawTextureWithNormals(*m_drawingWidget, *m_texture, *m_mesh);
@@ -273,8 +267,8 @@ void SceneMgr::setNormalMap(QImage *image) {
         return;
     }
 
-    delete m_normalMap;
     m_normalMap = image;
+    m_texture->setNormalMap(image);
 
     if (m_isBound && !m_isAnimationPlaying) {
         _drawTextureWithNormals(*m_drawingWidget, *m_texture, *m_mesh);
@@ -282,7 +276,15 @@ void SceneMgr::setNormalMap(QImage *image) {
 }
 
 void SceneMgr::setUseNormals(const bool useNormals) {
+    if (m_useNormals == useNormals) {
+        return;
+    }
+
     m_useNormals = useNormals;
+
+    if (m_isBound && !m_isAnimationPlaying) {
+        _drawTextureWithNormals(*m_drawingWidget, *m_texture, *m_mesh);
+    }
 }
 
 void SceneMgr::_drawTextureWithNormals(const DrawingWidget &drawingWidget, const Texture &texture, const Mesh &mesh) {

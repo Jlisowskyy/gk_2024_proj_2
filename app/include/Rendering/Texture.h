@@ -18,6 +18,7 @@
 #include <QPixmap>
 #include <chrono>
 #include <QDebug>
+#include <QMatrix3x3>
 
 class Texture : public QObject {
     Q_OBJECT
@@ -38,7 +39,7 @@ public:
     template<bool useNormals, typename ColorGetterT>
     void fillPixmap(QPixmap &pixmap, const Mesh &mesh, ColorGetterT colorGetter, const QVector3D &lightPos) const;
 
-    template<typename ColorGetterT, size_t N>
+    template<bool useNormals, typename ColorGetterT, size_t N>
     void colorPolygon(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorGet, const PolygonArr<N> &polygon,
                       const QVector3D &lightPos) const;
 
@@ -63,17 +64,28 @@ public slots:
         m_mCoef = mCoef;
     }
 
+    void setNormalMap(QImage *image) {
+        if (image == m_normalMap) {
+            return;
+        }
+
+        delete m_normalMap;
+        m_normalMap = image;
+    }
+
     // ------------------------------
     // Class protected methods
     // ------------------------------
 protected:
-    [[nodiscard]] static std::tuple<float, float, QVector3D>
-    _interpolateFromTrianglePoint(const QVector3D &pos, const Triangle &triangle);
+
+    template<bool useNormals>
+    [[nodiscard]] std::tuple<float, float, QVector3D>
+    _interpolateFromTrianglePoint(const QVector3D &pos, const Triangle &triangle) const;
 
     [[nodiscard]] QColor _applyLightToTriangleColor(const QColor &color, const QVector3D &normalVector,
                                                     const QVector3D &pos, const QVector3D &lightPos) const;
 
-    template<typename ColorGetterT>
+    template<bool useNormals, typename ColorGetterT>
     [[nodiscard]] QColor _processColor(ColorGetterT colorGetter, const QVector3D &pos, const Triangle &triangle,
                                        const QVector3D &lightPos) const;
 
@@ -81,11 +93,12 @@ protected:
     // Class fields
     // ------------------------------
 
-
     float m_ksCoef{};
     float m_kdCoef{};
     float m_mCoef{};
     QColor m_lightColor{};
+
+    QImage *m_normalMap{};
 };
 
 template<bool useNormals, typename ColorGetterT>
@@ -103,7 +116,7 @@ void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, ColorGetterT colorGe
 
     #pragma omp parallel for schedule(static)
     for (const auto &triangle: mesh.getMeshArr()) {
-        colorPolygon(bitMap, zBuffer, colorGetter, triangle, lightPos);
+        colorPolygon<useNormals>(bitMap, zBuffer, colorGetter, triangle, lightPos);
     }
 
     bitMap.dropToPixMap(pixmap);
@@ -129,7 +142,7 @@ void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, ColorGetterT colorGe
     free(zBuffer);
 }
 
-template<typename ColorGetterT, size_t N>
+template<bool useNormals, typename ColorGetterT, size_t N>
 void Texture::colorPolygon(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorGet, const PolygonArr<N> &polygon,
                            const QVector3D &lightPos) const {
     std::array<size_t, N> sorted{};
@@ -210,7 +223,7 @@ void Texture::colorPolygon(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorG
                             z
                         };
 
-                        const QColor color = _processColor(colorGet, drawPoint, polygon, lightPos);
+                        const QColor color = _processColor<useNormals>(colorGet, drawPoint, polygon, lightPos);
                         bitMap.setColorAt(screenX, screenY, color);
                     }
                 }
@@ -256,7 +269,7 @@ void Texture::colorPolygon(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorG
                         z
                     };
 
-                    const QColor color = _processColor(colorGet, drawPoint, polygon, lightPos);
+                    const QColor color = _processColor<useNormals>(colorGet, drawPoint, polygon, lightPos);
                     bitMap.setColorAt(screenX, screenY, color);
                 }
             }
@@ -264,12 +277,78 @@ void Texture::colorPolygon(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorG
     }
 }
 
-template<typename ColorGetterT>
+template<bool useNormals, typename ColorGetterT>
 QColor Texture::_processColor(ColorGetterT colorGetter, const QVector3D &pos, const Triangle &triangle,
                               const QVector3D &lightPos) const {
-    const auto [u, v, interpolatedNormalVector] = _interpolateFromTrianglePoint(pos, triangle);
+    const auto [u, v, interpolatedNormalVector] = _interpolateFromTrianglePoint<useNormals>(pos, triangle);
     const QColor color = colorGetter(u, v);
     return _applyLightToTriangleColor(color, interpolatedNormalVector, pos, lightPos);
+}
+
+template<bool useNormals>
+std::tuple<float, float, QVector3D>
+Texture::_interpolateFromTrianglePoint(const QVector3D &pos, const Triangle &triangle) const {
+    const QVector3D v0 = triangle[1].rotatedPosition - triangle[0].rotatedPosition;
+    const QVector3D v1 = triangle[2].rotatedPosition - triangle[0].rotatedPosition;
+    const QVector3D v2 = pos - triangle[0].rotatedPosition;
+
+    const float d00 = QVector3D::dotProduct(v0, v0);
+    const float d01 = QVector3D::dotProduct(v0, v1);
+    const float d11 = QVector3D::dotProduct(v1, v1);
+    const float d20 = QVector3D::dotProduct(v2, v0);
+    const float d21 = QVector3D::dotProduct(v2, v1);
+
+    const float denom = d00 * d11 - d01 * d01;
+    const float v = (d11 * d20 - d01 * d21) / denom;
+    const float w = (d00 * d21 - d01 * d20) / denom;
+    const float u = 1.0f - v - w;
+
+    const float interpolatedU =
+            std::clamp(u * triangle[0].u + v * triangle[1].u + w * triangle[2].u, 0.0f, 1.0f);
+    const float interpolatedV =
+            std::clamp(u * triangle[0].v + v * triangle[1].v + w * triangle[2].v, 0.0f, 1.0f);
+
+    QVector3D interpolatedNormalVector =
+            (u * triangle[0].rotatedNormal + v * triangle[1].rotatedNormal + w * triangle[2].rotatedNormal);
+
+    if constexpr (useNormals) {
+        const QColor color = m_normalMap->pixelColor(
+                static_cast<int>(interpolatedV * static_cast<float>(m_normalMap->width() - 1)),
+                static_cast<int>((1.0f - interpolatedU) * static_cast<float>(m_normalMap->height() - 1))
+        );
+
+        QVector3D normalFromTexture(
+                (color.red() - 127.0f) / 127.0f,
+                (color.green() - 127.0f) / 127.0f,
+                (color.blue() - 128.0f) / 127.0f
+        );
+
+        const QVector3D interpolatedPU = (u * triangle[0].rotatedPuVector +
+                                          v * triangle[1].rotatedPuVector +
+                                          w * triangle[2].rotatedPuVector);
+
+        const QVector3D interpolatedPV = (u * triangle[0].rotatedPvVector +
+                                          v * triangle[1].rotatedPvVector +
+                                          w * triangle[2].rotatedPvVector);
+
+        interpolatedNormalVector = QVector3D(
+                interpolatedPU.x() * normalFromTexture.x() +
+                interpolatedPV.x() * normalFromTexture.y() +
+                interpolatedNormalVector.x() * normalFromTexture.z(),
+
+                interpolatedPU.y() * normalFromTexture.x() +
+                interpolatedPV.y() * normalFromTexture.y() +
+                interpolatedNormalVector.y() * normalFromTexture.z(),
+
+                interpolatedPU.z() * normalFromTexture.x() +
+                interpolatedPV.z() * normalFromTexture.y() +
+                interpolatedNormalVector.z() * normalFromTexture.z()
+        );
+
+        interpolatedNormalVector.normalize();
+    }
+
+    return {interpolatedU, interpolatedV, interpolatedNormalVector};
 }
 
 

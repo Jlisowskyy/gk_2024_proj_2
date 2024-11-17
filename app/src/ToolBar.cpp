@@ -112,7 +112,7 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
                              "Enable normal vectors",
                              ":/icons/vector_icon.png");
     m_enableNormalVectorsButton = pButton->getAction();
-    m_enableTextureButton->setCheckable(true);
+    m_enableNormalVectorsButton->setCheckable(true);
     m_toolBar->addWidget(pButton);
 
     // Rotation section

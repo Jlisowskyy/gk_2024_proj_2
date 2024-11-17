@@ -108,10 +108,13 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
                 -march=native
                 -fopenmp
                 -funroll-loops
+                -march=native
+                -funroll-loops
         )
     elseif (BUILD_TYPE_UPPER STREQUAL "DEBUG")
         target_compile_options(app PUBLIC
                 -fopenmp
+                -march=native
         )
     else()
         message(FATAL_ERROR "UNKNOWN BUILD TYPE: ${BUILD_TYPE_UPPER}")
@@ -123,10 +126,13 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
                 -O3
                 -march=native
                 -fopenmp
+                -march=native
+                -funroll-loops
         )
     elseif (BUILD_TYPE_UPPER STREQUAL "DEBUG")
         target_compile_options(app PUBLIC
                 -fopenmp
+                -march=native
         )
     else()
         message(FATAL_ERROR "UNKNOWN BUILD TYPE: ${BUILD_TYPE_UPPER}")
@@ -139,10 +145,12 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel" OR CMAKE_CXX_COMPILER_ID STREQUAL
                 -march=native
                 -fopenmp
                 -fno-tracer
+                -march=native
         )
     elseif (BUILD_TYPE_UPPER STREQUAL "DEBUG")
         target_compile_options(app PUBLIC
                 -fopenmp
+                -march=native
         )
     else()
         message(FATAL_ERROR "UNKNOWN BUILD TYPE: ${BUILD_TYPE_UPPER}")
@@ -153,10 +161,12 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         target_compile_options(app PUBLIC
                 /O2
                 /openmp
+                /arch:AVX2
         )
     elseif (BUILD_TYPE_UPPER STREQUAL "DEBUG")
         target_compile_options(app PUBLIC
                 /openmp
+                /arch:AVX2
         )
     else()
         message(FATAL_ERROR "UNKNOWN BUILD TYPE: ${BUILD_TYPE_UPPER}")

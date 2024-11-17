@@ -329,16 +329,20 @@ Texture::_interpolateFromTrianglePoint(const QVector3D &pos, const Triangle &tri
         QVector3D normalFromTexture(
                 (color.red() - 127.0f) / 127.0f,
                 (color.green() - 127.0f) / 127.0f,
-                (color.blue() - 128.0f) / 127.0f
+                (color.blue() - 127.0f) / 127.0f
         );
+        normalFromTexture.normalize();
 
-        const QVector3D interpolatedPU = (u * triangle[0].rotatedPuVector +
+        QVector3D interpolatedPU = (u * triangle[0].rotatedPuVector +
                                           v * triangle[1].rotatedPuVector +
                                           w * triangle[2].rotatedPuVector);
+        interpolatedPU.normalize();
 
-        const QVector3D interpolatedPV = (u * triangle[0].rotatedPvVector +
+        QVector3D interpolatedPV = (u * triangle[0].rotatedPvVector +
                                           v * triangle[1].rotatedPvVector +
                                           w * triangle[2].rotatedPvVector);
+        interpolatedPV.normalize();
+        interpolatedNormalVector.normalize();
 
         interpolatedNormalVector = QVector3D(
                 interpolatedPU.x() * normalFromTexture.x() +

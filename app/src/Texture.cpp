@@ -50,3 +50,16 @@ QColor Texture::_applyLightToTriangleColor(const QColor &color, const QVector3D 
         static_cast<int>(resultColors.z())
     };
 }
+
+Texture::_drawData Texture::_preprocess(const Triangle &triangle) {
+    _drawData result{};
+
+    result.v0 = triangle[1].rotatedPosition - triangle[0].rotatedPosition;
+    result.v1 = triangle[2].rotatedPosition - triangle[0].rotatedPosition;
+
+    result.d00 = QVector3D::dotProduct(result.v0, result.v0);
+    result.d01 = QVector3D::dotProduct(result.v0, result.v1);
+    result.d11 = QVector3D::dotProduct(result.v1, result.v1);
+
+    return result;
+}

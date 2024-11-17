@@ -94,6 +94,7 @@ void StateMgr::loadDefaultSettings() {
     );
 
     _loadTexture(RESOURCE_CONSTANTS::DEFAULT_TEXTURE_PATH);
+    _loadNormalMap(RESOURCE_CONSTANTS::DEFAULT_NORMAL_MAP_PATH);
 
     m_mesh = new Mesh(this,
                       _loadBezierPointsOpenFile(RESOURCE_CONSTANTS::DEFAULT_CONTROL_POINTS_PATH, nullptr),
@@ -167,7 +168,8 @@ void StateMgr::onEnableTextureChanged(const bool isChecked) {
     m_sceneMgr->setUseTexture(isChecked);
 }
 
-void StateMgr::onEnableNormalVectorsChanged(bool isChecked) {
+void StateMgr::onEnableNormalVectorsChanged(const bool isChecked) {
+    m_sceneMgr->setUseNormals(isChecked);
 }
 
 void StateMgr::onStopLightingMovementChanged(const bool isChecked) {
@@ -381,4 +383,14 @@ void StateMgr::onLightColorChangedTriggered() {
     }
 
     m_sceneMgr->setLightColor(selectedColor);
+}
+
+void StateMgr::_loadNormalMap(const QString &path) {
+    const auto pTexture = _loadTextureFromFile(path);
+
+    if (!pTexture) {
+        return;
+    }
+
+    m_sceneMgr->setNormalMap(pTexture);
 }

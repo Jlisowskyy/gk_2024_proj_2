@@ -175,6 +175,7 @@ namespace SLIDER_CONSTANTS {
 namespace RESOURCE_CONSTANTS {
     static constexpr const char *DEFAULT_CONTROL_POINTS_PATH = ":/data/example1";
     static constexpr const char *DEFAULT_TEXTURE_PATH = ":/data/test_texture.png";
+    static constexpr const char *DEFAULT_NORMAL_MAP_PATH = ":/data/nmap1.png";
     static constexpr int TEXTURE_IMAGE_SIZE = 1000;
 }
 

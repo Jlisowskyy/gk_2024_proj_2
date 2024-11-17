@@ -35,7 +35,7 @@ public:
     // Class interaction
     // ------------------------------
 
-    template<typename ColorGetterT>
+    template<bool useNormals, typename ColorGetterT>
     void fillPixmap(QPixmap &pixmap, const Mesh &mesh, ColorGetterT colorGetter, const QVector3D &lightPos) const;
 
     template<typename ColorGetterT, size_t N>
@@ -88,8 +88,8 @@ protected:
     QColor m_lightColor{};
 };
 
-template<typename colorGet>
-void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, colorGet colorGetter, const QVector3D &lightPos) const {
+template<bool useNormals, typename ColorGetterT>
+void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, ColorGetterT colorGetter, const QVector3D &lightPos) const {
     const auto t0 = std::chrono::steady_clock::now();
     const size_t zBufferSize = pixmap.width() * pixmap.height();
 

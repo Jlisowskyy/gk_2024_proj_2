@@ -41,6 +41,7 @@ void BitMap::dropToPixMap(QPixmap &pixMap) const {
 QImage BitMap::createQImage() const {
     QImage image(m_width, m_height, QImage::Format_RGB32);
 
+    #pragma omp parallel for schedule(static)
     for (int32_t y = 0; y < m_height; y++) {
         uchar *line = image.scanLine(y);
         for (int32_t x = 0; x < m_width; x++) {

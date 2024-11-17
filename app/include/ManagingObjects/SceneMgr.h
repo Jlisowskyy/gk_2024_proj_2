@@ -72,6 +72,10 @@ public slots:
 
     void setLightColor(const QColor &color);
 
+    void setNormalMap(QImage *image);
+
+    void setUseNormals(bool useNormals);
+
     // ------------------------------
     // Class protected methods
     // ------------------------------
@@ -83,6 +87,7 @@ protected slots:
 protected:
     static void _drawNet(DrawingWidget &drawingWidget, const Mesh &mesh);
 
+    template<bool drawNormals>
     void _drawTexture(const DrawingWidget &drawingWidget, const Texture &texture, const Mesh &mesh);
 
     void _processLightPosition();
@@ -93,6 +98,8 @@ protected:
 
     void _addLightItem(const DrawingWidget *drawingWidget);
 
+    void _drawTextureWithNormals(const DrawingWidget &drawingWidget, const Texture &texture, const Mesh &mesh);
+
     // ------------------------------
     // Class fields
     // ------------------------------
@@ -101,6 +108,7 @@ protected:
     bool m_useTexture{};
     bool m_isAnimationPlaying{};
     bool m_drawNet{};
+    bool m_useNormals{};
 
     /* connected objects */
     bool m_isBound{};
@@ -121,6 +129,8 @@ protected:
     float m_lightPos{};
     QColor m_lightColor{};
     QGraphicsEllipseItem *m_lightEllipse{};
+
+    QImage *m_normalMap{};
 };
 
 #endif //SCENEMGR_H

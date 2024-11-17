@@ -107,6 +107,8 @@ protected:
 
     void _loadTexture(const QString &path);
 
+    void _loadNormalMap(const QString &path);
+
     [[nodiscard]] QImage *_loadTextureFromFile(const QString &path);
 
     void _showToast(const QString &message, int duration = UI_CONSTANTS::DEFAULT_TOAST_DURATION_MS);

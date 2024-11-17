@@ -77,7 +77,7 @@ void SceneMgr::setColor(const QColor &color) {
     m_color = color;
 
     if (m_isBound && !m_isAnimationPlaying) {
-        _drawTexture(*m_drawingWidget, *m_texture, *m_mesh);
+        _drawTextureWithNormals(*m_drawingWidget, *m_texture, *m_mesh);
     }
 }
 
@@ -105,7 +105,7 @@ void SceneMgr::setUseTexture(const bool useTexture) {
     m_fillType = getFillType();
 
     if (m_isBound && !m_isAnimationPlaying && m_fillType != oldFill) {
-        _drawTexture(*m_drawingWidget, *m_texture, *m_mesh);
+        _drawTextureWithNormals(*m_drawingWidget, *m_texture, *m_mesh);
     }
 }
 
@@ -121,7 +121,7 @@ void SceneMgr::setTextureImg(QImage *image) {
     m_fillType = getFillType();
 
     if (m_isBound && !m_isAnimationPlaying && m_fillType != oldFill) {
-        _drawTexture(*m_drawingWidget, *m_texture, *m_mesh);
+        _drawTextureWithNormals(*m_drawingWidget, *m_texture, *m_mesh);
     }
 }
 
@@ -133,7 +133,7 @@ void SceneMgr::setLightZ(const int z) {
     m_lightZ = z;
 
     if (m_isBound && !m_isAnimationPlaying) {
-        _drawTexture(*m_drawingWidget, *m_texture, *m_mesh);
+        _drawTextureWithNormals(*m_drawingWidget, *m_texture, *m_mesh);
     }
 }
 
@@ -145,7 +145,7 @@ void SceneMgr::setLightColor(const QColor &color) {
     m_lightColor = color;
 
     if (m_isBound && !m_isAnimationPlaying) {
-        _drawTexture(*m_drawingWidget, *m_texture, *m_mesh);
+        _drawTextureWithNormals(*m_drawingWidget, *m_texture, *m_mesh);
     }
 }
 
@@ -157,12 +157,12 @@ void SceneMgr::_onTimer() {
     m_lightPos = std::fmod(m_lightPos + LIGHTING_CONSTANTS::LIGHT_MOVEMENT_STEP, 1.0f);
 
     _processLightPosition();
-    _drawTexture(*m_drawingWidget, *m_texture, *m_mesh);
+    _drawTextureWithNormals(*m_drawingWidget, *m_texture, *m_mesh);
 }
 
 void SceneMgr::_onElementsUpdate(const DrawingWidget *sender) {
     _addLightItem(sender);
-    _drawTexture(*sender, *m_texture, *m_mesh);
+    _drawTextureWithNormals(*sender, *m_texture, *m_mesh);
 }
 
 void SceneMgr::_addLightItem(const DrawingWidget *drawingWidget) {
@@ -212,10 +212,11 @@ void SceneMgr::_drawNet(DrawingWidget &drawingWidget, const Mesh &mesh) {
     }
 }
 
+template<bool drawNormals>
 void SceneMgr::_drawTexture(const DrawingWidget &drawingWidget, const Texture &texture, const Mesh &mesh) {
     switch (m_fillType) {
         case FillType::TEXTURE: {
-            texture.fillPixmap(*drawingWidget.getPixMap(), mesh,
+            texture.fillPixmap<drawNormals>(*drawingWidget.getPixMap(), mesh,
                                [this](const float u, const float v) {
                                    return m_textureImg->pixelColor(
                                        static_cast<int>(v * static_cast<float>(m_textureImg->width() - 1)),
@@ -227,7 +228,7 @@ void SceneMgr::_drawTexture(const DrawingWidget &drawingWidget, const Texture &t
         }
         break;
         case FillType::SIMPLE_COLOR: {
-            texture.fillPixmap(*drawingWidget.getPixMap(), mesh,
+            texture.fillPixmap<drawNormals>(*drawingWidget.getPixMap(), mesh,
                                [this]([[maybe_unused]] const float u, [[maybe_unused]] const float v) {
                                    return m_color;
                                },
@@ -265,4 +266,29 @@ QPointF SceneMgr::_getLightPosition2D() const {
 QVector3D SceneMgr::_getLightPos() const {
     const QPointF point2D = _getLightPosition2D();
     return {static_cast<float>(point2D.x()), static_cast<float>(point2D.y()), static_cast<float>(m_lightZ)};
+}
+
+void SceneMgr::setNormalMap(QImage *image) {
+    if (image == m_normalMap) {
+        return;
+    }
+
+    delete m_normalMap;
+    m_normalMap = image;
+
+    if (m_isBound && !m_isAnimationPlaying) {
+        _drawTextureWithNormals(*m_drawingWidget, *m_texture, *m_mesh);
+    }
+}
+
+void SceneMgr::setUseNormals(const bool useNormals) {
+    m_useNormals = useNormals;
+}
+
+void SceneMgr::_drawTextureWithNormals(const DrawingWidget &drawingWidget, const Texture &texture, const Mesh &mesh) {
+    if (m_useNormals) {
+        _drawTexture<true>(drawingWidget, texture, mesh);
+    } else {
+        _drawTexture<false>(drawingWidget, texture, mesh);
+    }
 }

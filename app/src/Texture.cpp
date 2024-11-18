@@ -16,10 +16,6 @@ Texture::Texture(QObject *parent, const float ksCoef, const float kdCoef, const 
 
 QColor Texture::_applyLightToTriangleColor(const QColor &color, const QVector3D &normalVector,
                                            const QVector3D &pos, const QVector3D &lightPos) const {
-    if (m_drawReflector) {
-        return Qt::black;
-    }
-
     static constexpr QVector3D V(0, 0, 1);
 
     const QVector3D L1 = (lightPos - pos).normalized();
@@ -52,6 +48,12 @@ QColor Texture::_applyLightToTriangleColor(const QColor &color, const QVector3D 
                               static_cast<float>(color.green()),
                               static_cast<float>(color.blue())) / 255.0f;
 
+    const float a1 = QVector3D::dotProduct(L1.normalized(), lightPos.normalized());
+    const float a2 = QVector3D::dotProduct(L2.normalized(), lightPos2.normalized());
+
+    const float a1m = std::pow(a1, m_reflectorCoef);
+    const float a2m = std::pow(a2, m_reflectorCoef);
+
     QVector3D resultColors{};
     for (int i = 0; i < 3; ++i) {
         const float left = m_kdCoef * lightColors[i] * objColors[i] * cos00;
@@ -60,7 +62,11 @@ QColor Texture::_applyLightToTriangleColor(const QColor &color, const QVector3D 
         const float left1 = m_kdCoef * lightColors[i] * objColors[i] * cos01;
         const float right1 = m_ksCoef * lightColors[i] * objColors[i] * cos1m1;
 
-        resultColors[i] = std::clamp(left + right + left1 + right1, 0.0f, 1.0f);
+        const float light = m_drawReflector
+                                ? (left + right) * a1m + (left1 + right1) * a2m
+                                : left + right + left1 + right1;
+
+        resultColors[i] = std::clamp(light, 0.0f, 1.0f);
     }
 
     resultColors *= 255.0f;

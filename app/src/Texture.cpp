@@ -5,15 +5,21 @@
 #include "../include/Rendering/Texture.h"
 
 Texture::Texture(QObject *parent, const float ksCoef, const float kdCoef, const float mCoef,
-                 const QColor &lightColor) : QObject(parent),
-                                             m_ksCoef(ksCoef),
-                                             m_kdCoef(kdCoef),
-                                             m_mCoef(mCoef),
-                                             m_lightColor(lightColor) {
+                 const QColor &lightColor, const bool useReflector, const float reflector_coef) : QObject(parent),
+    m_ksCoef(ksCoef),
+    m_kdCoef(kdCoef),
+    m_mCoef(mCoef),
+    m_lightColor(lightColor),
+    m_reflectorCoef(reflector_coef),
+    m_drawReflector(useReflector) {
 }
 
 QColor Texture::_applyLightToTriangleColor(const QColor &color, const QVector3D &normalVector,
                                            const QVector3D &pos, const QVector3D &lightPos) const {
+    if (m_drawReflector) {
+        return Qt::black;
+    }
+
     static constexpr QVector3D V(0, 0, 1);
 
     const QVector3D L1 = (lightPos - pos).normalized();

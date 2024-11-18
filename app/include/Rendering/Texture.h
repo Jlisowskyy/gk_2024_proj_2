@@ -28,7 +28,7 @@ public:
     // Class creation
     // ------------------------------
 
-    Texture(QObject *parent, float ksCoef, float kdCoef, float mCoef, const QColor &lightColor);
+    Texture(QObject *parent, float ksCoef, float kdCoef, float mCoef, const QColor &lightColor, bool useReflector, float reflectorCoef);
 
     ~Texture() override = default;
 
@@ -77,6 +77,14 @@ public slots:
         m_drawNet = drawNet;
     }
 
+    void setUseReflector(const bool useReflector) {
+        m_drawReflector = useReflector;
+    }
+
+    void setReflectorCoef(const float reflectorCoef) {
+        m_reflectorCoef = reflectorCoef;
+    }
+
     // ------------------------------
     // Class protected methods
     // ------------------------------
@@ -111,9 +119,13 @@ protected:
     float m_kdCoef{};
     float m_mCoef{};
     QColor m_lightColor{};
+
     bool m_drawNet{};
 
     QImage *m_normalMap{};
+
+    float m_reflectorCoef{};
+    bool m_drawReflector{};
 };
 
 template<bool useNormals, typename ColorGetterT>

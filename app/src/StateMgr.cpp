@@ -44,6 +44,7 @@ void StateMgr::connectToToolBar(ToolBar *toolBar) {
         {toolBar->m_kdSlider, &StateMgr::onKDChanged},
         {toolBar->m_mSlider, &StateMgr::onMChanged},
         {toolBar->m_lightningPositionSlider, &StateMgr::onLightZChanged},
+        {toolBar->m_reflectorMSlider, &StateMgr::onReflectorCoefChanged}
     };
 
     for (const auto &[slider, proc]: vSliderProc) {
@@ -69,6 +70,7 @@ void StateMgr::connectToToolBar(ToolBar *toolBar) {
         {toolBar->m_enableTextureButton, &StateMgr::onEnableTextureChanged},
         {toolBar->m_enableNormalVectorsButton, &StateMgr::onEnableNormalVectorsChanged},
         {toolBar->m_stopLightMovementButton, &StateMgr::onStopLightingMovementChanged},
+        {toolBar->m_changeReflectionButton, &StateMgr::onUseReflectorChanged}
     };
 
     for (const auto &[action, proc]: vActionBoolProc) {
@@ -107,7 +109,9 @@ void StateMgr::loadDefaultSettings() {
                             LIGHTING_CONSTANTS::DEFAULT_KS,
                             LIGHTING_CONSTANTS::DEFAULT_KD,
                             LIGHTING_CONSTANTS::DEFAULT_M,
-                            LIGHTING_CONSTANTS::DEFAULT_LIGHT_COLOR
+                            LIGHTING_CONSTANTS::DEFAULT_LIGHT_COLOR,
+                            LIGHTING_CONSTANTS::USE_REFLECTORS,
+                            LIGHTING_CONSTANTS::DEFAULT_REFLECTION_COEF
     );
 
     m_drawingWidget->setObserverDistance(VIEW_SETTINGS::DEFAULT_OBSERVER_DISTANCE);
@@ -160,7 +164,8 @@ void StateMgr::onLightZChanged(double value) {
     m_sceneMgr->setLightZ(static_cast<float>(value));
 }
 
-void StateMgr::onReflectorCoefChanged(double value) {
+void StateMgr::onReflectorCoefChanged(const double value) {
+    m_texture->setReflectorCoef(static_cast<float>(value));
 }
 
 void StateMgr::onDrawNetChanged(const bool isChecked) {
@@ -179,8 +184,9 @@ void StateMgr::onStopLightingMovementChanged(const bool isChecked) {
     m_sceneMgr->setIsAnimationPlayed(!isChecked);
 }
 
-void StateMgr::onUseReflectorChanged(bool isChecked) {
-
+void StateMgr::onUseReflectorChanged(const bool isChecked) {
+    m_texture->setUseReflector(isChecked);
+    redraw();
 }
 
 void StateMgr::onLoadBezierPointsTriggered() {
@@ -227,7 +233,7 @@ void StateMgr::_loadBezierPoints(const QString &path) {
 void StateMgr::_openFileDialog(const std::function<void(const QString &)> &callback, const char *filter) {
     Q_ASSERT(callback);
 
-    const QString initialPath = m_previousDirectory.isEmpty() ? QDir::currentPath(): m_previousDirectory;
+    const QString initialPath = m_previousDirectory.isEmpty() ? QDir::currentPath() : m_previousDirectory;
     const QString filePath = QFileDialog::getOpenFileName(
         nullptr,
         "Open File",

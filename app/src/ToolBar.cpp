@@ -82,7 +82,7 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
                              ":/icons/net_icon.png");
     m_drawNetButton = pButton->getAction();
     m_drawNetButton->setCheckable(true);
-    m_drawNetButton->setChecked(true);
+    m_drawNetButton->setChecked(false);
     m_toolBar->addWidget(pButton);
 
     pButton = new TextButton(m_toolBar,

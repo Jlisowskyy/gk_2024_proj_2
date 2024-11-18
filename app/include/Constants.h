@@ -29,7 +29,7 @@ namespace UI_CONSTANTS {
 
     /* others */
     static constexpr bool DEFAULT_USE_TEXTURE = false;
-    static constexpr bool DEFAULT_DRAW_NET = true;
+    static constexpr bool DEFAULT_DRAW_NET = false;
     static constexpr bool DEFAULT_PLAY_ANIMATION = false;
 }
 
@@ -99,8 +99,8 @@ namespace SLIDER_CONSTANTS {
     }
 
     namespace BETA {
-        static constexpr double MIN = -180.0;
-        static constexpr double MAX = 180.0;
+        static constexpr double MIN = -20.0;
+        static constexpr double MAX = 20.0;
         static constexpr int STEPS = 1000;
         static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(
             VIEW_SETTINGS::DEFAULT_BETA,

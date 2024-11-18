@@ -73,11 +73,14 @@ public slots:
         m_normalMap = image;
     }
 
+    void setDrawNet(const bool drawNet) {
+        m_drawNet = drawNet;
+    }
+
     // ------------------------------
     // Class protected methods
     // ------------------------------
 protected:
-
     struct _drawData {
         QVector3D v0;
         QVector3D v1;
@@ -89,16 +92,16 @@ protected:
 
     template<bool useNormals>
     [[nodiscard]] std::tuple<float, float, QVector3D>
-    _interpolateFromTrianglePoint(const QVector3D &pos, const Triangle &triangle, const _drawData& drawData) const;
+    _interpolateFromTrianglePoint(const QVector3D &pos, const Triangle &triangle, const _drawData &drawData) const;
 
     [[nodiscard]] QColor _applyLightToTriangleColor(const QColor &color, const QVector3D &normalVector,
                                                     const QVector3D &pos, const QVector3D &lightPos) const;
 
     template<bool useNormals, typename ColorGetterT>
     [[nodiscard]] QColor _processColor(ColorGetterT colorGetter, const QVector3D &pos, const Triangle &triangle,
-                                       const QVector3D &lightPos, const _drawData& drawData) const;
+                                       const QVector3D &lightPos, const _drawData &drawData) const;
 
-    [[nodiscard]] static _drawData _preprocess(const Triangle& triangle);
+    [[nodiscard]] static _drawData _preprocess(const Triangle &triangle);
 
     // ------------------------------
     // Class fields
@@ -108,6 +111,7 @@ protected:
     float m_kdCoef{};
     float m_mCoef{};
     QColor m_lightColor{};
+    bool m_drawNet{};
 
     QImage *m_normalMap{};
 };
@@ -125,7 +129,7 @@ void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, ColorGetterT colorGe
     BitMap bitMap(pixmap.width(), pixmap.height());
     bitMap.setWhiteAll();
 
-    #pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static)
     for (const auto &triangle: mesh.getMeshArr()) {
         colorPolygon<useNormals>(bitMap, zBuffer, colorGetter, triangle, lightPos);
     }
@@ -140,6 +144,20 @@ void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, ColorGetterT colorGe
     const auto tm = std::chrono::duration_cast<std::chrono::milliseconds>(t);
 
     QPainter painter(&pixmap);
+
+    painter.setPen(QPen(Qt::black, 2));
+
+    if (m_drawNet)
+        for (const auto &triangle: mesh.getMeshArr()) {
+            for (size_t i = 0; i < 3; i++) {
+                const auto &v1 = triangle[i].rotatedPosition;
+                const auto &v2 = triangle[(i + 1) % 3].rotatedPosition;
+
+                painter.drawLine(v1.x() + bitMap.width() / 2, v1.y() + bitMap.height() / 2, v2.x() + bitMap.width() / 2,
+                                 v2.y() + bitMap.height() / 2);
+            }
+        }
+
     QFont font{};
     font.setFamily("Courier");
     font.setPointSize(UI_CONSTANTS::DEFAULT_FPS_SIZE);
@@ -237,7 +255,8 @@ void Texture::colorPolygon(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorG
                             z
                         };
 
-                        const QColor color = _processColor<useNormals>(colorGet, drawPoint, polygon, lightPos, drawData);
+                        const QColor color = _processColor<
+                            useNormals>(colorGet, drawPoint, polygon, lightPos, drawData);
                         bitMap.setColorAt(screenX, screenY, color);
                     }
                 }
@@ -293,7 +312,7 @@ void Texture::colorPolygon(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorG
 
 template<bool useNormals, typename ColorGetterT>
 QColor Texture::_processColor(ColorGetterT colorGetter, const QVector3D &pos, const Triangle &triangle,
-                              const QVector3D &lightPos, const _drawData& drawData) const {
+                              const QVector3D &lightPos, const _drawData &drawData) const {
     const auto [u, v, interpolatedNormalVector] = _interpolateFromTrianglePoint<useNormals>(pos, triangle, drawData);
     const QColor color = colorGetter(u, v);
     return _applyLightToTriangleColor(color, interpolatedNormalVector, pos, lightPos);
@@ -301,7 +320,8 @@ QColor Texture::_processColor(ColorGetterT colorGetter, const QVector3D &pos, co
 
 template<bool useNormals>
 std::tuple<float, float, QVector3D>
-Texture::_interpolateFromTrianglePoint(const QVector3D &pos, const Triangle &triangle, const _drawData& drawData ) const {
+Texture::_interpolateFromTrianglePoint(const QVector3D &pos, const Triangle &triangle,
+                                       const _drawData &drawData) const {
     const QVector3D v2 = pos - triangle[0].rotatedPosition;
 
     const float d20 = QVector3D::dotProduct(v2, drawData.v0);
@@ -322,40 +342,40 @@ Texture::_interpolateFromTrianglePoint(const QVector3D &pos, const Triangle &tri
 
     if constexpr (useNormals) {
         const QColor color = m_normalMap->pixelColor(
-                static_cast<int>(interpolatedV * static_cast<float>(m_normalMap->width() - 1)),
-                static_cast<int>((1.0f - interpolatedU) * static_cast<float>(m_normalMap->height() - 1))
+            static_cast<int>(interpolatedV * static_cast<float>(m_normalMap->width() - 1)),
+            static_cast<int>((1.0f - interpolatedU) * static_cast<float>(m_normalMap->height() - 1))
         );
 
         QVector3D normalFromTexture(
-                (color.red() - 127.0f) / 127.0f,
-                (color.green() - 127.0f) / 127.0f,
-                (color.blue() - 127.0f) / 127.0f
+            (color.red() - 127.0f) / 127.0f,
+            (color.green() - 127.0f) / 127.0f,
+            (color.blue() - 127.0f) / 127.0f
         );
         normalFromTexture.normalize();
 
         QVector3D interpolatedPU = (u * triangle[0].rotatedPuVector +
-                                          v * triangle[1].rotatedPuVector +
-                                          w * triangle[2].rotatedPuVector);
+                                    v * triangle[1].rotatedPuVector +
+                                    w * triangle[2].rotatedPuVector);
         interpolatedPU.normalize();
 
         QVector3D interpolatedPV = (u * triangle[0].rotatedPvVector +
-                                          v * triangle[1].rotatedPvVector +
-                                          w * triangle[2].rotatedPvVector);
+                                    v * triangle[1].rotatedPvVector +
+                                    w * triangle[2].rotatedPvVector);
         interpolatedPV.normalize();
         interpolatedNormalVector.normalize();
 
         interpolatedNormalVector = QVector3D(
-                interpolatedPU.x() * normalFromTexture.x() +
-                interpolatedPV.x() * normalFromTexture.y() +
-                interpolatedNormalVector.x() * normalFromTexture.z(),
+            interpolatedPU.x() * normalFromTexture.x() +
+            interpolatedPV.x() * normalFromTexture.y() +
+            interpolatedNormalVector.x() * normalFromTexture.z(),
 
-                interpolatedPU.y() * normalFromTexture.x() +
-                interpolatedPV.y() * normalFromTexture.y() +
-                interpolatedNormalVector.y() * normalFromTexture.z(),
+            interpolatedPU.y() * normalFromTexture.x() +
+            interpolatedPV.y() * normalFromTexture.y() +
+            interpolatedNormalVector.y() * normalFromTexture.z(),
 
-                interpolatedPU.z() * normalFromTexture.x() +
-                interpolatedPV.z() * normalFromTexture.y() +
-                interpolatedNormalVector.z() * normalFromTexture.z()
+            interpolatedPU.z() * normalFromTexture.x() +
+            interpolatedPV.z() * normalFromTexture.y() +
+            interpolatedNormalVector.z() * normalFromTexture.z()
         );
 
         interpolatedNormalVector.normalize();

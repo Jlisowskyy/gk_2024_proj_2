@@ -24,7 +24,8 @@ SceneMgr::SceneMgr(QObject *parent,
                                     m_textureImg(image),
                                     m_color(color),
                                     m_timer(new QTimer(this)),
-                                    m_lightZ(lightZ) {}
+                                    m_lightZ(lightZ) {
+}
 
 FillType SceneMgr::getFillType() const {
     return m_useTexture && m_textureImg ? FillType::TEXTURE : FillType::SIMPLE_COLOR;
@@ -89,6 +90,8 @@ void SceneMgr::setDrawNet(const bool drawNet) {
     }
 
     m_drawNet = drawNet;
+    m_texture->setDrawNet(drawNet);
+
     redrawScene(*m_drawingWidget, *m_texture, *m_mesh);
 }
 
@@ -211,22 +214,23 @@ void SceneMgr::_drawTexture(const DrawingWidget &drawingWidget, const Texture &t
     switch (m_fillType) {
         case FillType::TEXTURE: {
             texture.fillPixmap<drawNormals>(*drawingWidget.getPixMap(), mesh,
-                               [this](const float u, const float v) {
-                                   return m_textureImg->pixelColor(
-                                       static_cast<int>(v * static_cast<float>(m_textureImg->width() - 1)),
-                                       static_cast<int>((1.0f - u) * static_cast<float>(m_textureImg->height() - 1))
-                                   );
-                               },
-                               _getLightPos()
+                                            [this](const float u, const float v) {
+                                                return m_textureImg->pixelColor(
+                                                    static_cast<int>(v * static_cast<float>(m_textureImg->width() - 1)),
+                                                    static_cast<int>(
+                                                        (1.0f - u) * static_cast<float>(m_textureImg->height() - 1))
+                                                );
+                                            },
+                                            _getLightPos()
             );
         }
         break;
         case FillType::SIMPLE_COLOR: {
             texture.fillPixmap<drawNormals>(*drawingWidget.getPixMap(), mesh,
-                               [this]([[maybe_unused]] const float u, [[maybe_unused]] const float v) {
-                                   return m_color;
-                               },
-                               _getLightPos()
+                                            [this]([[maybe_unused]] const float u, [[maybe_unused]] const float v) {
+                                                return m_color;
+                                            },
+                                            _getLightPos()
             );
         }
         break;

@@ -51,8 +51,8 @@ QColor Texture::_applyLightToTriangleColor(const QColor &color, const QVector3D 
     const float a1 = QVector3D::dotProduct(L1.normalized(), lightPos.normalized());
     const float a2 = QVector3D::dotProduct(L2.normalized(), lightPos2.normalized());
 
-    const float a1m = std::pow(a1, m_reflectorCoef);
-    const float a2m = std::pow(a2, m_reflectorCoef);
+    const float a1m = std::abs(std::pow(a1, m_reflectorCoef));
+    const float a2m = std::abs(std::pow(a2, m_reflectorCoef));
 
     QVector3D resultColors{};
     for (int i = 0; i < 3; ++i) {

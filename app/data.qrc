@@ -2,6 +2,7 @@
 <RCC version="1.0">
     <qresource>
         <file>data/example1</file>
+        <file>data/example2</file>
         <file>data/test_texture.png</file>
         <file>data/nmap1.png</file>
         <file>data/nmap2.jpg</file>

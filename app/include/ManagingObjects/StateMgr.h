@@ -71,6 +71,8 @@ public slots:
 
     void onLightZChanged(double value);
 
+    void onReflectorCoefChanged(double value);
+
     /* toggle actions */
 
     void onDrawNetChanged(bool isChecked);
@@ -80,6 +82,8 @@ public slots:
     void onEnableNormalVectorsChanged(bool isChecked);
 
     void onStopLightingMovementChanged(bool isChecked);
+
+    void onUseReflectorChanged(bool isChecked);
 
     /* simple actions */
 

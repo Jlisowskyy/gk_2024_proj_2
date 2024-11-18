@@ -173,6 +173,15 @@ void SceneMgr::_addLightItem(const DrawingWidget *drawingWidget) {
         QPen(UI_CONSTANTS::LIGHT_SOURCE_COLOR),
         QBrush(UI_CONSTANTS::LIGHT_SOURCE_COLOR)
     );
+
+    m_lightEllipse1 = drawingWidget->scene()->addEllipse(
+        -(point.x() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS),
+        -(point.y() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS),
+        2 * UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
+        2 * UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
+        QPen(UI_CONSTANTS::LIGHT_SOURCE_COLOR),
+        QBrush(UI_CONSTANTS::LIGHT_SOURCE_COLOR)
+    );
 }
 
 void SceneMgr::_drawNet(DrawingWidget &drawingWidget, const Mesh &mesh) {
@@ -246,6 +255,13 @@ void SceneMgr::_processLightPosition() {
     m_lightEllipse->setRect(
         point.x() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
         point.y() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
+        2 * UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
+        2 * UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS
+    );
+
+    m_lightEllipse1->setRect(
+        -(point.x() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS),
+        -(point.y() - UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS),
         2 * UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS,
         2 * UI_CONSTANTS::DEFAULT_LIGHT_SOURCE_RADIUS
     );

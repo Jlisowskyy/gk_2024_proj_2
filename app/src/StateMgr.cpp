@@ -160,6 +160,9 @@ void StateMgr::onLightZChanged(double value) {
     m_sceneMgr->setLightZ(static_cast<float>(value));
 }
 
+void StateMgr::onReflectorCoefChanged(double value) {
+}
+
 void StateMgr::onDrawNetChanged(const bool isChecked) {
     m_sceneMgr->setDrawNet(isChecked);
 }
@@ -174,6 +177,10 @@ void StateMgr::onEnableNormalVectorsChanged(const bool isChecked) {
 
 void StateMgr::onStopLightingMovementChanged(const bool isChecked) {
     m_sceneMgr->setIsAnimationPlayed(!isChecked);
+}
+
+void StateMgr::onUseReflectorChanged(bool isChecked) {
+
 }
 
 void StateMgr::onLoadBezierPointsTriggered() {

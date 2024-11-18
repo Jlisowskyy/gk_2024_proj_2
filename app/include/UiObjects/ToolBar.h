@@ -76,6 +76,9 @@ public:
     QAction *m_stopLightMovementButton{};
     QAction *m_changePlainColorButton{};
     QAction *m_changeLightColorButton{};
+
+    DoubleSlider *m_reflectorMSlider{};
+    QAction *m_changeReflectionButton{};
 };
 
 

@@ -16,14 +16,25 @@ QColor Texture::_applyLightToTriangleColor(const QColor &color, const QVector3D 
                                            const QVector3D &pos, const QVector3D &lightPos) const {
     static constexpr QVector3D V(0, 0, 1);
 
-    const QVector3D L = (lightPos - pos).normalized();
+    const QVector3D L1 = (lightPos - pos).normalized();
     const QVector3D N = normalVector.normalized();
-    const float NdotL = QVector3D::dotProduct(N, L);
-    const QVector3D R = (2.0f * NdotL * N - L).normalized();
+    const float NdotL1 = QVector3D::dotProduct(N, L1);
+    const QVector3D R1 = (2.0f * NdotL1 * N - L1).normalized();
 
-    const float cos0 = std::max(0.0f, NdotL);
-    const float cos1 = std::max(0.0f, QVector3D::dotProduct(V, R));
-    const float cos1m = std::pow(cos1, m_mCoef);
+    const float cos00 = std::max(0.0f, NdotL1);
+    const float cos10 = std::max(0.0f, QVector3D::dotProduct(V, R1));
+    const float cos1m0 = std::pow(cos10, m_mCoef);
+
+    const QVector3D lightPos2 = QVector3D(
+        -lightPos.x(), -lightPos.y(), lightPos.z());
+
+    const QVector3D L2 = (lightPos2 - pos).normalized();
+    const float NdotL2 = QVector3D::dotProduct(N, L2);
+    const QVector3D R2 = (2.0f * NdotL2 * N - L2).normalized();
+
+    const float cos01 = std::max(0.0f, NdotL2);
+    const float cos11 = std::max(0.0f, QVector3D::dotProduct(V, R2));
+    const float cos1m1 = std::pow(cos11, m_mCoef);
 
     QVector3D lightColors = QVector3D(
                                 static_cast<float>(m_lightColor.red()),
@@ -37,9 +48,13 @@ QColor Texture::_applyLightToTriangleColor(const QColor &color, const QVector3D 
 
     QVector3D resultColors{};
     for (int i = 0; i < 3; ++i) {
-        const float left = m_kdCoef * lightColors[i] * objColors[i] * cos0;
-        const float right = m_ksCoef * lightColors[i] * objColors[i] * cos1m;
-        resultColors[i] = std::clamp(left + right, 0.0f, 1.0f);
+        const float left = m_kdCoef * lightColors[i] * objColors[i] * cos00;
+        const float right = m_ksCoef * lightColors[i] * objColors[i] * cos1m0;
+
+        const float left1 = m_kdCoef * lightColors[i] * objColors[i] * cos01;
+        const float right1 = m_ksCoef * lightColors[i] * objColors[i] * cos1m1;
+
+        resultColors[i] = std::clamp(left + right + left1 + right1, 0.0f, 1.0f);
     }
 
     resultColors *= 255.0f;

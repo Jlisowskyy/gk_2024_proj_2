@@ -208,4 +208,25 @@ void ToolBar::setupToolBar(QToolBar *toolBar, DrawingWidget *drawingWidget) {
                              ":/icons/color_icon.png");
     m_changeLightColorButton = pButton->getAction();
     m_toolBar->addWidget(pButton);
+
+    _addSeparator();
+    _addToolbarLiteral("Lab options:");
+
+    pButton = new TextButton(m_toolBar,
+                             "Swap light to reflector!",
+                             "Change to reflector",
+                             ":/icons/vector_icon.png");
+    m_changeReflectionButton = pButton->getAction();
+    m_changeReflectionButton->setCheckable(true);
+    m_changeReflectionButton->setChecked(LIGHTING_CONSTANTS::USE_REFLECTORS);
+    m_toolBar->addWidget(pButton);
+
+    m_reflectorMSlider = new DoubleSlider(Qt::Horizontal, m_toolBar,
+                                      SLIDER_CONSTANTS::REFLECTOR::MIN,
+                                      SLIDER_CONSTANTS::REFLECTOR::MAX,
+                                      SLIDER_CONSTANTS::REFLECTOR::STEPS,
+                                      SLIDER_CONSTANTS::REFLECTOR::DEFAULT_STEP,
+                                      "Reflector coef",
+                                      "Reflector coefficient for lighting equation");
+    m_toolBar->addWidget(m_reflectorMSlider->getContainer());
 }

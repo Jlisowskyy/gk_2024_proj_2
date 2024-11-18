@@ -59,9 +59,21 @@ namespace LIGHTING_CONSTANTS {
     static constexpr float LIGHT_MOVEMENT_STEP = (ANIMATION_TIME_STEP_MS / 1000.0) * LIGHT_SPEED;
     static constexpr Qt::GlobalColor DEFAULT_LIGHT_COLOR = Qt::white;
     static constexpr float NUMBER_OF_SPIRALS = 5.0f;
+
+    static constexpr bool USE_REFLECTORS = false;
+    static constexpr double DEFAULT_REFLECTION_COEF = 5.0;
 }
 
 namespace SLIDER_CONSTANTS {
+    namespace REFLECTOR {
+        static constexpr double MIN = 1.0;
+        static constexpr double MAX = 100.0;
+
+        static constexpr int STEPS = 99;
+        static constexpr int DEFAULT_STEP = CONVERT_TO_DEFAULT_STEP(LIGHTING_CONSTANTS::DEFAULT_REFLECTION_COEF,
+                                                                    MIN, MAX, STEPS);
+    }
+
     namespace TRIANGULATION {
         static constexpr double MIN = 2.0;
         static constexpr double MAX = 300.0;
@@ -173,7 +185,7 @@ namespace SLIDER_CONSTANTS {
 
 
 namespace RESOURCE_CONSTANTS {
-    static constexpr const char *DEFAULT_CONTROL_POINTS_PATH = ":/data/example1";
+    static constexpr const char *DEFAULT_CONTROL_POINTS_PATH = ":/data/example2";
     static constexpr const char *DEFAULT_TEXTURE_PATH = ":/data/test_texture.png";
     static constexpr const char *DEFAULT_NORMAL_MAP_PATH = ":/data/nmap1.png";
     static constexpr int TEXTURE_IMAGE_SIZE = 1000;

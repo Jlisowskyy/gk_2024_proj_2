@@ -426,7 +426,7 @@ void Texture::colorFigure(BitMap &bitMap, int16_t *zBuffer, QColor color, const 
                             z
                         };
 
-                        // QColor color = _applyLightToTriangleColor(QColorConstants::Blue, {}, drawPoint, lightPos);
+                        // color = _applyLightToTriangleColor(QColorConstants::Blue, {}, drawPoint, lightPos);
                         bitMap.setColorAt(screenX, screenY, color);
                     }
                 }
@@ -472,8 +472,8 @@ void Texture::colorFigure(BitMap &bitMap, int16_t *zBuffer, QColor color, const 
                         z
                     };
 
-                    // QColor color = _applyLightToTriangleColor(QColorConstants::Blue, {}, drawPoint, lightPos);
-                    // bitMap.setColorAt(screenX, screenY, color);
+                    // color = _applyLightToTriangleColor(QColorConstants::Blue, {}, drawPoint, lightPos);
+                    bitMap.setColorAt(screenX, screenY, color);
                 }
             }
         }

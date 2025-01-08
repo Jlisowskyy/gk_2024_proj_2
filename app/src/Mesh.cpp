@@ -138,11 +138,11 @@ void Mesh::_adjustAfterRotation() {
 
 MeshArr Mesh::_getFigure() {
     static constexpr QVector3D kPoints[5]{
-        {300, 0, 300},
-        {300, 0, -300},
-        {-300, 0, -300},
-        {-300, 0, 300},
-        {0, 1000, 0},
+        {150, 0, 150},
+        {150, 0, -150},
+        {-150, 0, -150},
+        {-150, 0, 150},
+        {0, -120, 0},
     };
 
     static constexpr int kTrianges[6][3]{
@@ -167,6 +167,8 @@ MeshArr Mesh::_getFigure() {
                 QVector3D(),
                 0, 0, 0, 0, 0
             );
+
+            triangle[p_idx].rotate(15, 0, 0);
         }
 
         arr.push_back(triangle);
@@ -226,4 +228,16 @@ std::tuple<BernsteinTable, BernsteinTable> Mesh::_computeBernstein(const float t
             0.0f,
         }
     };
+}
+
+void Mesh::rotateFigure() {
+    static constexpr float kAlphaRot = 0.5f;
+    static constexpr float kBetaRot = 0.9f;
+    static constexpr float kDelta = 0.0f;
+
+    for (auto &triangle: m_figure) {
+        for (auto &vertex: triangle) {
+            vertex.rotate(kAlphaRot, kBetaRot, kDelta);
+        }
+    }
 }

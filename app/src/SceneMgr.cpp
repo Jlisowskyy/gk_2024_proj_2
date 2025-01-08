@@ -155,6 +155,8 @@ void SceneMgr::_onTimer() {
 
     _processLightPosition();
     _drawTextureWithNormals(*m_drawingWidget, *m_texture, *m_mesh);
+
+    m_mesh->rotateFigure();
 }
 
 void SceneMgr::_onElementsUpdate(const DrawingWidget *sender) {

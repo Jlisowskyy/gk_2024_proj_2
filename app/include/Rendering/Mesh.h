@@ -52,6 +52,8 @@ public:
 
     void setControlPoints(const ControlPoints &controlPoints);
 
+    void rotateFigure();
+
     // ------------------------------
     // Public slots
     // ------------------------------

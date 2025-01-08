@@ -126,3 +126,27 @@ void Texture::_drawLineOwn(const QVector3D &from, const QVector3D &to, BitMap &b
         if (e2 < dx) { err += dx; y1 += sy; }
     }
 }
+
+QVector3D Texture::_findNormal(const QVector3D &pos, const Triangle &triangle) const {
+    QVector3D v0 = triangle[1].position - triangle[0].position;
+    QVector3D v1 = triangle[2].position - triangle[0].position;
+    QVector3D v2 = pos - triangle[0].position;
+
+    float d00 = QVector3D::dotProduct(v0, v0);
+    float d01 = QVector3D::dotProduct(v0, v1);
+    float d11 = QVector3D::dotProduct(v1, v1);
+    float d20 = QVector3D::dotProduct(v2, v0);
+    float d21 = QVector3D::dotProduct(v2, v1);
+
+    float denom = d00 * d11 - d01 * d01;
+    float v = (d11 * d20 - d01 * d21) / denom;
+    float w = (d00 * d21 - d01 * d20) / denom;
+    float u = 1.0f - v - w;
+
+    QVector3D interpolatedNormal =
+        triangle[0].normal * u +
+        triangle[1].normal * v +
+        triangle[2].normal * w;
+
+    return interpolatedNormal.normalized();
+}

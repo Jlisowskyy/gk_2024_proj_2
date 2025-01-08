@@ -145,6 +145,14 @@ MeshArr Mesh::_getFigure() {
         {0, -120, 0},
     };
 
+    static constexpr std::tuple<float, float> kUvs[5]{
+        {1, 1},
+        {1, 0},
+        {0, 0},
+        {0, 1},
+        {0.5, 0.5},
+    };
+
     static constexpr int kTrianges[6][3]{
         {0, 1, 2},
         {2, 3, 0},
@@ -156,16 +164,46 @@ MeshArr Mesh::_getFigure() {
 
     MeshArr arr{};
 
+    QVector3D faceNormals[6];
+    for (size_t t_idx = 0; t_idx < 6; ++t_idx) {
+        const QVector3D &p0 = kPoints[kTrianges[t_idx][0]];
+        const QVector3D &p1 = kPoints[kTrianges[t_idx][1]];
+        const QVector3D &p2 = kPoints[kTrianges[t_idx][2]];
+
+        QVector3D edge1 = p1 - p0;
+        QVector3D edge2 = p2 - p0;
+        faceNormals[t_idx] = QVector3D::crossProduct(edge1, edge2).normalized();
+    }
+
+    // For each vertex, average the normals of all faces it belongs to
     for (size_t t_idx = 0; t_idx < 6; ++t_idx) {
         Triangle triangle{};
 
         for (size_t p_idx = 0; p_idx < 3; ++p_idx) {
+            int vertexIndex = kTrianges[t_idx][p_idx];
+            QVector3D normal{0, 0, 0};
+            int faceCount = 0;
+
+            for (size_t face = 0; face < 6; ++face) {
+                for (size_t v = 0; v < 3; ++v) {
+                    if (kTrianges[face][v] == vertexIndex) {
+                        normal += faceNormals[face];
+                        faceCount++;
+                        break;
+                    }
+                }
+            }
+
+            normal = (normal / faceCount).normalized();
+
+            const auto [u, v] = kUvs[kTrianges[t_idx][p_idx]];
+
             triangle[p_idx] = Vertex(
                 kPoints[kTrianges[t_idx][p_idx]],
                 QVector3D(),
                 QVector3D(),
-                QVector3D(),
-                0, 0, 0, 0, 0
+                -normal,
+                u, v, 0, 0, 0
             );
 
             triangle[p_idx].rotate(15, 0, 0);
@@ -243,7 +281,7 @@ void Mesh::rotateFigure() {
 }
 
 QColor Mesh::getFigureColor(size_t idx) const {
-    static constexpr QColor kColors[] {
+    static constexpr QColor kColors[]{
         QColorConstants::Blue,
         QColorConstants::Green,
         QColorConstants::Yellow,

@@ -118,6 +118,8 @@ protected:
 
     static void _drawLineOwn(const QVector3D &from, const QVector3D &to, BitMap &bitMap, int16_t *zBuffer);
 
+    QVector3D _findNormal(const QVector3D &pos, const Triangle &triangle) const;
+
     // ------------------------------
     // Class fields
     // ------------------------------
@@ -426,7 +428,8 @@ void Texture::colorFigure(BitMap &bitMap, int16_t *zBuffer, QColor color, const 
                             z
                         };
 
-                        // color = _applyLightToTriangleColor(QColorConstants::Blue, {}, drawPoint, lightPos);
+                        color = _applyLightToTriangleColor(color, _findNormal(drawPoint, polygon),
+                                                           drawPoint, lightPos);
                         bitMap.setColorAt(screenX, screenY, color);
                     }
                 }
@@ -472,7 +475,8 @@ void Texture::colorFigure(BitMap &bitMap, int16_t *zBuffer, QColor color, const 
                         z
                     };
 
-                    // color = _applyLightToTriangleColor(QColorConstants::Blue, {}, drawPoint, lightPos);
+                    color = _applyLightToTriangleColor(color, _findNormal(drawPoint, polygon),
+                                                       drawPoint, lightPos);
                     bitMap.setColorAt(screenX, screenY, color);
                 }
             }

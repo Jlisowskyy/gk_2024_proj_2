@@ -428,8 +428,8 @@ void Texture::colorFigure(BitMap &bitMap, int16_t *zBuffer, QColor color, const 
                             z
                         };
 
-                        color = _applyLightToTriangleColor(color, _findNormal(drawPoint, polygon),
-                                                           drawPoint, lightPos);
+
+                        // color = _applyLightToTriangleColor(color, _findNormal(drawPoint, polygon), drawPoint, lightPos);
                         bitMap.setColorAt(screenX, screenY, color);
                     }
                 }
@@ -475,8 +475,7 @@ void Texture::colorFigure(BitMap &bitMap, int16_t *zBuffer, QColor color, const 
                         z
                     };
 
-                    color = _applyLightToTriangleColor(color, _findNormal(drawPoint, polygon),
-                                                       drawPoint, lightPos);
+                    // color = _applyLightToTriangleColor(color, _findNormal(drawPoint, polygon), drawPoint, lightPos);
                     bitMap.setColorAt(screenX, screenY, color);
                 }
             }

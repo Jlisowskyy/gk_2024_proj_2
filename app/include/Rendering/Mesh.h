@@ -36,6 +36,10 @@ public:
         return m_triangles;
     }
 
+    [[nodiscard]] const MeshArr &getFigure() const {
+        return m_figure;
+    }
+
     static void rotate(QVector3D &p, float xRotationAngle, float zRotationAngle, float yRotationAngle);
 
     void alignWithMeshPlain(QVector3D &p) const { rotate(p, m_alpha, m_beta, m_delta); }
@@ -77,6 +81,8 @@ protected:
 
     void _adjustAfterRotation();
 
+    static MeshArr _getFigure();
+
     // ------------------------------
     // Class fields
     // ------------------------------
@@ -88,6 +94,7 @@ protected:
 
     ControlPoints m_controlPoints;
     MeshArr m_triangles;
+    MeshArr m_figure;
 };
 
 #endif //MESH_H

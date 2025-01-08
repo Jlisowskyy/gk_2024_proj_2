@@ -90,3 +90,39 @@ Texture::_drawData Texture::_preprocess(const Triangle &triangle) {
 
     return result;
 }
+
+void Texture::_drawLineOwn(const QVector3D &from, const QVector3D &to, BitMap &bitMap, int16_t *zBuffer) {
+    int x1 = int(from.x() + bitMap.width() / 2.0);
+    int y1 = int(from.y() + bitMap.height() / 2.0);
+    int x2 = int(to.x() + bitMap.width() / 2.0);
+    int y2 = int(to.y() + bitMap.height() / 2.0);
+
+    int dx = abs(x2 - x1);
+    int dy = abs(y2 - y1);
+    int sx = x1 < x2 ? 1 : -1;
+    int sy = y1 < y2 ? 1 : -1;
+    int err = dx - dy;
+
+    float z1 = from.z();
+    float z2 = to.z();
+
+    while (true) {
+        if (x1 >= 0 && y1 >= 0 && x1 < bitMap.width() && y1 < bitMap.height()) {
+            float t = (dx > dy) ?
+                     float(x1 - (from.x() + bitMap.width() / 2.0)) / (to.x() - from.x()) :
+                     float(y1 - (from.y() + bitMap.height() / 2.0)) / (to.y() - from.y());
+            float z = z1 + t * (z2 - z1) + 2.0;
+
+            auto zRounded = static_cast<int16_t>(std::floor(z));
+            if (zRounded > zBuffer[y1 * bitMap.width() + x1]) {
+                zBuffer[y1 * bitMap.width() + x1] = zRounded;
+                bitMap.setColorAt(x1, y1, QColor(0, 0, 0));
+            }
+        }
+
+        if (x1 == x2 && y1 == y2) break;
+        int e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x1 += sx; }
+        if (e2 < dx) { err += dx; y1 += sy; }
+    }
+}

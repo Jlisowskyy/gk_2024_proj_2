@@ -28,7 +28,8 @@ public:
     // Class creation
     // ------------------------------
 
-    Texture(QObject *parent, float ksCoef, float kdCoef, float mCoef, const QColor &lightColor, bool useReflector, float reflectorCoef);
+    Texture(QObject *parent, float ksCoef, float kdCoef, float mCoef, const QColor &lightColor, bool useReflector,
+            float reflectorCoef);
 
     ~Texture() override = default;
 
@@ -42,6 +43,10 @@ public:
     template<bool useNormals, typename ColorGetterT, size_t N>
     void colorPolygon(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorGet, const PolygonArr<N> &polygon,
                       const QVector3D &lightPos) const;
+
+    template<bool useNormals, typename ColorGetterT, size_t N>
+    void colorFigure(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorGet, const PolygonArr<N> &polygon,
+                     const QVector3D &lightPos) const;
 
     // ------------------------------
     // Public slots
@@ -111,6 +116,8 @@ protected:
 
     [[nodiscard]] static _drawData _preprocess(const Triangle &triangle);
 
+    static void _drawLineOwn(const QVector3D &from, const QVector3D &to, BitMap &bitMap, int16_t *zBuffer) ;
+
     // ------------------------------
     // Class fields
     // ------------------------------
@@ -146,6 +153,28 @@ void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, ColorGetterT colorGe
         colorPolygon<useNormals>(bitMap, zBuffer, colorGetter, triangle, lightPos);
     }
 
+    if (m_drawNet) {
+        for (const auto &triangle: mesh.getMeshArr()) {
+            for (size_t i = 0; i < 3; i++) {
+                const auto &v1 = triangle[i].rotatedPosition;
+                const auto &v2 = triangle[(i + 1) % 3].rotatedPosition;
+
+                _drawLineOwn(v1, v2, bitMap, zBuffer);
+            }
+        }
+    }
+
+    for (const auto &triangle: mesh.getFigure()) {
+        // colorFigure<false>(bitMap, zBuffer, colorGetter, triangle, lightPos);
+
+        for (size_t i = 0; i < 3; i++) {
+            const auto &v1 = triangle[i].rotatedPosition;
+            const auto &v2 = triangle[(i + 1) % 3].rotatedPosition;
+
+            _drawLineOwn(v1, v2, bitMap, zBuffer);
+        }
+    }
+
     bitMap.dropToPixMap(pixmap);
 
     const auto t1 = std::chrono::steady_clock::now();
@@ -158,17 +187,6 @@ void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, ColorGetterT colorGe
     QPainter painter(&pixmap);
 
     painter.setPen(QPen(Qt::black, 2));
-
-    if (m_drawNet)
-        for (const auto &triangle: mesh.getMeshArr()) {
-            for (size_t i = 0; i < 3; i++) {
-                const auto &v1 = triangle[i].rotatedPosition;
-                const auto &v2 = triangle[(i + 1) % 3].rotatedPosition;
-
-                painter.drawLine(v1.x() + bitMap.width() / 2, v1.y() + bitMap.height() / 2, v2.x() + bitMap.width() / 2,
-                                 v2.y() + bitMap.height() / 2);
-            }
-        }
 
     QFont font{};
     font.setFamily("Courier");
@@ -316,6 +334,142 @@ void Texture::colorPolygon(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorG
 
                     const QColor color = _processColor<useNormals>(colorGet, drawPoint, polygon, lightPos, drawData);
                     bitMap.setColorAt(screenX, screenY, color);
+                }
+            }
+        }
+    }
+}
+
+template<bool useNormals, typename ColorGetterT, size_t N>
+void Texture::colorFigure(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorGet, const PolygonArr<N> &polygon,
+                          const QVector3D &lightPos) const {
+    std::array<size_t, N> sorted{};
+    for (size_t i = 0; i < N; i++) {
+        sorted[i] = i;
+    }
+
+    for (int i = 1; i < static_cast<int>(N); i++) {
+        size_t key = sorted[i];
+        int j = i - 1;
+
+        while (j >= 0 && polygon[sorted[j]].rotatedPosition.y() > polygon[key].rotatedPosition.y()) {
+            sorted[j + 1] = sorted[j];
+            j--;
+        }
+        sorted[j + 1] = key;
+    }
+
+    std::list<ActiveEdge> aet{};
+    int scanLineY = static_cast<int>(std::floor(polygon[sorted[0]].rotatedPosition.y()));
+    size_t nextVertex = 0;
+
+    /* works only for triangles */
+    _drawData drawData = _preprocess(polygon);
+
+    while (nextVertex < N || !aet.empty()) {
+        while (nextVertex < N &&
+               static_cast<int>(std::floor(polygon[sorted[nextVertex]].rotatedPosition.y())) == scanLineY) {
+            const size_t curr = sorted[nextVertex];
+            const size_t prev = (curr + N - 1) % N;
+            const size_t next = (curr + 1) % N;
+
+            const float currY = polygon[curr].rotatedPosition.y();
+            const float prevY = polygon[prev].rotatedPosition.y();
+            const float nextY = polygon[next].rotatedPosition.y();
+
+            if (prevY > currY) {
+                aet.emplace_back(
+                    polygon[prev].rotatedPosition,
+                    polygon[curr].rotatedPosition
+                );
+            }
+
+            if (nextY > currY) {
+                aet.emplace_back(
+                    polygon[next].rotatedPosition,
+                    polygon[curr].rotatedPosition
+                );
+            }
+
+            nextVertex++;
+        }
+
+        aet.sort([](const ActiveEdge &a, const ActiveEdge &b) {
+            return a.x < b.x || (a.x == b.x && a.dx < b.dx);
+        });
+
+        auto it = aet.begin();
+        while (it != aet.end() && std::next(it) != aet.end()) {
+            int x1 = static_cast<int>(std::floor(it->x));
+            int x2 = static_cast<int>(std::ceil(std::next(it)->x));
+
+            float zLeft = it->z;
+            float zRight = std::next(it)->z;
+            float zStep = (x2 - x1) != 0 ? (zRight - zLeft) / static_cast<float>(x2 - x1) : 0.0f;
+
+            for (int x = x1; x <= x2; x++) {
+                float z = zLeft + static_cast<float>(x - x1) * zStep;
+
+                const int screenX = x + bitMap.width() / 2;
+                const int screenY = scanLineY + bitMap.height() / 2;
+
+                if (screenX >= 0 && screenX < bitMap.width() && screenY >= 0 && screenY < bitMap.height()) {
+                    if (const auto zRounded = static_cast<int16_t>(std::floor(z));
+                        zRounded > zBuffer[screenY * bitMap.width() + screenX]) {
+                        zBuffer[screenY * bitMap.width() + screenX] = zRounded;
+
+                        const QVector3D drawPoint{
+                            static_cast<float>(x),
+                            static_cast<float>(scanLineY),
+                            z
+                        };
+
+                        // TODO: coloring here
+                    }
+                }
+            }
+
+            std::advance(it, 2);
+        }
+
+        ++scanLineY;
+
+        for (auto &edge: aet) {
+            edge.update();
+        }
+
+        aet.remove_if([scanLineY](const ActiveEdge &edge) {
+            return scanLineY >= edge.yMax;
+        });
+    }
+
+    for (size_t i = 0; i < N; i++) {
+        const auto &v1 = polygon[i].rotatedPosition;
+        const auto &v2 = polygon[(i + 1) % N].rotatedPosition;
+
+        if (std::abs(v1.y() - v2.y()) <= 1.0f) {
+            const int y = static_cast<int>(std::floor(v1.y()));
+            const int x1 = static_cast<int>(std::floor(std::min(v1.x(), v2.x())));
+            const int x2 = static_cast<int>(std::floor(std::max(v1.x(), v2.x())));
+
+            const float zStart = v1.z();
+            const float zEnd = v2.z();
+            const float zStep = x2 - x1 != 0 ? (zEnd - zStart) / (x2 - x1) : 0.0f;
+
+            for (int x = x1; x <= x2; ++x) {
+                float z = zStart + (x - x1) * zStep;
+
+                const int screenX = x + bitMap.width() / 2;
+                const int screenY = y + bitMap.height() / 2;
+
+                if (screenX >= 0 && screenX < bitMap.width() && screenY >= 0 && screenY < bitMap.height()) {
+                    const QVector3D drawPoint{
+                        static_cast<float>(x),
+                        static_cast<float>(scanLineY),
+                        z
+                    };
+
+                    // TODO: coloring here
                 }
             }
         }

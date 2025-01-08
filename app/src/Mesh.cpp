@@ -16,7 +16,8 @@ Mesh::Mesh(QObject *parent, const ControlPoints &controlPoints, const float alph
                                 m_beta(beta),
                                 m_delta(delta),
                                 m_controlPoints(controlPoints),
-                                m_triangles(_interpolateBezier(controlPoints)) {
+                                m_triangles(_interpolateBezier(controlPoints)),
+                                m_figure(_getFigure()) {
 }
 
 void Mesh::setAlpha(const double alpha) {
@@ -126,13 +127,52 @@ std::tuple<QVector3D, QVector3D, QVector3D> Mesh::_computePointAndDeriv(
 }
 
 void Mesh::_adjustAfterRotation() {
-    #pragma omp parallel for
+#pragma omp parallel for
     for (auto &triangle: m_triangles) {
         for (auto &vertex: triangle) {
             vertex.resetRotation();
             vertex.rotate(m_alpha, m_beta, m_delta);
         }
     }
+}
+
+MeshArr Mesh::_getFigure() {
+    static constexpr QVector3D kPoints[5]{
+        {300, 0, 300},
+        {300, 0, -300},
+        {-300, 0, -300},
+        {-300, 0, 300},
+        {0, 1000, 0},
+    };
+
+    static constexpr int kTrianges[6][3]{
+        {0, 1, 2},
+        {2, 3, 0},
+        {0, 1, 4},
+        {1, 2, 4},
+        {2, 3, 4},
+        {3, 0, 4},
+    };
+
+    MeshArr arr{};
+
+    for (size_t t_idx = 0; t_idx < 6; ++t_idx) {
+        Triangle triangle{};
+
+        for (size_t p_idx = 0; p_idx < 3; ++p_idx) {
+            triangle[p_idx] = Vertex(
+                kPoints[kTrianges[t_idx][p_idx]],
+                QVector3D(),
+                QVector3D(),
+                QVector3D(),
+                0, 0, 0, 0, 0
+            );
+        }
+
+        arr.push_back(triangle);
+    }
+
+    return arr;
 }
 
 void Mesh::rotate(QVector3D &p, const float xRotationAngle, const float zRotationAngle, const float yRotationAngle) {

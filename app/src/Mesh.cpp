@@ -241,3 +241,16 @@ void Mesh::rotateFigure() {
         }
     }
 }
+
+QColor Mesh::getFigureColor(size_t idx) const {
+    static constexpr QColor kColors[] {
+        QColorConstants::Blue,
+        QColorConstants::Green,
+        QColorConstants::Yellow,
+        QColorConstants::Magenta,
+        QColorConstants::DarkGray,
+        QColorConstants::Cyan
+    };
+
+    return kColors[idx];
+}

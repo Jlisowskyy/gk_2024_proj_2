@@ -54,6 +54,8 @@ public:
 
     void rotateFigure();
 
+    QColor getFigureColor(size_t idx) const;
+
     // ------------------------------
     // Public slots
     // ------------------------------

@@ -44,8 +44,8 @@ public:
     void colorPolygon(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorGet, const PolygonArr<N> &polygon,
                       const QVector3D &lightPos) const;
 
-    template<bool useNormals, typename ColorGetterT, size_t N>
-    void colorFigure(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorGet, const PolygonArr<N> &polygon,
+    template<bool useNormals, size_t N>
+    void colorFigure(BitMap &bitMap, int16_t *zBuffer, QColor color, const PolygonArr<N> &polygon,
                      const QVector3D &lightPos) const;
 
     // ------------------------------
@@ -116,7 +116,7 @@ protected:
 
     [[nodiscard]] static _drawData _preprocess(const Triangle &triangle);
 
-    static void _drawLineOwn(const QVector3D &from, const QVector3D &to, BitMap &bitMap, int16_t *zBuffer) ;
+    static void _drawLineOwn(const QVector3D &from, const QVector3D &to, BitMap &bitMap, int16_t *zBuffer);
 
     // ------------------------------
     // Class fields
@@ -164,8 +164,10 @@ void Texture::fillPixmap(QPixmap &pixmap, const Mesh &mesh, ColorGetterT colorGe
         }
     }
 
+    size_t idx = 0;
     for (const auto &triangle: mesh.getFigure()) {
-        // colorFigure<false>(bitMap, zBuffer, colorGetter, triangle, lightPos);
+        const QColor color = mesh.getFigureColor(idx++);
+        colorFigure<false>(bitMap, zBuffer, color, triangle, lightPos);
 
         for (size_t i = 0; i < 3; i++) {
             const auto &v1 = triangle[i].rotatedPosition;
@@ -340,8 +342,8 @@ void Texture::colorPolygon(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorG
     }
 }
 
-template<bool useNormals, typename ColorGetterT, size_t N>
-void Texture::colorFigure(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorGet, const PolygonArr<N> &polygon,
+template<bool useNormals, size_t N>
+void Texture::colorFigure(BitMap &bitMap, int16_t *zBuffer, QColor color, const PolygonArr<N> &polygon,
                           const QVector3D &lightPos) const {
     std::array<size_t, N> sorted{};
     for (size_t i = 0; i < N; i++) {
@@ -424,7 +426,8 @@ void Texture::colorFigure(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorGe
                             z
                         };
 
-                        // TODO: coloring here
+                        // QColor color = _applyLightToTriangleColor(QColorConstants::Blue, {}, drawPoint, lightPos);
+                        bitMap.setColorAt(screenX, screenY, color);
                     }
                 }
             }
@@ -469,7 +472,8 @@ void Texture::colorFigure(BitMap &bitMap, int16_t *zBuffer, ColorGetterT colorGe
                         z
                     };
 
-                    // TODO: coloring here
+                    // QColor color = _applyLightToTriangleColor(QColorConstants::Blue, {}, drawPoint, lightPos);
+                    // bitMap.setColorAt(screenX, screenY, color);
                 }
             }
         }
